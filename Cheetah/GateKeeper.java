@@ -6,6 +6,8 @@ import java.util.*;
 import java.io.*;
 
 import java.net.*;
+ 
+
 
 /**
  * gatekeeper registers a prefix of an URL such as "/cgi-bin/foo.cgi"
@@ -20,7 +22,7 @@ import java.net.*;
  * bet, the owch agent registered in the WeakHashMap is notified of a
  * waiting pipeline
  */
-public class GateKeeper extends Node 
+public class GateKeeper extends Node implements javax.naming.directory.DirContext 
 { 
     public static void main(String[] args) { 
 	Map m=Env.parseCmdLine(args);
@@ -32,7 +34,7 @@ public class GateKeeper extends Node
 				   "GateKeeper Agent usage:\n\n"+
 				   "-name name\n"+ 
 				   "-HostPort port\n"+ 
-				   "$Id: GateKeeper.java,v 1.1 2001/04/26 03:06:12 grrrrr Exp $\n"
+				   "$Id: GateKeeper.java,v 1.2 2001/04/30 01:28:37 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };

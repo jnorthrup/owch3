@@ -17,7 +17,7 @@ import owch.*;
 import java.util.*;
 import java.io.*; 
 
-public class Room extends Node implements Runnable
+public class Room extends Node implements Runnable , javax.naming.directory.DirContext 
 { 
     //String dir=".";
     public Map usersList; //Contains users in the room
@@ -32,7 +32,7 @@ public class Room extends Node implements Runnable
 				   "\n\n******************** cmdline syntax error\n"+
 				   "Room Agent usage:\n\n"+
 				   "-name name\n"+  
-				   "$Id: Room.java,v 1.1 2001/04/26 03:06:12 grrrrr Exp $\n"
+				   "$Id: Room.java,v 1.2 2001/04/30 01:28:37 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };

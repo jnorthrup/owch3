@@ -2,7 +2,7 @@ package Cheetah;
 
 import owch.*; 
 import java.io.*;
-import java.util.*;
+import java.util.*; 
 
     /**
      * application level interface to a parent routing node.
@@ -12,8 +12,7 @@ import java.util.*;
      *                        WalkTo, Leave,  listClients, & GetUserRoom methods
      */
 
-public class Domain
-extends Node
+public class Domain extends Node implements javax.naming.ldap.LdapContext
 {
    
       public static void main(String[] args) { 
@@ -26,7 +25,7 @@ extends Node
 				   "Domain Agent usage:\n\n"+
 				   "-name name\n"+ 
 				   "-HostPort port\n"+ 
-				   "$Id: Domain.java,v 1.1 2001/04/26 03:06:12 grrrrr Exp $\n"
+				   "$Id: Domain.java,v 1.2 2001/04/30 01:28:37 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };

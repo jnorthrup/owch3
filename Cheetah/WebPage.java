@@ -4,6 +4,9 @@
   @author   Jim Northrup
 
   $Log: WebPage.java,v $
+  Revision 1.2.2.1  2001/04/30 04:27:56  grrrrr
+  SocketProxy + Deploy methods
+
   Revision 1.2  2001/04/27 12:47:54  grrrrr
   webpages are functional, DeployAgent provides saner means of cloning.
 
@@ -50,8 +53,9 @@ public class WebPage extends   Node implements Runnable{
 				   "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n"+
 				   "[-Clone 'host1[ ..hostn]']\n"+
 				   "[-Content-Type 'application/msword']\n"+
-				   "[-Clone 'host1[ ..hostn]']\n"+
-				   "$Id: WebPage.java,v 1.2 2001/04/27 12:47:54 grrrrr Exp $\n"
+				   "[-Clone 'host1[ ..hostn]']\n"+			
+				   "[-Deploy 'host1[ ..hostn]']\n"+
+				   "$Id: WebPage.java,v 1.2.2.1 2001/04/30 04:27:56 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };
@@ -365,6 +369,19 @@ public class WebPage extends   Node implements Runnable{
 		StringTokenizer st=new StringTokenizer(clist);
 		while(st.hasMoreTokens())
 		    clone_state1(st.nextToken());
+	    };
+	if(containsKey("Deploy"))
+	    try {
+		String clist=(String)get("Deploy");
+		remove("Deploy");
+		Env.debug(500,getClass().getName()+" **Cloning for "+clist);
+		StringTokenizer st=new StringTokenizer(clist);
+		while(st.hasMoreTokens())
+		    clone_state1(st.nextToken());
+		Thread.currentThread().sleep(15*1000);//kludge, allow udp messages to arrive...
+		System.exit(0);//TODO: allow our host to stay alive...
+	    }catch(Exception e){
+		e.printStackTrace();
 	    };
     }
     

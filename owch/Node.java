@@ -3,17 +3,15 @@ package owch;
 import java.net.*;
 import java.io.*;
 import java.util.*;
-import javax.naming.Referenceable;
 
 /*
   http://www.iconcomp.com/papers/comp/comp_41.html
 */
 
-/** $Log: Node.java,v $
-/** Revision 1.2  2001/04/30 01:28:37  grrrrr
-/** beginning jndi foundations in Room.java
-/** */
-abstract public class Node extends TreeMap implements MetaProperties, Referenceable {
+/**
+$Id: Node.java,v 1.1.1.1.2.1 2001/04/30 04:27:56 grrrrr Exp $
+ */
+abstract public class Node extends TreeMap implements MetaNode {
     protected boolean killFlag = false;
     boolean virgin;
     LinkRegistry acl = null;
@@ -21,6 +19,7 @@ abstract public class Node extends TreeMap implements MetaProperties, Referencea
     /** this tells our (potentially clone) web page to stop re-registering.  it will cease to spin. */
     public void dissolve() {
         killFlag = true;
+	//UnLink("default")
     };
 
     public boolean isParent() {
@@ -34,6 +33,10 @@ abstract public class Node extends TreeMap implements MetaProperties, Referencea
             update(name);
             return;
         };
+        if ( JMSType.equals("Dissolve")) {
+            dissolve();
+            return;
+        }
     }
 
     /**
@@ -48,16 +51,23 @@ abstract public class Node extends TreeMap implements MetaProperties, Referencea
         Env.debug(15, getClass().getName() + "::" + getJMSReplyTo() + " Node.update() sent for " + dest);
     }
 
+    public Node() {
+    }
 
-    public Node(Map p ) {
+    public Node(Map p) {
         super(p);
         Env.getRouter("IPC").addElement(this);
         if (!isParent())
             linkTo("default");
     }
 
+    public void init(Map p) {
+        putAll(p);
+        Env.getRouter("IPC").addElement(this);
+        if (!isParent())
+            linkTo("default");
+    }
 
- 
     /**
      * Sends a Link notification other node(s) intended to establish direct socket communication.
      * @param lk node(s) to link to
@@ -113,9 +123,12 @@ abstract public class Node extends TreeMap implements MetaProperties, Referencea
         return s;
     }
 
-    /** returns the JMS name fof the node. */
     public final String getJMSReplyTo() {
         return (String)get("JMSReplyTo");
     };
-
 };
+
+//$Log: Node.java,v $
+//Revision 1.1.1.1.2.1  2001/04/30 04:27:56  grrrrr
+//SocketProxy + Deploy methods
+//

@@ -11,8 +11,9 @@ agents=[
     ], [
     "QUICKSTART1","Cheetah.WebPage -name quickstart -Resource /bookmark.html -Content-Type text/html"
     ], [
-    "clone jarfile","Cheetah.WebPage -name jarfile    -Resource /rnodi_owch.jar -Clone deploy_1"
-    ],
+    "clone jarfile","Cheetah.WebPage -name jarfile    -Resource /rnodi_owch.jar -Deploy deploy_1"
+    ], [
+    "NNTP ProxySocket","Cheetah.SocketProxy -name nntp_proxy -SourcePort 119 -SourceHost news.mindspring.com -ProxyPort 2119 -clone deploy_1"	],
     ]
 
 import os

@@ -6,7 +6,13 @@ package id4wx9ucl9jndqrcl9jox7q;
 @__modelType diagram 
 */
 class diagram {
-}/**
+/**
+@__ref <oiref:design#Class#id3u97ycl9jndqrcl9joyg1.diagram:oiref><oihard>
+@__modelType reference
+@__fqn <oiref:#Package#msg.format:oiref> 
+*/
+class reference {
+}}/**
 @__tags
 @shapeType ClassDiagram 
 */

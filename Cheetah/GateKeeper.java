@@ -32,10 +32,7 @@ public class GateKeeper extends Node
      * cacheArray
      */
     private boolean cacheInvalid = true;
-
-    /** this holds our private stock of httpd servers */
-    ListenerCache web=new ListenerCache();
-
+ 
     /** this is used to store the URLS in order of length */
     private SortedSet URLSet =
 	new TreeSet( /** sorts strings based on length */

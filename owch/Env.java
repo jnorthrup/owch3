@@ -15,17 +15,15 @@ import java.net.*;
     holds onto the kernel socket objects, etc.
 
     Semantics for Env components are such that we wish to keep all
-    objects one step from recurisve gc, to this effect, our object
-    references should be cache deep, one level, and decoupled from
-    binary component linkages between riding agents.
+    objects one step from   gc .
 
     another way of stating this is that Env holds isolated object
     graphs, no two Env caches should have interdependance.
 
-    Protocol cache is introduced to provide an iron fisted portmap
-    control.  we want to be able to flush a protocol driver on the
-    fly, close its socket resources, and do it by cache granularity
-    with a single action context.
+    Protocol cache is introduced to provide a portmap control.  we
+    want to be able to flush a protocol driver on the fly, close its
+    socket resources, and do it by cache granularity with a single
+    action context.
 
     Node/Proxy/Socket Caches are namespace active reference enumerations.
 
@@ -61,7 +59,7 @@ import java.net.*;
     current Env, in its protocol context (URL determined).
 
     this means that the Notification carries the URL into the
-    ProxyCache, automatically, and its kinda proven.
+    ProxyCache, automatically.
 
 */
 
@@ -131,8 +129,7 @@ public final class Env extends Thread
 	
 	if (r==null) {
 	    try{
-		r=(Router)Class.forName( className).newInstance();
-	
+		r=(Router)Class.forName( className).newInstance(); 
 	    }catch(Exception e) {
 		e.printStackTrace();
 	    }
@@ -152,41 +149,35 @@ public final class Env extends Thread
 	    for(int i=0;i<(args.length-args.length%2);i+=2)
 		{
 		    if(!args[i].startsWith("-"))
-			throw new Exception("Params must all start with -");
-		    
+			throw new Exception("Params must all start with -"); 
 		    String key=args[i].substring(1);
-		    String val=args[i+1];
-		    
+		    String val=args[i+1]; 
 		    if(key.equals("help"))
 			throw new Exception ("requested help");
-
+		    if(key.equals("h"))
+			throw new Exception ("requested help"); 
+		    if(key.equals("-help"))
+			throw new Exception ("requested help"); 
 		    if(key.equals("name"))
-			key="JMSReplyTo";
-		    
+			key="JMSReplyTo"; 
 		    //intercept a few Env specific keywords...
 		    if(key.equals("Hostname"))
-			setHostname(val);
-		    
+			setHostname(val); 
 		    if(key.equals("debugLevel"))
-			setDebugLevel(Integer.decode(val).intValue());
-		     
+			setDebugLevel(Integer.decode(val).intValue()); 
 		    if(key.equals("HostPort"))
-			setHostPort(Integer.decode(val).intValue());
-		    	     
+			setHostPort(Integer.decode(val).intValue()); 
 		    if(key.equals("HostThreads"))
-			setHostThreads(Integer.decode(val).intValue());
-		    		    	     
+			setHostThreads(Integer.decode(val).intValue()); 
 		    if(key.equals("SocketCount"))
-			setSocketCount(Integer.decode(val).intValue());
-		    
+			setSocketCount(Integer.decode(val).intValue()); 
 		    if(key.equals("ParentURL"))
 			{
 			    Location l=new Location((Location)getParentNode());
 			    l.put("URL",val);
 			    setParentNode(l);
 			    continue;
-			};
-		    
+			}; 
 		    if(key.equals("config"))
 			{
 			    FileInputStream is=new FileInputStream(val);
@@ -210,13 +201,14 @@ public final class Env extends Thread
 			   "-config     - config file[s] to use having (RFC822) pairs of Key: Value\n"+
 			   "-JMSReplyTo - Name of agent\n"+
 			   "-name       - shorthand for JMSReplyTo\n"+
+			   "-Interval   - thread spin time. base number with +- 50% in milliseconds\n"+
 			   "-Hostname   - a hostname or ip address to advertise in the case of several NIC's\n"+
 			   "-HostPort   - port number\n"+ 
 			   "-HostThreads  - Host Thread count \n"+ 
 			   "-SocketCount- Multiple dynamic sockets for high load?\n"+
 			   "-debugLevel - controls how much scroll is displayed\n"+
 			   "-ParentURL  - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n"+
-			   " this Edition of the parser: $Id: Env.java,v 1.1 2001/04/26 03:06:15 grrrrr Exp $\n"
+			   " this Edition of the parser: $Id: Env.java,v 1.2 2001/05/04 10:59:08 grrrrr Exp $\n"
 			   );
 	   
 	System.exit(1);    return ;

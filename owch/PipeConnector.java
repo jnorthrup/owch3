@@ -5,13 +5,7 @@ import java.util.*;
 import java.io.*;
 
 /**
- * Advertise a pipe connnector to the GateKeeper when you have a
- * request waiting.  Gatekeeper will store 1:1 registration:pipeline.
- * thus if you register 25 seperate hierarchies you get 25 seperate
- * pipelines waiting.  Pipelines can hold as many threads as needed
- * and serve as many instances as needed.  Each Web Object needs its
- * own seperate ListenerCache. BIG DIFFERENCE -- owch and httpd protocols use
- * pooled caches for all agents.
+$Id: PipeConnector.java,v 1.2 2001/05/04 10:59:08 grrrrr Exp $
  */
 public class PipeConnector extends TCPServerWrapper implements ListenerReference, Runnable {
     int threads;
@@ -40,10 +34,11 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
         super(port);
         this.threads = threads;
         try {
-                new Thread(this).start();
+	    for (int i=0;i<threads;i++)
+		new Thread(this).start();
         }
         catch (Exception e) {
-            Env.debug(2, "ServerSocket creation Failure");
+            Env.debug(2, "ServerSocket creation Failure:"+e.getMessage());
         };
     };
 
@@ -51,7 +46,6 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
         while (true) {
             try {
                 Socket s = accept();
-                
                 Env.debug(20, "debug: " + Thread.currentThread().getName() + " init");
             } catch (Exception e) {
                 Env.debug(2, "PipeServer thread going down in flames");
@@ -59,3 +53,12 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
         };
     };
 };
+
+
+//$Log: PipeConnector.java,v $
+//Revision 1.2  2001/05/04 10:59:08  grrrrr
+//WIP
+//
+//Revision 1.1.1.1.2.1  2001/04/30 04:27:56  grrrrr
+//SocketProxy + Deploy methods
+//

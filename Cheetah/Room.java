@@ -32,20 +32,12 @@ public class Room extends Node implements Runnable , javax.naming.directory.DirC
 				   "\n\n******************** cmdline syntax error\n"+
 				   "Room Agent usage:\n\n"+
 				   "-name name\n"+  
-				   "$Id: Room.java,v 1.2 2001/04/30 01:28:37 grrrrr Exp $\n"
-				   );
+ 
+				   "$Id: Room.java,v 1.3 2001/05/04 10:59:08 grrrrr Exp $\n"
+ 				   );
 		System.exit(2);
 	    };
-	Room d=new Room(m );
-	Thread t=new Thread();
-	try{
-	    t.start();
-	    while(true)
-		t.sleep(60000);
-	    
-	    
-	}catch (Exception e){
-	};
+	Room d=new Room(m ); 
       };
 
     /**
@@ -181,7 +173,7 @@ public class Room extends Node implements Runnable , javax.naming.directory.DirC
 
         while(true)//todo: watch runstate
 	    { 
-		wait120();
+		waitInterval();
 
 		// commented out - causes relink - much network traffic
 		linkTo(Env.getParentNode().getJMSReplyTo());

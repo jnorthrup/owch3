@@ -4,6 +4,9 @@
   @author   Jim Northrup
 
   $Log: Deploy.java,v $
+  Revision 1.3  2001/05/04 10:59:08  grrrrr
+  WIP
+
   Revision 1.2  2001/04/27 12:47:54  grrrrr
   webpages are functional, DeployAgent provides saner means of cloning.
 
@@ -30,7 +33,6 @@ import java.net.*;
 import java.util.*;
 
 public class Deploy extends Node {
-    
     public static void main(String[] args) { 
 	Map m=Env.parseCmdLine(args);
 	
@@ -40,24 +42,13 @@ public class Deploy extends Node {
 				   "\n\n******************** cmdline syntax error\n"+
 				   "Deploy Agent usage:\n\n"+
 				   "-name name\n"+
-				   "$Id: Deploy.java,v 1.2 2001/04/27 12:47:54 grrrrr Exp $\n"
+				   "$Id: Deploy.java,v 1.3 2001/05/04 10:59:08 grrrrr Exp $\n"
 				   );
 		System.exit(2);
-	    };
-	
-	Deploy d=new Deploy( m );
-	Thread t=new Thread();	 
-	t.start();
-	while(!d.killFlag)
-	    try{
-
-		t.sleep(60*60*3);
-		d.linkTo(null);
-	    }catch(Exception e)
-		{
-		}
+	    }; 
+	Deploy d=new Deploy( m ); 
     };
-   
+
     /*
      *  Client Constructor
      *

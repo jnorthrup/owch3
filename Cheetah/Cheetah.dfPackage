@@ -37,6 +37,21 @@ class reference4 {
 @__modelType reference 
 */
 class reference31 {
+}/**
+@__ref <oiref:java#Class#Cheetah.Deploy:oiref><oihard>
+@__modelType reference 
+*/
+class reference43 {
+}/**
+@__ref <oiref:java#Class#Cheetah.WebPage:oiref><oihard>
+@__modelType reference 
+*/
+class reference44 {
+}/**
+@__ref <oiref:java#Class#Cheetah.SocketProxy:oiref><oihard>
+@__modelType reference 
+*/
+class reference45 {
 }}/**
 @__tags
 @shapeType ClassDiagram 
@@ -47,18 +62,24 @@ class __tags {
 */
 class __options {
 }/**
-@__positions <oigroup:<oiref:java#Member#Cheetah.GateKeeper#receive#(#owch.Notification#)#:oiref>=369,109,0,0,1:oigroup>
-<oigroup:<oiref:java#Extends#Cheetah.GateKeeper#owch.Node:oiref>=593,347,593,263:oigroup>
-<oigroup:<oiref:java#Extends#Cheetah.Tester#owch.Node:oiref>=372,347,557,263:oigroup>
+@__positions <oigroup:<oiref:java#Class#Cheetah.Domain:oiref>=717,347,219,123,1:oigroup>
 <oigroup:<oiref:java#Class#Cheetah.Room:oiref>=956,347,203,193,1:oigroup>
-<oigroup:<oiref:java#Extends#Cheetah.Domain#owch.Node:oiref>=826,347,630,263:oigroup>
-<oigroup:<oiref:java#Class#Cheetah.Client:oiref>=10,347,203,163,1:oigroup>
-<oigroup:<oiref:java#Extends#Cheetah.Room#owch.Node:oiref>=1057,347,668,263:oigroup>
-<oigroup:<oiref:java#Class#owch.Node:oiref>=487,10,219,253,1:oigroup>
-<oigroup:<oiref:java#Extends#Cheetah.Client#owch.Node:oiref>=111,347,522,263:oigroup>
-<oigroup:<oiref:java#Class#Cheetah.GateKeeper:oiref>=532,347,165,173,0:oigroup>
+<oigroup:<oiref:java#Member#Cheetah.GateKeeper#receive#(#owch.Notification#)#:oiref>=369,109,0,0,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Tester#owch.Node:oiref>=372,347,547,293:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Room#owch.Node:oiref>=1057,347,674,293:oigroup>
+<oigroup:<oiref:java#Class#owch.Node:oiref>=487,10,219,283,1:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.WebPage:oiref>=714,500,219,358,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.GateKeeper#owch.Node:oiref>=578,347,578,293:oigroup>
 <oigroup:<oiref:java#Class#Cheetah.Tester:oiref>=233,347,279,229,0:oigroup>
-<oigroup:<oiref:java#Class#Cheetah.Domain:oiref>=717,347,219,168,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Client#owch.Node:oiref>=111,347,517,293:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.Client:oiref>=10,347,203,148,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.WebPage#owch.Node:oiref>=823,500,610,293:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.SocketProxy:oiref>=182,168,219,193,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Deploy#owch.Node:oiref>=455,97,487,97:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.SocketProxy#owch.Node:oiref>=401,227,487,227:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.Deploy:oiref>=252,38,203,118,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Domain#owch.Node:oiref>=826,347,642,293:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.GateKeeper:oiref>=532,347,165,173,0:oigroup>
 */
 class __positions {
 }

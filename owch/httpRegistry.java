@@ -165,7 +165,7 @@ import java.net.*;
 		    } 
 		//3 create PipeConnection to registered location
 		Env.debug(15, getClass().getName()+" creating PipeSocket for "+n.get("Resource").toString());
-		PipeSocket p=new PipeSocket (s,l,n);
+		PipeSocket p=new httpPipeSocket (s,l,n);
 		return true;
 	    }; 
 	//4 else super.sendFile 

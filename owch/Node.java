@@ -3,30 +3,31 @@ package owch;
 import java.net.*;
 import java.io.*;
 import java.util.*;
-import javax.naming.Referenceable;
+import javax.naming.*;
 
 /*
   http://www.iconcomp.com/papers/comp/comp_41.html
 */
 
-/** $Log: Node.java,v $
-/** Revision 1.2  2001/04/30 01:28:37  grrrrr
-/** beginning jndi foundations in Room.java
-/** */
-abstract public class Node extends TreeMap implements MetaProperties, Referenceable {
+ 
+/** $Id: Node.java,v 1.3 2001/05/04 10:59:08 grrrrr Exp $*/
+ 
+abstract public class Node extends TreeMap implements MetaProperties, Runnable, Referenceable {
+    protected  long interval=60*1000 * 2;  
     protected boolean killFlag = false;
+ 
     boolean virgin;
-    LinkRegistry acl = null;
-
+ 
     /** this tells our (potentially clone) web page to stop re-registering.  it will cease to spin. */
     public void dissolve() {
         killFlag = true;
+	//UnLink("default")
     };
-
+ 
     public boolean isParent() {
         return false;
     };
-
+ 
     public void receive(MetaProperties n) {
         String JMSType = (String)n.get("JMSType");
         if (JMSType.equals("Link")) {
@@ -34,12 +35,17 @@ abstract public class Node extends TreeMap implements MetaProperties, Referencea
             update(name);
             return;
         };
+        if ( JMSType.equals("Dissolve")) {
+            dissolve();
+            return;
+        }
+ 
     }
 
     /**
      *  Sends an update to another Node
      *  @param dest JMSReplyTo
-     */
+     */ 
     public void update(String dest) {
         MetaProperties n = new Notification();
         n.put("JMSType", "Update");
@@ -48,15 +54,15 @@ abstract public class Node extends TreeMap implements MetaProperties, Referencea
         Env.debug(15, getClass().getName() + "::" + getJMSReplyTo() + " Node.update() sent for " + dest);
     }
 
-
-    public Node(Map p ) {
+ 
+ 
+    public Node(Map p) {
         super(p);
         Env.getRouter("IPC").addElement(this);
         if (!isParent())
             linkTo("default");
-    }
-
-
+	new Thread(this,(String)get("JMSReplyTo") ).start();
+     }
  
     /**
      * Sends a Link notification other node(s) intended to establish direct socket communication.
@@ -112,10 +118,47 @@ abstract public class Node extends TreeMap implements MetaProperties, Referencea
         String s = (String)get("URL");
         return s;
     }
-
+ 
     /** returns the JMS name fof the node. */
     public final String getJMSReplyTo() {
+	
         return (String)get("JMSReplyTo");
     };
 
+    public void run(){
+	try{	    
+	    while(!killFlag)
+		waitInterval(); 
+	}catch (Exception e){
+	};
+    };
+    /** 
+     * waits an interval averageing 120 seconds.
+     *
+     */
+
+    synchronized final  public  void waitInterval()
+    {
+
+        //Random
+        try
+	    {
+		long tim= (long)(Math.random()*(interval/2.0)  +(interval/2.0)); 
+		Thread.currentThread().sleep(tim);
+	    }catch(Exception e)
+		{ 
+		}
+        Env.debug(13,"debug: wait120 end");
+    }
+
+        
 };
+
+//$Log: Node.java,v $
+//Revision 1.3  2001/05/04 10:59:08  grrrrr
+//WIP
+//
+//Revision 1.1.1.1.2.1  2001/04/30 04:27:56  grrrrr
+//SocketProxy + Deploy methods
+//
+

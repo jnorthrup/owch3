@@ -33,19 +33,13 @@ public class GateKeeper extends Node implements javax.naming.directory.DirContex
 				   "\n\n******************** cmdline syntax error\n"+
 				   "GateKeeper Agent usage:\n\n"+
 				   "-name name\n"+ 
-				   "-HostPort port\n"+ 
-				   "$Id: GateKeeper.java,v 1.2 2001/04/30 01:28:37 grrrrr Exp $\n"
+				   "-HostPort port\n"+  
+				   "$Id: GateKeeper.java,v 1.3 2001/05/04 10:59:08 grrrrr Exp $\n" 
 				   );
 		System.exit(2);
 	    };
 	GateKeeper d=new GateKeeper(m );
-	Thread t=new Thread();
-	try{
-	    t.start();
-	    while(true)
-		t.sleep(60000);
-	}catch (Exception e){
-	};
+ 
     };
     
     

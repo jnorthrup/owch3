@@ -4,6 +4,12 @@
   @author   Jim Northrup
 
   $Log: WebPage.java,v $
+  Revision 1.3  2001/05/04 10:59:08  grrrrr
+  WIP
+
+  Revision 1.2.2.1  2001/04/30 04:27:56  grrrrr
+  SocketProxy + Deploy methods
+
   Revision 1.2  2001/04/27 12:47:54  grrrrr
   webpages are functional, DeployAgent provides saner means of cloning.
 
@@ -36,8 +42,8 @@ import java.util.*;
    class carries content far away safe from harm.
    
  */
-public class WebPage extends   Node implements Runnable{
-    protected  Thread thread;
+public class WebPage extends   Node {
+ 
     public static void main(String[] args) { 
 	Map m=Env.parseCmdLine(args);
 	
@@ -50,8 +56,9 @@ public class WebPage extends   Node implements Runnable{
 				   "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n"+
 				   "[-Clone 'host1[ ..hostn]']\n"+
 				   "[-Content-Type 'application/msword']\n"+
-				   "[-Clone 'host1[ ..hostn]']\n"+
-				   "$Id: WebPage.java,v 1.2 2001/04/27 12:47:54 grrrrr Exp $\n"
+				   "[-Clone 'host1[ ..hostn]']\n"+			
+				   "[-Deploy 'host1[ ..hostn]']\n"+
+				   "$Id: WebPage.java,v 1.3 2001/05/04 10:59:08 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };
@@ -75,7 +82,7 @@ public class WebPage extends   Node implements Runnable{
     /** interval defines our random interval of re-registration
 	starting with 1/2n..n milliseconds
     */
-    private long interval=60*1000 * 2;  
+
     byte[]payload;//for now we'll just assume payload is a static buffer
     //todo: servelet api
 
@@ -84,9 +91,7 @@ public class WebPage extends   Node implements Runnable{
      * re-registering.  it will cease to spin.
      */
     public void dissolve (){ 
-	thread.interrupt();
-
-	Notification n2=new Notification(); 
+ 	Notification n2=new Notification(); 
 	n2.put("JMSDestination", "GateKeeper");
 	n2.put("JMSType", "UnRegister");
 	n2.put("URLSpec",get("Resource").toString());
@@ -119,10 +124,7 @@ public class WebPage extends   Node implements Runnable{
      *           
      *  url -- name of a file
     */ 
-	public WebPage(String name,String file) {     
-	    super();
-	    init(name,file);
-	}
+ 
     public void init(String name,String file) { 
 	put("JMSReplyTo",  name);
 
@@ -140,12 +142,7 @@ public class WebPage extends   Node implements Runnable{
      *           
      *  url -- name of a file
     */  
-    public WebPage(String name,String url,String resource) {  
-	put("JMSReplyTo",  name);
-	put("Resource", resource); 
-	remove("Source");
-	init(name,url,resource);
-    }
+     
 
     public void init(String name,String url,String resource) { 
 	inductURL(url);
@@ -210,8 +207,7 @@ public class WebPage extends   Node implements Runnable{
 	    payload=os.toByteArray();
 	    os.flush();
 	    os.close();
-	    thread=new Thread(this,getClass().getName()+":"+get("JMSReplyTo()")+":"+get("Resource")  );
-	    thread.start();
+	     
 	    Env.debug(50, "-=-=-=-=-"+ getClass().getName()+":"+get("Resource").toString()+" ThreadStart " );
 	}catch (Exception e)
 	    {
@@ -244,16 +240,8 @@ public class WebPage extends   Node implements Runnable{
     public void run(){
 	while(!killFlag){
 	    sendRegistrations();
-	    doIntervalJobs();
- 
-	    try{ 	
-		long tim=(long)(Math.random()*(interval/2.0)  +(interval/2.0));
-		Env.debug(12, getClass().getName()+" waiting for "+tim+" ms.");
-		Thread.currentThread().sleep(tim);
-	    }
-	    catch(Exception e){
-		return;
-	    }
+	    doIntervalJobs(); 
+	    waitInterval();
 	}
     }
       
@@ -365,6 +353,19 @@ public class WebPage extends   Node implements Runnable{
 		StringTokenizer st=new StringTokenizer(clist);
 		while(st.hasMoreTokens())
 		    clone_state1(st.nextToken());
+	    };
+	if(containsKey("Deploy"))
+	    try {
+		String clist=(String)get("Deploy");
+		remove("Deploy");
+		Env.debug(500,getClass().getName()+" **Cloning for "+clist);
+		StringTokenizer st=new StringTokenizer(clist);
+		while(st.hasMoreTokens())
+		    clone_state1(st.nextToken());
+		Thread.currentThread().sleep(15*1000);//kludge, allow udp messages to arrive...
+		System.exit(0);//TODO: allow our host to stay alive...
+	    }catch(Exception e){
+		e.printStackTrace();
 	    };
     }
     

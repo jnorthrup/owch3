@@ -25,22 +25,13 @@ public class Domain extends Node implements javax.naming.ldap.LdapContext
 				   "Domain Agent usage:\n\n"+
 				   "-name name\n"+ 
 				   "-HostPort port\n"+ 
-				   "$Id: Domain.java,v 1.2 2001/04/30 01:28:37 grrrrr Exp $\n"
+ 				   "$Id: Domain.java,v 1.3 2001/05/04 10:59:08 grrrrr Exp $\n"
+ 
 				   );
 		System.exit(2);
 	    };
 	Env.setParentHost(true);
-	Domain d=new Domain( m );
-	Thread t=new Thread();
-
-	try{
-	    t.start();
-	    while(true)
-		t.sleep(60000);
-	    
-	    
-	}catch (Exception e){
-	};
+	Domain d=new Domain( m ); 
       };
 
     /**

@@ -27,11 +27,6 @@ class reference5 {
 */
 class reference6 {
 }/**
-@__ref <oiref:java#Class#owch.DatagramFactory:oiref><oihard>
-@__modelType reference 
-*/
-class reference7 {
-}/**
 @__ref <oiref:java#Class#owch.DeadLocation:oiref><oihard>
 @__modelType reference 
 */
@@ -46,11 +41,6 @@ class reference9 {
 @__modelType reference 
 */
 class reference10 {
-}/**
-@__ref <oiref:java#Class#owch.Proxy:oiref><oihard>
-@__modelType reference 
-*/
-class reference11 {
 }/**
 @__ref <oiref:java#Class#owch.Env:oiref><oihard>
 @__modelType reference 
@@ -81,16 +71,6 @@ class reference16 {
 @__modelType reference 
 */
 class reference17 {
-}/**
-@__ref <oiref:java#Class#owch.NodeCache:oiref><oihard>
-@__modelType reference 
-*/
-class reference19 {
-}/**
-@__ref <oiref:java#Class#owch.HTTPServer:oiref><oihard>
-@__modelType reference 
-*/
-class reference21 {
 }/**
 @__ref <oiref:java#Class#owch.MetaNode:oiref><oihard>
 @__modelType reference 
@@ -127,25 +107,10 @@ class reference27 {
 */
 class reference28 {
 }/**
-@__ref <oiref:java#Class#owch.HTTPFactory:oiref><oihard>
-@__modelType reference 
-*/
-class reference29 {
-}/**
 @__ref <oiref:java#Class#owch.Format:oiref><oihard>
 @__modelType reference 
 */
 class reference31 {
-}/**
-@__ref <oiref:java#Class#owch.DatagramDispatch:oiref><oihard>
-@__modelType reference 
-*/
-class reference32 {
-}/**
-@__ref <oiref:java#Class#owch.ProxyCache:oiref><oihard>
-@__modelType reference 
-*/
-class reference33 {
 }/**
 @__ref <oiref:java#Class#owch.ListenerReference:oiref><oihard>
 @__modelType reference 
@@ -184,6 +149,76 @@ class reference20 {
 @__modelType reference 
 */
 class reference30 {
+}/**
+@__ref <oiref:java#Class#owch.DomainRouter:oiref><oihard>
+@__modelType reference 
+*/
+class reference3 {
+}/**
+@__ref <oiref:java#Class#owch.owchDispatch:oiref><oihard>
+@__modelType reference 
+*/
+class reference7 {
+}/**
+@__ref <oiref:java#Class#owch.IPCRouter:oiref><oihard>
+@__modelType reference 
+*/
+class reference11 {
+}/**
+@__ref <oiref:java#Class#owch.httpServer:oiref><oihard>
+@__modelType reference 
+*/
+class reference19 {
+}/**
+@__ref <oiref:java#Class#owch.RouteHunter:oiref><oihard>
+@__modelType reference 
+*/
+class reference21 {
+}/**
+@__ref <oiref:java#Class#owch.owchRouter:oiref><oihard>
+@__modelType reference 
+*/
+class reference29 {
+}/**
+@__ref <oiref:java#Class#owch.Registry:oiref><oihard>
+@__modelType reference 
+*/
+class reference32 {
+}/**
+@__ref <oiref:java#Class#owch.owchFactory:oiref><oihard>
+@__modelType reference 
+*/
+class reference33 {
+}/**
+@__ref <oiref:java#Class#owch.Router:oiref><oihard>
+@__modelType reference 
+*/
+class reference34 {
+}/**
+@__ref <oiref:java#Class#owch.DefaultRouter:oiref><oihard>
+@__modelType reference 
+*/
+class reference39 {
+}/**
+@__ref <oiref:java#Class#owch.httpFactory:oiref><oihard>
+@__modelType reference 
+*/
+class reference40 {
+}/**
+@__ref <oiref:java#Class#owch.httpRegistry:oiref><oihard>
+@__modelType reference 
+*/
+class reference41 {
+}/**
+@__ref <oiref:java#Class#owch.nullRouter:oiref><oihard>
+@__modelType reference 
+*/
+class reference42 {
+}/**
+@__ref <oiref:java#Class#owch.httpPipeSocket:oiref><oihard>
+@__modelType reference 
+*/
+class reference46 {
 }}/**
 @__tags
 @shapeType ClassDiagram 
@@ -210,12 +245,10 @@ class __options {
 <oigroup:<oiref:java#Implements#owch.owchListener#owch.ListenerReference:oiref>=567,445,362,305:oigroup>
 <oigroup:<oiref:java#Class#owch.ListenerReference:oiref>=247,177,188,128,1:oigroup>
 <oigroup:<oiref:java#Class#owch.ListenerCache:oiref>=525,177,219,208,1:oigroup>
-<oigroup:<oiref:java#Class#owch.Proxy:oiref>=1005,278,219,178,1:oigroup>
 <oigroup:<oiref:java#Class#owch.PipeConnector:oiref>=227,452,203,163,1:oigroup>
 <oigroup:MemberLink#<oiref:java#Member#owch.ProxyCache#outbound:oiref>=1275,79,1185,79:oigroup>
 <oigroup:<oiref:java#Class#owch.Format:oiref>=2560,10,203,83,1:oigroup>
 <oigroup:<oiref:java#Extends#Cheetah.Domain#owch.Node:oiref>=1680,1076,1680,516:oigroup>
-<oigroup:<oiref:java#Class#owch.DatagramDispatch:oiref>=429,1076,203,268,1:oigroup>
 <oigroup:<oiref:java#Class#owch.MetaProperties:oiref>=2337,278,203,143,1:oigroup>
 <oigroup:MemberLink#<oiref:java#Member#owch.Env#nodeCache:oiref>=1344,996,963,1076:oigroup>
 <oigroup:MemberLink#<oiref:java#Member#owch.Node#acl:oiref>=1807,516,2081,1076:oigroup>
@@ -225,10 +258,8 @@ class __options {
 <oigroup:<oiref:java#Implements#owch.TCPServerWrapper#owch.ServerWrapper:oiref>=118,177,468,93:oigroup>
 <oigroup:MemberLink#<oiref:java#Member#owch.Env#proxyCache:oiref>=1332,278,1332,193:oigroup>
 <oigroup:<oiref:java#Implements#owch.UDPServerWrapper#owch.ServerWrapper:oiref>=863,177,513,93:oigroup>
-<oigroup:<oiref:java#Class#owch.NodeCache:oiref>=875,1076,177,108,1:oigroup>
 <oigroup:<oiref:java#Implements#owch.Location#owch.MetaProperties:oiref>=2790,1076,2438,421:oigroup>
 <oigroup:<oiref:java#Class#owch.Node:oiref>=1614,278,219,238,1:oigroup>
-<oigroup:<oiref:java#Class#owch.HTTPServer:oiref>=-95,442,203,193,1:oigroup>
 <oigroup:<oiref:java#Class#owch.Env:oiref>=1244,278,203,718,1:oigroup>
 <oigroup:MemberLink#<oiref:java#Member#owch.Env#notificationFactory:oiref>=1319,996,753,1076:oigroup>
 <oigroup:<oiref:java#Implements#owch.XMLFormat#owch.Format:oiref>=3329,176,3329,93:oigroup>
@@ -262,20 +293,17 @@ class __options {
 <oigroup:<oiref:java#Implements#owch.Node#owch.MetaNode:oiref>=1677,278,1677,93:oigroup>
 <oigroup:MemberLink#<oiref:java#Member#owch.Env#domain:oiref>=1389,278,1641,179,1641,93:oigroup>
 <oigroup:<oiref:java#Class#owch.PipeFactory:oiref>=113,686,219,138,1:oigroup>
-<oigroup:<oiref:java#Class#owch.DatagramFactory:oiref>=2442,1076,219,138,1:oigroup>
 <oigroup:MemberLink#<oiref:java#Member#owch.Proxy#queue:oiref>=1095,278,1095,148:oigroup>
 <oigroup:<oiref:java#Class#owch.ListenerFactory:oiref>=2114,278,203,69,1:oigroup>
-<oigroup:<oiref:java#Class#owch.HTTPFactory:oiref>=2203,1076,219,138,1:oigroup>
 <oigroup:<oiref:java#Implements#owch.Proxy#owch.MetaNode:oiref>=1159,278,1605,178,1605,93:oigroup>
 <oigroup:<oiref:java#Implements#owch.DatagramFactory#owch.ListenerFactory:oiref>=2588,1076,2279,347:oigroup>
-<oigroup:<oiref:java#Implements#owch.HTTPServer#owch.ListenerReference:oiref>=75,442,304,305:oigroup>
 <oigroup:<oiref:java#Class#owch.MetaNode:oiref>=1570,10,170,83,1:oigroup>
+<oigroup:<oiref:java#Implements#owch.HTTPServer#owch.ListenerReference:oiref>=75,442,304,305:oigroup>
 <oigroup:<oiref:java#Extends#owch.Notification#owch.Location:oiref>=2857,1394,2857,1249:oigroup>
 <oigroup:<oiref:java#Extends#owch.AuthenticationServer#owch.TCPServerWrapper:oiref>=725,460,873,367,873,300:oigroup>
 <oigroup:<oiref:java#Class#owch.RFC822Format:oiref>=2560,176,203,88,1:oigroup>
 <oigroup:<oiref:java#Implements#owch.HTTPFactory#owch.ListenerFactory:oiref>=2241,1076,2241,347:oigroup>
 <oigroup:<oiref:java#Extends#owch.PipeConnector#owch.TCPServerWrapper:oiref>=280,452,134,300:oigroup>
-<oigroup:<oiref:java#Class#owch.ProxyCache:oiref>=1275,10,203,183,1:oigroup>
 <oigroup:<oiref:java#Implements#owch.SocketFactory#owch.ListenerFactory:oiref>=2156,545,2888,245:oigroup>
 <oigroup:MemberLink#<oiref:java#Member#owch.ListenerCache#nextInLine:oiref>=525,241,435,241:oigroup>
 <oigroup:<oiref:java#Extends#Cheetah.Client#owch.Node:oiref>=1782,1076,1782,516:oigroup>

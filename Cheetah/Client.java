@@ -20,27 +20,24 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class Client extends Node implements Runnable
+public class Client extends Node 
 {
-    static String host="localhost";
-    static    int port=2112;
-    static   String JMSReplyTo="Client";
-
+    public static void main(String[] args) { 
+	Map m=Env.parseCmdLine(args);
 	
-
-    public static  void main(String args[]){
-	 
-	System.out.println(args);
-	if(args.length>2)
-	    host=args[2];
-	if(args.length>1)
-	    port=Integer.valueOf(args[1]).intValue(); 
-	if(args.length>0)
-	    JMSReplyTo=args[0];
- 
-
-	new Client();
-    };
+	if(!(m.containsKey("JMSReplyTo")  ))
+	    {
+		System.out.println(
+				   "\n\n******************** cmdline syntax error\n"+
+				   "Client Agent usage:\n\n"+
+				   "-name name\n"+  
+				   
+				   "$Id: Client.java,v 1.2 2001/05/04 10:59:08 grrrrr Exp $\n"
+ 				   );
+		System.exit(2);
+	    };
+	Client d=new Client(m );
+    }
     
     /*
      *  Client Constructor
@@ -48,11 +45,9 @@ public class Client extends Node implements Runnable
      *  Initializes communication 
      */
 	
-    public Client( )
-    {  
-	
-	
-	put("JMSReplyTo",JMSReplyTo); 
+    public Client(Map m)
+    { 
+	super(m); 
 	linkTo("Main");
 
 	MetaProperties n=new Notification();
@@ -60,23 +55,16 @@ public class Client extends Node implements Runnable
 	n.put("JMSType","Test");
 	send(n);
 
-	while(true)
+	while(!killFlag)
 	    {
 		try{
-		    Thread.currentThread().sleep(200000);
+		    Thread.currentThread().sleep(2*1000*60);
 		}
-		catch (Exception e){};
+		catch (Exception e){
+		};
 	    }   
     }; //end construct
-
-    /** test clients don't need threads
-     */
-    public void run(){
-    }
- 
-
- 
-
+  
     /**
      *  sends a textual message to a node
      *

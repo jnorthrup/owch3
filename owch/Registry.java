@@ -26,11 +26,19 @@ public abstract  class  Registry
      */
     
     abstract  protected Map getWeakMap(); 
+
     protected Reference refGet(Object key){
 	return (Reference) getWeakMap().get(key);
     };
+
     protected Object weakGet(Object key){
-	return refGet(key).get();
+	if(key==null)
+	    return null;
+	Reference r=refGet(key);
+	if(r==null)
+	    return null;
+	Object o=r.get();
+	return o;
     };
 
     /**    exported frequently after a change.

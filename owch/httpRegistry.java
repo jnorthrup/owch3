@@ -159,6 +159,7 @@ import java.net.*;
 			n.put("_Socket",s);
 			n.put("JMSDestination",lname );
 			n.put("JMSType","httpd");
+			n.put("JMSReplyTo","nobody");//apparently we *MUST* give ourselves a name..
 			Env.send(n);
 			return true; 	
 		    } 

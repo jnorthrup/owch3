@@ -69,37 +69,40 @@ final class NotificationFactory implements Runnable
 	    }; 
     };
     
-    private boolean recognize(MetaProperties n,String s)
+    private boolean   recognize(MetaProperties n,String s)
     {
+	boolean res=false;
+	java.lang.ref.SoftReference ref;
 	synchronized(recv){
-	    if(recv.contains(s))
-		{
-		    Env.debug(12,"NotificationFactory.recognize() found DUPE Notification: "+s);
-		    return
-			true;
-		}else
-		    if(recv2.contains(s)) {
-			Env.debug(12,"NotificationFactory.recognize() found DUPE Notification: "+s);
-			return
-			    true;
-		    }
+
+	for(Iterator i=recv.iterator();i.hasNext();)   {
+		Object o=i.next();
+		ref=(java.lang.ref.SoftReference)o;
+		String prev=(String)ref.get();
+		if(prev==null)
+		    continue;
+		
+		if(prev.equals(s)){
+		    res=true;
+		    break;
+		};
+	    };
 	};
-	recv.add(s);
-	Env.debug(12,"NotificationFactory.recognize() found NEW Notification: "+s);
-	return
-	    false;
- 
+	return res;
     };
 
     //DoubleEndedQueue deq;
+    int trigger=0;
     Set recv =new HashSet();
-    Set recv2=new HashSet();
+    java.lang.ref.ReferenceQueue q=new java.lang.ref.ReferenceQueue();
 
     NotificationFactory()
     {
-	new Thread(this).start();
+	
+	Thread t=new Thread();
+	t.setDaemon(true);
+	t.start();
     };
-
     
     void handleDatagram(DatagramPacket p)
     {
@@ -115,20 +118,21 @@ final class NotificationFactory implements Runnable
 
     public void run(){
 	try{
+	java.lang.ref.Reference ref;
 	    while (true){
-		Thread.currentThread().sleep(60*60*10);//10 minutes
-		synchronized(recv){
-		    if(recv.size()>500)
-			{
-			    recv2=recv;
-			    recv=new HashSet();
-			};
-		};
-	    };
+		ref=q.remove(3000L);//3 seconds
+		if(ref!=null)
+		    synchronized(recv){ 
+			recv.remove(ref);
+			Env.debug(40,getClass().getName()+"::collecting softref ---- ");
+		    };
+	    }
+	    
 	}catch (Exception e)
 	    {
-		
+		e.printStackTrace();
+		throw new Error("NotificationFactory lost");
 	    };
     };
-};
-
+}
+ 

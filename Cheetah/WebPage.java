@@ -4,8 +4,11 @@
   @author   Jim Northrup
 
   $Log: WebPage.java,v $
-  Revision 1.1  2001/04/26 03:06:13  grrrrr
-  Initial revision
+  Revision 1.2  2001/04/27 12:47:54  grrrrr
+  webpages are functional, DeployAgent provides saner means of cloning.
+
+  Revision 1.1.1.1  2001/04/26 03:06:13  grrrrr
+
 
   Revision 1.2  2001/04/25 03:35:55  grrrrr
   *** empty log message ***
@@ -48,7 +51,7 @@ public class WebPage extends   Node implements Runnable{
 				   "[-Clone 'host1[ ..hostn]']\n"+
 				   "[-Content-Type 'application/msword']\n"+
 				   "[-Clone 'host1[ ..hostn]']\n"+
-				   "$Id: WebPage.java,v 1.1 2001/04/26 03:06:13 grrrrr Exp $\n"
+				   "$Id: WebPage.java,v 1.2 2001/04/27 12:47:54 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };
@@ -425,10 +428,15 @@ public class WebPage extends   Node implements Runnable{
     public void clone_state1(String host)
     { 
 	MetaProperties n2=Env.getLocation("http");  
-	n2.put("JMSType","Deploy"); 
+	n2.putAll(this);
+	n2.put("JMSType","DeployNode"); 
 	n2.put("Class",getClass().getName());
-	n2.put("Signature","java.lang.String java.lang.String java.lang.String"); 
-	n2.put("Parameters",getJMSReplyTo()+"."+host+" "+Env.getLocation("http").getURL()+get("Resource")+" "+get("Resource"));//produces 3 Strings
+
+	n2.put("JMSReplyTo",getJMSReplyTo()+"."+host);
+	n2.put("Source", Env.getLocation("http").getURL()+get("Resource"));
+
+	//resource remains constant in this incarnation
+	//n2.put( "Resource",get("Resource"));//produces 3 Strings
 	n2.put("JMSDestination", host);
 	send(n2);
  

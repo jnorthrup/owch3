@@ -1,0 +1,38 @@
+ 
+package  net.sourceforge.idyuts.IOLayer;
+import java.util.*;
+
+public class @XCLASS@SourceNode implements @XCLASS@Source{
+
+    //  @XCLASS@SourceNode **BEGIN** **UNIQUE SIGNATURES** 
+ 
+    private java.util.List _@XCLASS@_clients=new java.util.LinkedList( ); 
+    public  void attach(@XCLASS@Filter filter){
+	_@XCLASS@_clients.add(filter);
+    };
+
+    public  void detach(@XCLASS@Filter filter){
+	_@XCLASS@_clients.remove(filter);
+    };
+
+    private static final Class[] parm_cls_@XCLASS@=new Class[]{ @XFILTERTYPE@.class};
+    //  @XCLASS@SourceNode **DUPE**
+    public void xmit(){
+	try{
+	    Object data=null;//YOUR OBJECT 
+	    Iterator iter=_@XCLASS@_clients.iterator();
+	    while(iter.hasNext()){ 
+		@XCLASS@Filter filter=(@XCLASS@Filter)iter.next();
+		filter.getClass().getMethod("recv",  parm_cls_@XCLASS@ ).invoke(filter,new Object[]{data});
+		//YOUR CODE GOES HERE
+		throw new Error("unfinished code");
+	    }
+	}catch (Exception e){
+	    throw new Error("more debugging needed here");
+	};
+    };
+
+  
+    //  @XCLASS@SourceNode **END**
+  
+};

@@ -85,7 +85,8 @@ public class PipeSocket {
 	    while (!term)
 		{
 		    try{
-			for (avail = is.available(); avail > 0; ) { //runs while
+			for (avail = is.available(); avail > 0; ) {
+			    //runs while
 			    //data exists
 			    //to be
 			    //claimed
@@ -95,14 +96,9 @@ public class PipeSocket {
 				os.flush();
 				term=true;
 				Env.debug(15, label + " input stream closed " + actual);
-				if (term) {
+				if (term){
 				    os.close();
-				    //close something...
-				    pipe.getClass().getMethod("close",
-							      new Class[] { }).invoke(pipe,
-										      new Object[] { });
-				    //interrupt our sister thread... which
-				    //should be asleep
+
 				    tg.interrupt();
 				};
 				return;
@@ -116,9 +112,18 @@ public class PipeSocket {
 		    } catch (java.io.InterruptedIOException e){
 			try{os.flush(); }catch (IOException e1) {};
 		    } catch (InterruptedException e) {
-			Env.debug(500, name + " closing: " + e.getMessage()); return;
+			//close something...
+			pipe.getClass().getMethod(
+						  "close",
+						  new Class[] { }).invoke(pipe,
+									  new Object[]{ });
+			//interrupt our sister thread... which
+			//should be asleep	
+
+			Env.debug(500, name + " closing: " + e.getMessage()); 
 		    } catch (Exception e) {
-			Env.debug(500, name + " Error - - closing: " + e.getMessage());return;
+			Env.debug(500, name + " Error - - closing: " + e.getMessage());
+			return;
 		    };
 		}
 	};

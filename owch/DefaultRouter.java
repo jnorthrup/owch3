@@ -4,6 +4,10 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
+/**
+ * @version $Id: DefaultRouter.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup 
+ */
 public class DefaultRouter implements Router {
     public void remove(Object key){};
     public Object getDestination(Map item){

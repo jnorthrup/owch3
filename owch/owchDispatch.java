@@ -8,6 +8,8 @@ import java.util.*;
  * owchDispatch owch passes udp datagrams.  each of these datagrams was at one time
  * a MetaProperties.  dpwrap is created from MetaProperties.save(ByteArrayOutputStream).  dpwrap is held in a
  * cache keyed by MessageID.
+ * @version $Id: owchDispatch.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup
  */
 final class owchDispatch implements Runnable {
 
@@ -138,7 +140,7 @@ final class owchDispatch implements Runnable {
 
     public void run() {
         int count = 0;
-        while (true) {
+        while (!owch.Env.shutdown) {
             try {
                 Thread.currentThread().sleep(1800);
             }

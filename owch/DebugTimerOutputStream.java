@@ -2,6 +2,10 @@ package owch;
 
 import java.io.*;
 
+/**
+ * @version $Id: DebugTimerOutputStream.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup 
+ */
 class DebugTimerOutputStream extends PrintStream
 {
     private static long benchmark=System.currentTimeMillis();

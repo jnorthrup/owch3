@@ -3,7 +3,10 @@ package owch;
 import java.io.*;
 import java.util.*;
 
-
+/**
+ * @version $Id: RFC822Format.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup 
+ */
 public class  RFC822Format implements Format
 {
    

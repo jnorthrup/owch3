@@ -29,9 +29,8 @@ import java.net.*;
  * someone else will get paid to write the same things.
  * This class represents the first sacrifice from RNODI design spec-- we cannot build
  * our own URLStreamHandlerFactory. -jimn
- * @version 	1.29, 29 Feb 1996
- * @author 	James Gosling
- */
+ * @version 	$Id: URLString.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup*/
 
 public final class URLString
 {

@@ -5,7 +5,9 @@ import java.util.*;
 import java.io.*;
 
 /**
-$Id: PipeConnector.java,v 1.2 2001/05/04 10:59:08 grrrrr Exp $
+$Id: PipeConnector.java,v 1.3 2001/09/23 10:20:10 grrrrr Exp $
+ * @version $Id: PipeConnector.java,v 1.3 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup
  */
 public class PipeConnector extends TCPServerWrapper implements ListenerReference, Runnable {
     int threads;
@@ -43,7 +45,7 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
     };
 
     public void run() {
-        while (true) {
+        while (!Env.shutdown) {
             try {
                 Socket s = accept();
                 Env.debug(20, "debug: " + Thread.currentThread().getName() + " init");
@@ -56,8 +58,16 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
 
 
 //$Log: PipeConnector.java,v $
-//Revision 1.2  2001/05/04 10:59:08  grrrrr
-//WIP
+//Revision 1.3  2001/09/23 10:20:10  grrrrr
+//lessee
+//
+//2 major enhancements
+//
+//1) we now use reflection to decode message types.
+//
+//a message looks for handle_<JMSType> method that takes a MetaProperties as its input
+//
+//2) we now serve HTTP / 1.1 at every opportunity, sending content-length, and last-modified, and content type by default.  (WebPage still needs a few updates to catch up)
 //
 //Revision 1.1.1.1.2.1  2001/04/30 04:27:56  grrrrr
 //SocketProxy + Deploy methods

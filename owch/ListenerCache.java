@@ -7,6 +7,11 @@ import java.util.*;
  * ListenerCache
  *
  */
+
+/**
+ * @version $Id: ListenerCache.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup 
+ */
 public class ListenerCache   implements java.lang.Runnable
 {
     
@@ -47,8 +52,8 @@ public class ListenerCache   implements java.lang.Runnable
 		    //if not empty, but we're at the bottom,
 		    //start over...
 		    enumFlag=false;
-		    return getNextInLine();
 		};
+    return getNextInLine();
     };
 
     public void put(ListenerReference l)
@@ -117,7 +122,7 @@ public class ListenerCache   implements java.lang.Runnable
 
     public synchronized void run()
     {
-	while(true)
+	while(!Env.shutdown)
 	    {
 		try
 		    {

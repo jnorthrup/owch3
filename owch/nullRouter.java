@@ -8,6 +8,8 @@ import java.util.*;
 /**
    this class came about by accident one day and seemed to fit..  null
    is all-seeing all forgiving and 100% black hole.
+ * @version $Id: nullRouter.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup
  */
 public class nullRouter implements Router{
     public boolean hasElement(Object key){

@@ -7,6 +7,11 @@ import java.io.*;
  * owchListener.java
  * 
  */
+
+/**
+ * @version $Id: owchListener.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup 
+ */
 class owchListener extends UDPServerWrapper implements  Runnable,ListenerReference {
     int threads;
     owchListener(int port,int threads)throws  java.net.SocketException{

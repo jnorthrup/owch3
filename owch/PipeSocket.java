@@ -4,7 +4,9 @@ import java.net.*;
 import java.util.*;
 import java.io.*;
 
-/** GateKeeper opens a PipeSocket to send data ussually in one direction. */
+/** GateKeeper opens a PipeSocket to send data ussually in one direction. 
+ * @version $Id: PipeSocket.java,v 1.3 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup*/
 public class PipeSocket {
     //for GET method the inner socket OutputStream will close
     //first.

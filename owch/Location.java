@@ -8,8 +8,8 @@ import java.util.*;
 	 * Provides information of how to reference a Node out on the network,
      * contains the most recently known network address of a listener,
      * and it's clones.
-     * @version 0.5 22 aug 96
-     * @author 	Jim Northrup*/
+     * @version $Id: Location.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+     * @author James Northrup*/
 
 public class Location extends TreeMap implements MetaProperties 
 { 

@@ -1,111 +1,105 @@
 /*
- * Client.java
- *************************************************************************************
+* Client.java
+*************************************************************************************
 
-  Created by Jim Northrup
+Created by Jim Northrup
 
-  Modified by   EDS CSTS
-  @version     3.0 1/23/97
+Modified by   EDS CSTS
+@version     3.0 1/23/97
 
-  Client implementation.  This object is responsible for handling
-  communication with Room, and Domain servers.
+Client implementation.  This object is responsible for handling
+communication with Room, and Domain servers.
 
 
 *************************************************************************************/
 
 package Cheetah;
 
-import owch.*; 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.net.URL;
+import java.net.URLClassLoader;
+import owch.MetaProperties;
+import owch.Node;
+import owch.Notification;
 
-public class Client extends Node 
-{
-    public static void main(String[] args) { 
-	Map m=Env.parseCmdLine(args);
-	
-	if(!(m.containsKey("JMSReplyTo")  ))
-	    {
-		System.out.println(
-				   "\n\n******************** cmdline syntax error\n"+
-				   "Client Agent usage:\n\n"+
-				   "-name name\n"+  
-				   
-				   "$Id: Client.java,v 1.2 2001/05/04 10:59:08 grrrrr Exp $\n"
- 				   );
-		System.exit(2);
-	    };
-	Client d=new Client(m );
-    }
-    
+/** ****************************************************************
+ * @version $Id: Client.java,v 1.3 2001/09/23 10:20:09 grrrrr Exp $
+ * @author James Northrup
+ **************************************************************** */
+public class Client extends Node implements Runnable {
+    static String host       = "localhost";
+    static int port          = 2112;
+    static String JMSReplyTo = "Client";
+
+
+
+    public static void main( String[] args ) {
+
+        System.out.println( args );
+        if ( args.length > 2 ) {
+            host = args[ 2 ];
+        }
+        if ( args.length > 1 ) {
+            port = Integer.valueOf( args[ 1 ] ).intValue();
+        }
+        if ( args.length > 0 ) {
+            JMSReplyTo = args[ 0 ];
+        }
+
+
+        new Client();
+    };
+
     /*
-     *  Client Constructor
-     *
-     *  Initializes communication 
-     */
-	
-    public Client(Map m)
-    { 
-	super(m); 
-	linkTo("Main");
+    *  Client Constructor
+    *
+    *  Initializes communication
+    */
 
-	MetaProperties n=new Notification();
-	n.put("JMSDestination","Main");
-	n.put("JMSType","Test");
-	send(n);
+    public Client() {
 
-	while(!killFlag)
-	    {
-		try{
-		    Thread.currentThread().sleep(2*1000*60);
-		}
-		catch (Exception e){
-		};
-	    }   
+
+        put( "JMSReplyTo", JMSReplyTo );
+        linkTo( "Main" );
+
+        MetaProperties n = new Notification();
+        n.put( "JMSDestination", "Main" );
+        n.put( "JMSType", "Test" );
+        send( n );
+
+        while ( true ) {
+            try {
+                Thread.currentThread().sleep( 200000 );
+            }
+            catch ( Exception e ) {
+            };
+        }
     }; //end construct
-  
-    /**
+
+    /** test clients don't need threads */
+    public void run() { }
+
+
+
+    /** ************************************************************
      *  sends a textual message to a node
      *
      * @param to recipient owch node name
      * @param arg the text of the message
-     */
+     ************************************************************ */
+    public void handle_Test( MetaProperties notificationIn ) {
+        try {
+            URL p1 = new URL( notificationIn.get( "Path"
+                ).toString() );
+            URLClassLoader loader = new URLClassLoader(
+                new URL[] {
+                    p1
+                } );
+            loader.loadClass( notificationIn.get( "Class" ).toString()
+                ).newInstance();
+        }
+        catch ( Exception e ) {
+        };
+        return;
+    }
+}; // if type != NULL
 
-    synchronized public void receive(MetaProperties notificationIn)
-    {
-	Thread.currentThread().yield(); 
-	if(notificationIn==null)return;
-	String type;
-	String subJMSType;
-
-	type=(String)notificationIn.get("JMSType");
-	subJMSType=(String)notificationIn.get("SubJMSType");
-	Env.debug(8,"Client - receive type = " + type);
-
-	if(type!=null)
-	    {
-		String sender;
-		String room;
-
-		if(type.equals("Test"))
-		    {
-			try{
-			    URL p1=new URL( notificationIn.get("Path").toString());
-			    URLClassLoader loader=new URLClassLoader( new URL[]{p1} );
-			    loader.loadClass(notificationIn.get("Class").toString()).newInstance();
-			}
-			catch(Exception e)
-			    {
-			    };
-			return;
-		    }
-	    };// if type != NULL
-	super.receive(notificationIn);// superclass might know the JMSType
-
-    };// end handle MetaProperties
-
- 
- 
-
-}; // end class

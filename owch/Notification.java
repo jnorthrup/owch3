@@ -135,6 +135,11 @@ JMS does not require that a provider strictly implement priority ordering of
 messages; however, it should do its best to deliver expedited messages ahead
 of normal messages.
  */
+
+/**
+ * @version $Id: Notification.java,v 1.2 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup 
+ */
 public class Notification extends Location
 {
 

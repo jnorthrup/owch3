@@ -4,6 +4,10 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 
+/**
+ * @version $Id: NotificationFactory.java,v 1.3 2001/09/23 10:20:10 grrrrr Exp $
+ * @author James Northrup 
+ */
 final class NotificationFactory implements Runnable
 {
     final void handleStream(InputStream istream)
@@ -119,7 +123,7 @@ final class NotificationFactory implements Runnable
     public void run(){
 	try{
 	java.lang.ref.Reference ref;
-	    while (true){
+	    while (!owch.Env.shutdown){
 		ref=q.remove(3000L);//3 seconds
 		if(ref!=null)
 		    synchronized(recv){ 

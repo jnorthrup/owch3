@@ -4,8 +4,8 @@
   @author   Jim Northrup
 
   $Log: WebPage.java,v $
-  Revision 1.1  2001/04/12 19:07:26  grrrrr
-  Initial revision
+  Revision 1.2  2001/04/12 19:09:50  grrrrr
+  *** empty log message ***
 
 */
 
@@ -19,25 +19,29 @@ import java.util.*;
 
 public class WebPage extends   Node {
     
-    public static void main(String[] args) {
-        String host = "localhost";
-        int port = 2112;
+    public static void main(String[] args) { 
         String JMSReplyTo = "index.html"; 
+	String 	resource = "index.html"; 
 
 	System.out.println(args);
-        if (args.length > 2)
-            host = args[2];
-        if (args.length > 1)
-            port = Integer.valueOf(args[1]).intValue();
-        if (args.length > 0)
-            JMSReplyTo = args[0];
-        new WebPage(JMSReplyTo,"index.html");
+	if (args.length > 0)
+            JMSReplyTo = args[0];  
+	if (args.length >1)
+            resource = args[1];
+	new WebPage(JMSReplyTo,resource);
+	
     };
 
     /*
-     *  Client Constructor
+     *  WebPage Constructor
      *
      *  Initializes communication
+     * 
+     *  params: name -- we name our agent anything we want..
+     *           
+     *  Resource -- name of a web resource
+     *
+
      */
 
     public WebPage(String name,String resource) {
@@ -49,28 +53,38 @@ public class WebPage extends   Node {
 
     synchronized public void receive(MetaProperties n) {
         Thread.currentThread().yield();
-        if (n == null) return;
+        if (n == null)
+	    return;
         String type;
         String subJMSType;
         type = (String)n.get("JMSType"); 
         Env.debug(8, getClass().getName()+" receive type = " + type);
         if (type != null) {
             String sender;
-            String room;
+	    /**
+	       
+	    incoming Message type Move
+
+	    Host - name of a Deploy agent
+	    
+	    
+	     */
             if (type.equals("Move")) {
                 try { 
-		    String host=n.get("Host").toString(); 
+		    String host=n.get("Host").toString(); //name of a Deploy agent
+		    
 		    if(host==null)
 			host=Env.getHostname();
-
-		    Notification n2=new Notification();
 		    
+		    Notification n2=new Notification(); 
 		    n2.put("Path","default");  
+		    n2.put("Class",getClass().getName());
+		    n2.put("JMSDestination", host); 
 		    
                 }
                 catch (Exception e) {
-		     Env.debug(8, getClass().getName()+" receive error" + e.getMessage());
-		     e.printStackTrace();
+		    Env.debug(8, getClass().getName()+" receive error" + e.getMessage());
+		    e.printStackTrace();
                 };
                 return;
             }

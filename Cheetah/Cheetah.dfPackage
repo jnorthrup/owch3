@@ -1,0 +1,64 @@
+package id20mpvcl8jfkracl8jj2we;
+
+/**
+@version 2.0
+@physicalPackage
+@__modelType diagram 
+*/
+class diagram {
+/**
+@__ref <oiref:java#Class#Cheetah.Room:oiref><oihard>
+@__modelType reference 
+*/
+class reference {
+}/**
+@__ref <oiref:java#Class#Cheetah.Client:oiref><oihard>
+@__modelType reference 
+*/
+class reference2 {
+}/**
+@__ref <oiref:java#Class#Cheetah.Domain:oiref><oihard>
+@__modelType reference 
+*/
+class reference3 {
+}/**
+@__ref <oiref:java#Class#owch.Node:oiref><oihard>
+@__modelType reference
+@__imported 
+*/
+class reference1 {
+}/**
+@__ref <oiref:java#Class#Cheetah.GateKeeper:oiref><oihard>
+@__modelType reference 
+*/
+class reference4 {
+}/**
+@__ref <oiref:java#Class#Cheetah.Tester:oiref><oihard>
+@__modelType reference 
+*/
+class reference31 {
+}}/**
+@__tags
+@shapeType ClassDiagram 
+*/
+class __tags {
+}/**
+@__options 
+*/
+class __options {
+}/**
+@__positions <oigroup:<oiref:java#Member#Cheetah.GateKeeper#receive#(#owch.Notification#)#:oiref>=369,109,0,0,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.GateKeeper#owch.Node:oiref>=593,347,593,263:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Tester#owch.Node:oiref>=372,347,557,263:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.Room:oiref>=956,347,203,193,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Domain#owch.Node:oiref>=826,347,630,263:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.Client:oiref>=10,347,203,163,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Room#owch.Node:oiref>=1057,347,668,263:oigroup>
+<oigroup:<oiref:java#Class#owch.Node:oiref>=487,10,219,253,1:oigroup>
+<oigroup:<oiref:java#Extends#Cheetah.Client#owch.Node:oiref>=111,347,522,263:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.GateKeeper:oiref>=532,347,165,173,0:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.Tester:oiref>=233,347,279,229,0:oigroup>
+<oigroup:<oiref:java#Class#Cheetah.Domain:oiref>=717,347,219,168,1:oigroup>
+*/
+class __positions {
+}

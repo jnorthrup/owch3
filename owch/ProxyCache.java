@@ -25,8 +25,8 @@ final public class ProxyCache
 
     public void add(Proxy proxy)
     {
-        nameProxyMap.put(proxy.getNodeName(),proxy);
-	Env.debug(200,"debug: ProxyCache.add"+proxy.getNodeName());
+        nameProxyMap.put(proxy.getJMSReplyTo(),proxy);
+	Env.debug(200,"debug: ProxyCache.add"+proxy.getJMSReplyTo());
 	proxy.put("creation",String.valueOf(System.currentTimeMillis()));
     }
     DoubleEndedQueue outbound;
@@ -54,26 +54,19 @@ final public class ProxyCache
 
     static int ser=0;
 
-    synchronized public void addQueue(Notification n)
+    public void receive(MetaProperties n)
     {
 	Env.debug(18,"ProxyCache.Handler(MetaProperties) entered");
 
 	if(n==null)
 	    {
-		throw new Error("debug:  null sent to ProxyCache.handleNotification");
+		throw new Error("debug:  null sent to ProxyCache.recieve");
 	    }
+ 
+	    Env.debug(6,"ProxyCache.Handler(MetaProperties) recvd from "+n.getJMSReplyTo());
 
-        if(Env.getDebugLevel()>=12)
-	    {
-		try{
-		    n.save(System.err);
-		}catch(IOException e){};
-	    }
-        else
-	    Env.debug(6,"ProxyCache.Handler(MetaProperties) recvd from "+n.getNodeName());
-
-        String sender=n.getNodeName();
-        Env.debug(8,"ProxyCache - Message recieved from sender =" + sender);
+        String sender=n.getJMSReplyTo();
+        Env.debug(8,"ProxyCache - Message recieved from: " + sender);
 
         if(sender==null)
 	    {
@@ -87,18 +80,19 @@ final public class ProxyCache
         if(origin==null)
 	    {
 		Location l=new Location(n);
-		l.put("Created","ProxyCache.handleNotification()");
+		l.put("Created","ProxyCache.recieve()");
 		if(n.get("ResentFrom")==null)
 		    getProxy(l);
-
+		Env.debug(8,"ProxyCache  created proxy for: " + sender);
 	    }else
 		{
-
+		    Env.debug(8,"ProxyCache - sending node is on this host..." + sender);
 		    //check to see if we're reading broadcast stuff
 		    if(n.get("ResentFrom")!=null)
 			{
-			    Node node_=(owch.Node)Env.getNodeCache().getNode((String)n.get("DestNode"));
-			    if(node_!=null)node_.handleNotification(new Notification(n));
+			    Node node_=(owch.Node)Env.getNodeCache().getNode((String)n.get("JMSDestination"));
+			    if(node_!=null)node_.receive(new Notification(n));
+			    Env.debug(8,"ProxyCache - sending node is recving room traffic..." + sender);
 			    return;
 			};
 
@@ -106,21 +100,25 @@ final public class ProxyCache
 		    String serr=(String)n.get("SerialNo");
 		    if(serr==null)
 			{
+			  
 			    Date d=new Date();
 			    serr=sender+"["+d.toString()+"] "+ser;
-			    n.put("SerialNo","(-: "+serr+"."+serr.hashCode()+" ;-)");
+			    String jjj="(-: "+serr+"."+serr.hashCode()+" ;-)";
+			    n.put("JMSMessageID",jjj);
+			    Env.debug(8,"ProxyCache - adding JMSMessageID... "+jjj);
 			    ser++;
 			};
 
 		};
 
         //if its not us, add it to the cache
-        String t=(String)n.get("DestNode");
+        String t=(String)n.get("JMSDestination");
 
         if(t==null)
 	    {
 		t="";
 	    };
+	Env.debug(8,"ProxyCache - Message found apparently for... "+t);
 
         StringTokenizer st = new StringTokenizer(t);
         String d;
@@ -129,7 +127,7 @@ final public class ProxyCache
         while (st.hasMoreTokens())
 	    {
 		d=st.nextToken();
-		n.put("DestNode",d);
+		n.put("JMSDestination",d);
 
 		if(origin==null)
 		    {
@@ -139,7 +137,8 @@ final public class ProxyCache
 			if(nod!=null)
 			    {
 				//send
-				nod.handleNotification(new Notification(n));
+				nod.receive(new Notification(n));
+				Env.debug(8,"ProxyCache - Delivering msg for ... "+nod.getJMSReplyTo());
 				continue;
 			    };
 		    }
@@ -149,21 +148,24 @@ final public class ProxyCache
 		if(proxy!=null)
 		    {
 			proxy.addQueue(new Notification(n));
+			Env.debug(8,"ProxyCache - Delivering msg for proxy ... "+proxy.getJMSReplyTo());
 			continue;
 		    }
-
+		
 		//Create Proxy
 		Location l=new Location();
-		l.put("Created","ProxyCache.handleNotification()2");
-		l.put("NodeName",d);
-		getProxy(l).addQueue(new Notification(n));
+		l.put("Created","ProxyCache.recieve()2");
+		l.put("JMSReplyTo",d);
+		Proxy  mmm=getProxy(l);
+		mmm.addQueue(new Notification(n));
+		Env.debug(8,"ProxyCache - creating proxy ... "+mmm.getJMSReplyTo());
 	    }
     }
 
     Proxy getProxy(String name)
     {
         Location l=new Location();
-        l.put("NodeName",name);
+        l.put("JMSReplyTo",name);
         return getProxy(l);
     }
 
@@ -176,11 +178,11 @@ final public class ProxyCache
 	    }
 
         //the objective is to merge proxies
-        String nm=location.getNodeName();
+        String nm=location.getJMSReplyTo();
 
         if(nm==null)
 	    {
-		Env.debug(5,"debug: ProxyCache.Handler(Location)  was sent a Location without a NodeName");
+		Env.debug(5,"debug: ProxyCache.Handler(Location)  was sent a Location without a JMSReplyTo");
 		return null;
 	    }
 
@@ -198,8 +200,8 @@ final public class ProxyCache
 	    {
 		//create anew
 		p=new Proxy(location);
-		nameProxyMap.put(p.getNodeName(),p);
-		Env.debug(10,"debug: ProxyCache.Handler(Location) created proxy for "+p.getNodeName()+".");
+		nameProxyMap.put(p.getJMSReplyTo(),p);
+		Env.debug(10,"debug: ProxyCache.Handler(Location) created proxy for "+p.getJMSReplyTo()+".");
 	    }
         //update URL
 
@@ -213,7 +215,7 @@ final public class ProxyCache
 			if(!(lu.equals(pu)))
 			    {
 				p.put("URL",lu);
-				Env.debug(10,"debug: ProxyCache.Handler(Location) updated proxy for "+p.getNodeName()+".");
+				Env.debug(10,"debug: ProxyCache.Handler(Location) updated proxy for "+p.getJMSReplyTo()+".");
 			    }
 		    }else
 			{
@@ -224,7 +226,7 @@ final public class ProxyCache
 		    {
 			if(!Env.isParentNode())
 			    {
-				String tu=((MetaProperties)nameProxyMap.get("default")).getURL();
+				String tu=Env.getParentNode().getURL();
 				if(tu!=null)
 				    p.put("URL",tu);
 			    };

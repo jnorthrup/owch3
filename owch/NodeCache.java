@@ -13,7 +13,7 @@ public class NodeCache
             return;
         };
 
-        String s=n.getNodeName();
+        String s=n.getJMSReplyTo();
 
         if(s==null)
         {
@@ -35,12 +35,11 @@ public class NodeCache
         {
             while(!proxy.queue.empty())
             {
-                n.handleNotification((Notification)(proxy.queue.pop()));
+                n.receive((Notification)(proxy.queue.pop()));
             };
         };
-    }
-;
-
+    } 
+ 
     public void remove(String n)
     {
         nameNodeMap.remove(n);

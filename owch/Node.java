@@ -40,7 +40,7 @@ Section 2:  A Framework<P>
 </BODY>
 </HTML>
 */
-abstract public class Node extends MetaProperties
+abstract public class Node extends TreeMap implements MetaNode 
 {
     boolean virgin;
 	LinkRegistry acl = null;
@@ -54,32 +54,32 @@ abstract public class Node extends MetaProperties
     }
 ;
 
-    public void handleNotification(Notification n)
+    public void receive(MetaProperties n)
     {
 
         if(n==null)
         {
-    	    Env.debug(5,"debug: Node.handleNotification(Notification) has been sent a null notification");
+    	    Env.debug(5,"debug: Node.receive(Notification) has been sent a null notification");
     	    return;
         };
 
-		String Dest=(String)n.get("DestNode");
+		String Dest=(String)n.get("JMSDestination");
 		if(Dest==null)
 		    return;
 		    //worthless to us
 
-		String Type=(String)n.get("Type");
-		if(Type==null)Type="hi there";
+		String JMSType=(String)n.get("JMSType");
+		if(JMSType==null)JMSType="hi there";
 
-		if(Type.equals("Link"))
+		if(JMSType.equals("Link"))
 		{
-			String name=n.getNodeName();
+			String name=n.getJMSReplyTo();
     		if(name!=null)
     		{
     		    update(name);
 		    }else
 		    {
-		        Env.debug(5,"debug: Node.Handler(Type=Link) has been sent to link a null NodeName");
+		        Env.debug(5,"debug: Node.Handler(JMSType=Link) has been sent to link a null JMSReplyTo");
 		    };
 		    return;
 		};
@@ -87,22 +87,22 @@ abstract public class Node extends MetaProperties
     /**
      *  Sends an update to another Node
      *
-     *  @param dest NodeName
+     *  @param dest JMSReplyTo
      */
 
     public void update(String dest)
     {
-        Notification n=new Notification();
-        n.put("Type","Update");
-   		n.put("DestNode",dest);
+        MetaProperties n=new Notification();
+        n.put("JMSType","Update");
+   		n.put("JMSDestination",dest);
         String s=null;
         String u=null;
         String mu=Env.getLocation("owch").getURL();
 
-        Hashtable npm=Env.getProxyCache().nameProxyMap;
-        for (Enumeration e = npm.keys() ; e.hasMoreElements() ;)
+        Map npm=Env.getProxyCache().nameProxyMap;
+        for (Iterator e = npm.keySet().iterator() ; e.hasNext() ;)
         {
-            s=(String)e.nextElement();
+            s=(String)e.next();
 
             u=((String)((Proxy)npm.get(s)).getURL());
 
@@ -116,7 +116,7 @@ abstract public class Node extends MetaProperties
             };
         };
 
-        route(n);
+        send(n);
         Env.debug(15,"debug: Node.update() sent for "+dest);
     }
 ;
@@ -166,14 +166,13 @@ abstract public class Node extends MetaProperties
     {
         if(lk==null)
         {
-            Env.debug(5,"debug: (Node)"+this.getNodeName()+".linkTo(null) invoked.  routing to default");
+            Env.debug(5,"debug: (Node)"+this.getJMSReplyTo()+".linkTo(null) invoked. routing to default");
             lk="default";
         };
-        Notification n=new Notification();
-		n.put("DestNode",lk);
-        n.put("Type","Link");
-
-        route(n);
+        MetaProperties n=new Notification();
+		n.put("JMSDestination",lk);
+        n.put("JMSType","Link"); 
+        send(n);
     }
  
 
@@ -185,7 +184,7 @@ abstract public class Node extends MetaProperties
      * @param n  Notification destined for somewhere else
      */
 
-    public void route(Notification n)
+    public void send(MetaProperties n)
     {
         String d=null;
         String w=null;
@@ -194,16 +193,16 @@ abstract public class Node extends MetaProperties
 
         //see if this works out
 
-        if(n.getNodeName()==null)
+        if(n.getJMSReplyTo()==null)
         {
-            n.put("NodeName",this.getNodeName());
+            n.put("JMSReplyTo",this.getJMSReplyTo());
         };
 
-        d=(String)n.get("DestNode");
+        d=(String)n.get("JMSDestination");
 
         if(d==null)
         {
-            Env.debug(8,"debug: Node.Route(Notification) dropping unrouted Notification from "+this.getNodeName());
+            Env.debug(8,"debug: Node.Send(Notification) dropping unsendd Notification from "+this.getJMSReplyTo());
             return;
         };
 
@@ -211,27 +210,39 @@ abstract public class Node extends MetaProperties
         while (st.hasMoreTokens())
         {
             w=(String)st.nextToken();
-            Env.debug(15,"debug: Node.Route(Notification) routing from "+n.getNodeName()+" to "+w+" type "+n.get("Type"));
+            Env.debug(15,"debug: Node.Send(Notification) routing from "+n.getJMSReplyTo()+" to "+w+" type "+n.get("JMSType"));
 
             node=(Node)(Env.getNodeCache().nameNodeMap.get(w));
 
             if(node==null)
             {
-                if(n.getNodeName()==null)
-                  n.put("NodeName",getNodeName());
+                if(n.getJMSReplyTo()==null)
+                  n.put("JMSReplyTo",getJMSReplyTo());
 
                 Location l=new Location();
-                l.put("Created","route()");
-                l.put("NodeName",w);
+                l.put("Created","send()");
+                l.put("JMSReplyTo",w);
 
                 Proxy proxy=(Proxy)Env.getProxyCache().getProxy(l);
                 proxy.addQueue(n);
 
             }else
             {
-                node.handleNotification(n);
+                node.receive(n);
             };
         };
+    };
+
+    public final String getURL()
+    {
+        String s=(String)get("URL");
+        return s;
+    }
+
+ 
+    public final String getJMSReplyTo()
+    {
+        return (String)get("JMSReplyTo");
     };
 };
 

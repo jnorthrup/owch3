@@ -8,8 +8,10 @@ import java.io.*;
  * 
  */
 class owchListener extends UDPServerWrapper implements  Runnable,ListenerReference {
-    owchListener(int port)throws  java.net.SocketException{
+    int threads;
+    owchListener(int port,int threads)throws  java.net.SocketException{
 	super(port);
+	this.threads=threads;
     };
 
     public final void run() {
@@ -38,8 +40,9 @@ class owchListener extends UDPServerWrapper implements  Runnable,ListenerReferen
 	return (long) 0;
     }
     public int getThreads(){
-	return 2;
+	return this.threads;
     }
+
     public ServerWrapper getServer(){
 	return this;
     };

@@ -13,7 +13,7 @@ public final class DatagramFactory implements ListenerFactory {
 	return readyState;
     };
  
-    Hashtable sent=new Hashtable();
+    HashMap sent=new HashMap();
 
     /**
      * ctor
@@ -34,7 +34,7 @@ public final class DatagramFactory implements ListenerFactory {
 	Thread t=null;
 	owchListener udps=null; 
 	try{
-	    udps=new owchListener((int)port);
+	    udps=new owchListener((int)port,threads);
 	}
 	catch(Exception e){
 	    Env.debug(2,"owchListener failure on port "+port);

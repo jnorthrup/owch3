@@ -9,14 +9,27 @@ import java.util.*;
      * contains the most recently known network address of a listener,
      * and it's clones.
      * @version 0.5 22 aug 96
-     * @author 	Jim Northrup
-     */
+     * @author 	Jim Northrup*/
 
-public class Location extends MetaProperties
-{
-
- 
-
+public class Location extends TreeMap implements MetaProperties 
+{ 
+  static 
+    {	
+	try{
+	    Env.registerFormat("XMLSerial",(Format)Class.forName("msg.format.XMLSerialFormat").newInstance());
+	}catch(Exception e){
+	    Env.debug(5,"XML Format not loaded");
+	}     
+	Env.registerFormat( "RFC822",
+			    new RFC822Format());
+	try{
+	    Env.registerFormat("Serial",(Format)Class.forName("msg.format.SerialFormat").newInstance());
+	}catch(Exception e){
+	    Env.debug(5,"Serial Format not loaded");
+	}
+    };
+    private String format="RFC822";
+    
     /**
      * Inserts "URL" property from a given ServerSocket.
      *
@@ -24,24 +37,59 @@ public class Location extends MetaProperties
      * @param serverSocket Reference to be a Location to.
      */
 
-    public static Location create(ListenerReference lr)
+    public static  Location create(ListenerReference lr)
     {
         String tstring=new String(lr.getProtocol()+":");
 	Location l=new Location();
-        try
-	    {
-
-		String myIP=InetAddress.getLocalHost().toString();
-		myIP=myIP.substring(myIP.indexOf('/')+1);
-		tstring+="//"+myIP.trim()+":"+lr.getServer().getLocalPort();
-	    }catch(UnknownHostException e)
-		{
-		    tstring+="broked";
-		};
+        
+		tstring+="//"+Env.getHostname().trim()+":"+lr.getServer().getLocalPort();
+	  
         l.put("URL",tstring);
 
 	return l;
     }
+
+    /**
+     * RNODI specific Properties Serialization input.
+     *
+     * @param istream Source of input.
+     * @exception java.io.IOException thrown if istream throws an Exception.
+     */
+    public final void load(InputStream istream)
+	throws IOException
+    {
+        Env.getFormat(  getFormat()).read(istream,this);
+    }
+
+    /**
+     * Save properties to an OutputStream.
+     */
+    public synchronized void save(OutputStream os) throws IOException
+    { 
+	Env.getFormat( getFormat()).write(os,this);
+    }
+    
+    public void setFormat(String format){
+	this.format=format;
+    }
+
+    public   String getFormat(){
+	return format;
+    };
+
+    public final String getURL()
+    {
+        String s=(String)get("URL");
+        return s;
+    }
+
+    /**
+     * Default ctor.
+     */
+    public final String getJMSReplyTo()
+    {
+        return (String)get("JMSReplyTo");
+    };
 
     /**
      * Default Ctor
@@ -59,8 +107,7 @@ public class Location extends MetaProperties
      */
     public Location(Map p)
     {
-        super(p);
-    }
-    ;
+        putAll(p);
+    }    ;
 };
 

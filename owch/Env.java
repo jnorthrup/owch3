@@ -1,7 +1,9 @@
 package owch;
 import java.io.*;
 import java.util.*;
- 
+
+import java.net.*;
+  
 /*
     Env class:
     mobile agent host environment;
@@ -49,7 +51,7 @@ import java.util.*;
     stream filter reference granting MetaProperties format.  send to
     NotificationFactory.
 
-    this routes an owch MetaProperties Notification.
+    this sends an owch MetaProperties Notification.
 
     If the Mobile agent can speak owch, it will be found in nodeCache.
     The notification URL will define the transport context of the owch
@@ -79,11 +81,39 @@ public final class Env extends Thread
     private static boolean parentFlag=false;
     private static boolean alive=false;
     private static java.util.Map formatCache;
+    /**
+     * returns a MetaProperties suitable for parent routing.
+     *
+     */
+    static MetaNode domain=null;
+    //TODO:
+    //MetaProperties parentNode;
+    private static String host=null;
+
+    static public String getHostname()
+    {
+	try{
+	    if (host==null){
+		
+		String ip= InetAddress.getLocalHost().toString();
+		return  ip.substring(ip.indexOf('/')+1);
+	    }
+	}catch( java.net.UnknownHostException e){
+	};
+	return host;
+	
+    }
+    
+    static public void setHostname(String h)
+    {
+	host=h;
+    };
 
     public final static Format getFormat (String name )
     { 
 	return (Format) getFormatCache().get(name);
     };
+    
     public final static  void registerFormat (String name,Format f)
     { 
 	getFormatCache().put(name,f);
@@ -146,7 +176,7 @@ public final class Env extends Thread
 
     /**
      *
-     * sets the flag on the Factory Objects to act as parental router in all final location resolution.
+     * sets the flag on the Factory Objects to act as parental sendr in all final location resolution.
      *
      * @param flag sets the state to true or false
      */
@@ -155,9 +185,9 @@ public final class Env extends Thread
 	parentFlag=flag;
     }
 
-    final static public void setParentNode(MetaProperties l)
+    final static public void setParentNode(MetaNode l)
     {
-	domain=(MetaProperties)l;
+	domain=(MetaNode)l;
     }
 
 
@@ -185,7 +215,7 @@ public final class Env extends Thread
     /**
      * accessor for parental node being present in the current Process.
      *
-     * @return whether we are the Parent Router of all transactions
+     * @return whether we are the Parent Sendr of all transactions
      */
 
     public final static boolean isParentNode()
@@ -298,24 +328,18 @@ public final class Env extends Thread
 	    nodeCache=new NodeCache();
 	return nodeCache;
     };
-    /**
-     * returns a MetaProperties suitable for parent routing.
-     *
-     */
-    static MetaProperties domain=null;
-    //TODO:
-    //MetaProperties parentNode;
 
-    public final static MetaProperties getParentNode()
+    public final static MetaNode getParentNode()
     {
 	//TODO:  This oughta become System.Property stuff.  (shrug)
 
 	if(domain==null)
 	    {
-		domain=new Notification();
-		domain.put("Created",  "env.getDomain()" );
-		domain.put("NodeName", "default" ); 
-		domain.put("URL",      "owch://localhost:2112");
+		Location l=new Location();
+		l.put("Created",  "env.getDomain()" );
+		l.put("JMSReplyTo", "default" ); 
+		l.put("URL",      "owch://localhost:2112");
+		setParentNode(l);
 	    }; 
 	return domain;
     }

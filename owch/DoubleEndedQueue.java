@@ -7,6 +7,7 @@
 package owch;
 
 import java.util.*;
+import owch.DoubleEndedQueue;
 
 public final
 class DoubleEndedQueue
@@ -59,4 +60,22 @@ class DoubleEndedQueue
     {
 	    return head == null;
     }
+
+    final class DoubleEndedQueueNode
+    {
+        DoubleEndedQueueNode(DoubleEndedQueue.DoubleEndedQueueNode previous,Object o)
+        {
+            object=o;
+            next=previous;
+        };
+
+        DoubleEndedQueue.DoubleEndedQueueNode next=null;
+
+        final Object getObject()
+        {
+            return object;
+        };
+
+        Object object;
+    };
 }

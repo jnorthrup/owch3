@@ -16,24 +16,57 @@ public class Domain
 extends Node
 {
     static int port=2112;
-    static 
+ 
+    /**
+       args 1=port
+       args 2=iface
+     */
+    static void main(String args[])
     {
-	Room compileme;
-    }; 
+	int port=2112; 
+	String host="localhost";
+
+	
+	System.out.println(args);
+	if(args.length>1)
+	    port=Integer.valueOf(args[1]).intValue(); 
+
+ 	ListenerCache lc;
+	lc=new ListenerCache();
+	if(args.length>0)
+	    Env.setHostname(args[0]);
+
+	lc=new ListenerCache();
+	lc.put(Env.getDatagramFactory().create(port,8 ));
+	Env.getProtocolCache().put("owch",lc);
+	lc=new ListenerCache();
+	lc.put(Env.getHTTPFactory().create(port,8 ));
+	Env.getProtocolCache().put("http",lc);
+    
+	
+	new Domain ();
+	try{
+	    while(true){
+		Thread.currentThread().sleep(60000);
+	    };
+	}
+	catch(Exception e){
+	};
+    };
     /**
        contains user/room pairs*/
     public Hashtable userRoomList;
 
 
     /**
-     * Handles Notifications
+     * Handles MetaPropertiess
      *
      */
 
 
-    public void handleNotification(Notification notificationIn)
+    public void receive(MetaProperties notificationIn)
     {
-        String type=(String)notificationIn.get("Type");
+        String type=(String)notificationIn.get("JMSType");
 	
 	if(type!=null&&type.equals("StartRoom"))
 	    {
@@ -49,7 +82,7 @@ extends Node
 		    };
 		return;
 	    } 
-        super.handleNotification(notificationIn);
+        super.receive(notificationIn);
     }
  
 
@@ -66,8 +99,7 @@ extends Node
      */
     public Domain()
     {
-	super();
-	owch.AuthenticationServer.create( );
+	super(); 
 	init();
     };
 
@@ -82,45 +114,24 @@ extends Node
         //Somehow we now assume getDomain will do something helpful for us.
 	putAll(Env.getProtocolCache().getLocation("owch") );
 
-	put("NodeName","default");
+	put("JMSReplyTo","default");
         Env.getNodeCache().addNode(this);
-
-        String r=(String)get ("rooms" );
-	if(r==null)
-	    r="Main";
-
-        //bootstrap test of proper configuration to be able to act as a domain
-	startRoom(r);
+ 
     }
 
-    static void main(String args[])
-    {
-	if(args.length==2)
-	    port = Integer.getInteger(args[1]).intValue();
 
-	new Domain ();
-	try{
-	    while(true){
-		Thread.currentThread().sleep(60000);
-	    };
-	}
-	catch(Exception e){
-	};
-    };
     /**
      * Starts a room as part of the Domain's Server
      *
      */
 
     public void startRoom(String name)
-    {
-        String [] nam=new String[1];
+    { 
 
         if(name!=null)
-	    {
-		nam[0]=name;
-		Env.debug(5,"debug: Domain.startRoom("+nam[0]+")");
-		new Room(nam);
+	    { 
+		Env.debug(5,"debug: Domain.startRoom("+name+")");
+		new Room(name);
 	    };
     };
 

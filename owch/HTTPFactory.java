@@ -23,7 +23,7 @@ public class HTTPFactory implements ListenerFactory {
     public HTTPFactory() {
     }
 
-    public final MetaProperties getLocation() {
+    public   MetaProperties getLocation() {
 	return Env.getProtocolCache().getLocation("http");
     };
 
@@ -32,7 +32,7 @@ public class HTTPFactory implements ListenerFactory {
 	Thread t=null;
 	HTTPServer https;
 	try{
-	    https=new HTTPServer((int)port); 
+	    https=new HTTPServer((int)port,threads); 
 	}catch (Exception e){
 	    Env.debug(2,"HTTPServer init failure port "+port);
 	    return null;

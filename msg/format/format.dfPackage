@@ -1,0 +1,56 @@
+package id3u97ycl9jndqrcl9joyg1;
+
+/**
+@version 2.0
+@physicalPackage
+@__modelType diagram 
+*/
+class diagram {
+/**
+@__ref <oiref:java#Class#owch.Format:oiref><oihard>
+@__modelType reference
+@__imported 
+*/
+class reference {
+}/**
+@__ref <oiref:java#Class#msg.format.XMLSerialFormat:oiref><oihard>
+@__modelType reference 
+*/
+class reference1 {
+}/**
+@__ref <oiref:java#Class#archiver.XMLInputStream:oiref><oihard>
+@__modelType reference
+@__imported 
+*/
+class reference2 {
+}/**
+@__ref <oiref:java#Class#archiver.XMLOutputStream:oiref><oihard>
+@__modelType reference
+@__imported 
+*/
+class reference3 {
+}/**
+@__ref <oiref:java#Class#msg.format.SerialFormat:oiref><oihard>
+@__modelType reference 
+*/
+class reference4 {
+}}/**
+@__tags
+@shapeType ClassDiagram 
+*/
+class __tags {
+}/**
+@__options 
+*/
+class __options {
+}/**
+@__positions <oigroup:<oiref:java#Implements#msg.format.SerialFormat#owch.Format:oiref>=336,283,162,93:oigroup>
+<oigroup:<oiref:java#Implements#msg.format.XMLSerialFormat#owch.Format:oiref>=111,176,111,93:oigroup>
+<oigroup:<oiref:java#Class#msg.format.XMLSerialFormat:oiref>=10,176,203,73,1:oigroup>
+<oigroup:<oiref:java#Class#msg.format.SerialFormat:oiref>=235,283,203,73,1:oigroup>
+<oigroup:<oiref:java#Class#archiver.XMLOutputStream:oiref>=10,310,203,283,1:oigroup>
+<oigroup:<oiref:java#Class#archiver.XMLInputStream:oiref>=233,10,203,253,1:oigroup>
+<oigroup:<oiref:java#Class#owch.Format:oiref>=10,10,203,83,1:oigroup>
+*/
+class __positions {
+}

@@ -10,10 +10,10 @@ import java.util.*;
 public class ListenerCache implements java.lang.Runnable
 {
 
-    Hashtable cache=new Hashtable(7);
+      HashMap cache=new HashMap(7);
     //stores PortNumber->ListenerReference
-    Enumeration enumCycle=null;
-    boolean enumFlag;
+      Iterator enumCycle=null;
+      boolean  enumFlag;
 
     public Location getLocation()
     {
@@ -28,17 +28,17 @@ public class ListenerCache implements java.lang.Runnable
 
     //for UDP ListenerCaches this can be used to stripe the output ports of a protocol
     //such as owch
-    public final ListenerReference getNextInLine()
+    public    ListenerReference getNextInLine()
     {
     	if(enumFlag==false)
 	    {
-    		enumCycle=cache.keys();
+    		enumCycle=cache.keySet().iterator();
     		enumFlag=true;
 	    };
 
-    	if(enumCycle.hasMoreElements())
+    	if(enumCycle.hasNext())
 	    {
-		return (ListenerReference)cache.get(enumCycle.nextElement());
+		return (ListenerReference)cache.get(enumCycle.next());
 	    }else
 		{
 		    //empty hashTable cannot give us good info
@@ -87,9 +87,9 @@ public class ListenerCache implements java.lang.Runnable
 
 	//TODO: add a splaytree or something else that's sorted
 
-	for(Enumeration  e  =  cache.keys();  e.hasMoreElements()  ;)
+	for(Iterator  e  =  cache.keySet().iterator();  e.hasNext()  ;)
 	    {
-		ListenerReference l=(ListenerReference)cache.get(e.nextElement());
+		ListenerReference l=(ListenerReference)cache.get(e.next());
 
 		if(l.getExpiration()==0)
 		    continue;

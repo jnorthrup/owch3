@@ -13,7 +13,7 @@ import java.util.*;
     */
 
 //TODO:remove LinkRegistry from owch
-public class LinkRegistry extends MetaProperties
+public class LinkRegistry extends TreeMap
 {
     /**
      * Default constructor 
@@ -62,12 +62,12 @@ public class LinkRegistry extends MetaProperties
     {
         "ACK".intern(),
         "Created".intern(),
-        "DestNode".intern(),
+        "JMSDestination".intern(),
         "MessageText".intern(),
-        "NodeName".intern(),
+        "JMSReplyTo".intern(),
         "ResentFrom".intern(),
-        "SerialNo".intern(),
-        "Type".intern(),
+        "JMSMessageID".intern(),
+        "JMSType".intern(),
         "URL".intern(),
         "retry".intern()
     };

@@ -3,9 +3,13 @@ package owch;
 import java.net.*;
 import java.util.*;
 import java.io.*;
-
+/**
+ *  Http server daemon used for sending files and routing agent notifications.
+ */
 public class HTTPServer extends TCPServerWrapper implements ListenerReference, Runnable
 {
+    int threads;
+
     public String getProtocol(){
 	return "http";
     };
@@ -13,7 +17,7 @@ public class HTTPServer extends TCPServerWrapper implements ListenerReference, R
 	return (long) 0;
     }
     public int getThreads(){
-	return 2;
+	return threads;
     }
     public ServerWrapper getServer(){
 	return this;
@@ -23,84 +27,92 @@ public class HTTPServer extends TCPServerWrapper implements ListenerReference, R
 	getServer().close();
     };
 
-    HTTPServer(int port)throws java.io.IOException{
+    public HTTPServer(int port,int threads)throws java.io.IOException{
 	super(port);
+	this.threads=threads;
 	try{
-	    new Thread(this).start();
-	    new Thread(this).start();      
+	   for(int i=0;i<threads;i++)
+	       new Thread(this).start(); 
 	}
-	catch(Exception e){ Env.debug(2,"ServetrSocket creation Failure");
+	catch(Exception e){ Env.debug(2,"HTTPServer creation Failure");
 	};
     }; 
+
     /**called only on a new socket
      */   
-    public String getRequest(Socket s ){
-	/* expect:
-GET /junk.html HTTP/1.1
-Host: 10.21.12.1:35601
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.4.3-pre7 i686; en-US; m18) Gecko/20010131 Netscape6/6.01
-Accept: * / *
-Accept-Language: en
-Accept-Encoding: gzip,deflate,compress,identity
-Keep-Alive: 300
-Connection: keep-alive
-
-    */
-	String request=""; 
+    public MetaProperties getRequest(Socket s ){
 	String line="";
         Env.debug(100,"HTTPServer.getRequest");
-        try{
-	   BufferedReader ins
-	       = new BufferedReader(new InputStreamReader(s.getInputStream()));
-	   do{
-	       line=ins.readLine();
-	       request=request+line;
-	   }while(line.length()>0);
-	     
+	Notification n=new Notification();
+	try{	   
+	    n.setFormat("RFC822");
+	    DataInputStream ins
+		= new DataInputStream( s.getInputStream() ); 
+	    line=ins.readLine();
+	    n.load(ins);
+	    n.put("Request",line); 
 	}catch(java.lang.Exception e){
 	    Env.debug(5, "had a DynServer Snag, retry");
 	}
-	Env.debug(50, "returning "+request.toString());
-	return request.toString();
+	Env.debug(50, "returning "+n.toString());
+	return n;
     }
-    public void  requestFile(Socket s,String file){
-	//INHERIT ME
-	/* sunsite  sent me these headers
-	   HTTP/1.1 200 OK
-	   Date: Thu, 29 Mar 2001 17:49:53 GMT
-	   Server: Apache/1.3.19 (Unix) mod_jk mod_fastcgi/2.2.10 PHP/4.0.4pl1
-	   Last-Modified: Fri, 22 Jan 1999 02:03:34 GMT
-	   ETag: "d0074-22744-36a7dc76"
-	   Accept-Ranges: bytes
-	   Content-Length: 141124
-	   Connection: close
-	   Content-Type: application/octet-stream
-	   Content-Encoding: x-gzip
-	   */
+
+    /**default action of an agent host is to just send a file.
+     */
+    public void  sendFile(Socket s,String file){
+
+
+	/** errors would send...
+HTTP/1.1 404 Not Found
+Date: Sun, 08 Apr 2001 21:31:24 GMT
+Server: Apache/1.3.12 (Unix) mod_perl/1.24
+Connection: close
+Content-Type: text/html; charset=iso-8859-1
+
+
+
+	 */
+ 
 	try{
-	    byte[] pref="HTTP/1.1 200 OK\nContent-Type: application/octet-stream\n\n".getBytes();
+	    boolean found=true;
+	    byte[] pref=null; 
+	    if(file.startsWith("/"))
+		file=file.substring(1);
+	    FileInputStream is=null;
+	    try{
+		is=new FileInputStream(file);
+		
+	    }catch (Exception e)
+		{
+		    found=false;
+		    pref=
+			new String("HTTP/1.0 404 "+e.getMessage()+"\nConnection: close\n\n<!DOCTYPE HTML PUBLIC -//IETF//DTD HTML 2.0//EN><HTML><HEAD><TITLE>404 Not Found</TITLE></HEAD><BODY><H1>"+e.getMessage()+"</H1>The requested URL "+file+" was not found on this server.<P></BODY></HTML>").getBytes();
+		};
+	    if(pref==null)pref="HTTP/1.0 200 OK\nContent-Type: application/octet-stream\n\n".getBytes();
 	    
 	    OutputStream os=new BufferedOutputStream(s.getOutputStream());
 	    os.write(pref,0,pref.length);
-	    
-	    if(file.startsWith("/"))
-		file=file.substring(1);
-	    FileInputStream is=new FileInputStream(file);
-	    byte buf[]=new byte[16384];
-	    int actual=0;
-	    int avail=0;
-	    while(true){
-		avail=is.available();
-		if (avail>0)
-		    actual=is.read(buf);
-		else
-		    {
-			os.flush();
-			break;
+	    os.flush();
+
+	    if(found)
+		{
+		    byte buf[]=new byte[16384];
+		    int actual=0;
+		    int avail=0;
+		    while(true){
+			avail=is.available();
+			if (avail>0)
+			    actual=is.read(buf);
+			else
+			    {
+				os.flush();
+				break;
+			    }
+			os.write(buf,0,actual);	
+			Env.debug(50,"httpd "+file+" sent "+actual+" bytes" );
 		    }
-		os.write(buf,0,actual);	
-		Env.debug(50,"httpd "+file+" sent "+avail+" bytes" );
-	    }
+		}
 	}catch(Exception e)
 	    {
 		Env.debug(20,"httpd "+file+" connection exception "+e.getMessage());
@@ -108,29 +120,58 @@ Connection: keep-alive
 	finally{
 	    try{
 		Env.debug(50,"httpd "+file+" connection closing" );
-		s.close();
-	    }catch(Exception e){};
-	};
-    };
 
-    public void  run()
-    {
-	while(true){
-	    try{	
-		Env.debug(20,"debug: "+Thread.currentThread().getName()+" init");
-		Socket s=accept();
-		new Thread(this).start();
-		String req=getRequest(s);
-		StringTokenizer st = new StringTokenizer(req);
-		st.nextToken();
-		String item=st.nextToken();
-		requestFile(s,item);
-		//	    while (st.hasMoreTokens()){
-		//println(st.nextToken());
-		//}	    
+		s.close();
 	    }catch(Exception e){
-		Env.debug(2,"HTTPServer thread going down in flames");
 	    };
 	};
-    }; 
-};
+    };
+    
+    /**  
+     *   this cuts the first line of the request into parts of the
+     *   Request Notification so its easier to use
+     */
+    public void parseRequest(MetaProperties n)
+    {
+	String line=n.get("Request").toString();
+	StringTokenizer st = new StringTokenizer(line);
+	List list=new ArrayList();
+	while (st.hasMoreTokens()) 
+	    list.add( st.nextToken());
+	n.put("Method",list.get(0).toString().intern());
+        n.put("Resource",list.get(1).toString()); 
+	n.put("Protocol",list.get(2).toString());
+
+    }
+    /** this is written to be over-ridden by the GateKeeper who looks
+     * at registered URL specs.  by default it just sends a file it can find
+     */
+
+    public void dispatchRequest(Socket s,MetaProperties n)
+    {
+
+	//TODO: handle PUT , POST
+	sendFile(s,n.get("Resource").toString());
+    }
+
+    /** sits and waits on a socket;
+     */
+    public void  run()
+    { 
+	while(true){
+	    URL url=null;	
+	    ArrayList list=new ArrayList(); 
+	    try{
+		Env.debug(20,"debug: "+Thread.currentThread().getName()+" init");
+		Socket s=accept();
+		MetaProperties n=getRequest(s);
+		parseRequest(n);
+		dispatchRequest(s,n);
+	    }catch(Exception e){
+		Env.debug(2,"HTTPServer thread going down in flames on : "+e.getMessage());
+		e.printStackTrace();
+	    };
+	};
+    };
+}; 
+

@@ -22,16 +22,25 @@ public class Room extends Node implements Runnable
     static {
 	Client compileMe;
     }
-    
-    static void main(String args[])
-    {
-	if (args.length!=2)
-	    System.out.println("Usage: java Cheetah.Room <room name> <domain URL 'owch://hostname:port>'");
-	throw new Error("usage error");
+   
+    public static  void main(String args[]){
+	String host="localhost";
+	int port=2112;
+	String JMSReplyTo="Room";
 	
+ 
+	System.out.println(args);
+	if(args.length>2)
+	    host=args[2];
+	if(args.length>1)
+	    port=Integer.valueOf(args[1]).intValue(); 
+	if(args.length>0)
+	    JMSReplyTo=args[0];
+	
+	new Room( JMSReplyTo);
     }
     //String dir=".";
-    public HashMap usersList; //Contains users in the room
+    public Map usersList; //Contains users in the room
     
     /**
      * Constructor
@@ -39,21 +48,18 @@ public class Room extends Node implements Runnable
      * @param arg currently only a single filename is accepted if anything
      *
      */ 
-    public Room(String[] arg)
-    {
-        if(arg.length>0)
-	    put("NodeName",arg[0]);
-	
+    public Room( String name)
+    { 
+	put("JMSReplyTo",name); 
 	usersList=new LinkRegistry();
-	
-	Thread t=new Thread(this,"Room: "+getNodeName());
+	Thread t=new Thread(this,"Room: "+getJMSReplyTo());
 	t.start();
     };
     
-    synchronized void addUser(Notification clientIn)
+    synchronized void addUser(MetaProperties clientIn)
     {
-        //TODO: make Notificationects
-	String userNode = clientIn.getNodeName();
+        //TODO: make MetaPropertiesects
+	String userNode = clientIn.getJMSReplyTo();
 	String userKey = (String) usersList.get(userNode);
 	Env.debug(8,"Room - addUser = " + userNode + "key = " + userKey);
 	
@@ -65,91 +71,92 @@ public class Room extends Node implements Runnable
     
     
     /**
-     * This method handles the notifications based on their "Type"
+     * This method handles the notifications based on their "JMSType"
      * property.
      *
-     * @param n a Notification
+     * @param n a MetaProperties
      *
      */
-    synchronized public void handleNotification(Notification notificationIn)
+    public void receive(MetaProperties nIn)
     {
-        String type=(String)notificationIn.get("Type");
-        String subType=(String)notificationIn.get("SubType");
-        Env.debug(8,"Room - handleNotification type = " + type);  
-        String name=notificationIn.getNodeName();
+        String type=(String)nIn.get("JMSType"); 
+        Env.debug(8,"Room - receive type = " + type);  
+        String name=nIn.getJMSReplyTo();
+	
 	if ( type!=null&&type.equals("Test")){
-	    Notification  n=  new Notification(Env.getLocation("http"));
-	    n.put("DestNode", notificationIn .get("NodeName"));
-	    n.put("Type","Test"); 
+	      
+	    MetaProperties  n=  new Notification(Env.getLocation("http"));
+	    n.put("JMSDestination", nIn .get("JMSReplyTo"));
+	    n.put("JMSType","Test"); 
 	    String url= n.get("URL")+"/test.jar";
 	    n.put("Path",url);
 	    n.put("Class","Cheetah.TestWindow");
 	    n.put("args","");
-	    route(n);
+	    send(n);
 	    return;
 	};
-	super.handleNotification(notificationIn);
+	super.receive(nIn);
     }
     /** 
-     * broadcasts Notifications to all users in the room
+     * publishs MetaPropertiess to all users in the room
      */
 
-    synchronized public void broadcast(Notification notificationIn)
+    public void publish(MetaProperties nIn)
     {
 
-	String tmpNodeName; 
-	String roomServerName=getNodeName();
-	notificationIn.put("ResentFrom",roomServerName);
-	notificationIn.remove("SerialNo");
+	String tmpJMSReplyTo; 
+	String roomServerName=getJMSReplyTo();
+	nIn.put("ResentFrom",roomServerName);
+	nIn.remove("JMSMessageID");
 
 	//for each user in room
 	for (Iterator e = usersList.keySet().iterator(); e.hasNext() ;)
 	    {
-		tmpNodeName=(String)e.next();
-		notificationIn.put("DestNode",tmpNodeName);
-		Env.debug(8,"Room.Broadcast ("+roomServerName+")("+
-			  notificationIn.getNodeName()+
-			  ") user is "+notificationIn.get("DestNode"));
-		route(new Notification (notificationIn));
+		tmpJMSReplyTo=(String)e.next();
+		nIn.put("JMSDestination",tmpJMSReplyTo);
+		Env.debug(8,"Room.Publish ("+roomServerName+")("+
+			  nIn.getJMSReplyTo()+
+			  ") user is "+nIn.get("JMSDestination"));
+		send(new Notification (nIn));
 	    }; // end for
 
-    } // end broadcast method
+    } // end publish method
 
     /**
      * Updates the status of a user, and the user's view of users in the same room.
      *
-     * @param the notification to broadcast
+     * @param the notification to publish
      */
 
-    synchronized public void userUpdate(Notification clientIn)
+    synchronized public void userUpdate(MetaProperties clientIn)
     {
 
         addUser(clientIn);
 	
-	syncUsers(clientIn.get("NodeName"));
+	syncUsers(clientIn.get("JMSReplyTo").toString());
     };
 
     synchronized public void syncUsers(String nodeNameIn)
     {
-	String tmpNodeName = null;
+	String tmpJMSReplyTo = null;
 
-	Notification notificationOut = new Notification();
+	MetaProperties notificationOut = new Notification();
 
 	Env.debug(8,"Room - syncUsers  ");
 
-	notificationOut.put("Type","UserUpdate");
-	notificationOut.put("SubType","Add");
-	notificationOut.put("DestNode",nodeNameIn);
-	String roomServerName=getNodeName();
+	notificationOut.put("JMSType","UserUpdate");
+	notificationOut.put("SubJMSType","Add");
+	notificationOut.put("JMSDestination",nodeNameIn);
+	String roomServerName=getJMSReplyTo();
 	notificationOut.put("ResentFrom",roomServerName);
 
  	//for each user in room
 	for (Iterator e = usersList.keySet().iterator(); e.hasNext() ;)
 	    {
-		tmpNodeName=(String)e.next();
-		notificationOut.put("NodeName",tmpNodeName);
-		Env.debug(8,"Room.Broadcast ("+roomServerName+")("+ notificationOut.getNodeName()+ ") user is"+notificationOut.get("DestNode"));
-		route(new Notification (notificationOut));
+		tmpJMSReplyTo=(String)e.next();
+		notificationOut.put("JMSReplyTo",tmpJMSReplyTo);
+		Env.debug(8,"Room.Publish ("+roomServerName+")("+ notificationOut.getJMSReplyTo()+ ") user is"+notificationOut.get("JMSDestination"));
+		send(new Notification (notificationOut));
 	    }; // end for
 
     } //end synUsers
@@ -162,8 +169,8 @@ public class Room extends Node implements Runnable
     public void run()
     {
         Env.getNodeCache().addNode(this);
-        linkTo(Env.getParentNode().getNodeName());
-        linkTo(get("links"));
+        linkTo(Env.getParentNode().getJMSReplyTo());
+        
 
         StringBuffer s;
 
@@ -172,7 +179,7 @@ public class Room extends Node implements Runnable
 		wait120();
 
 		// commented out - causes relink - much network traffic
-		linkTo(Env.getParentNode().getNodeName());
+		linkTo(Env.getParentNode().getJMSReplyTo());
 		linkTo(Env.getProxyCache().enumProxies());
 	    };
     };

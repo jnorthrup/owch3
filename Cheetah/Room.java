@@ -18,39 +18,45 @@ import java.util.*;
 import java.io.*; 
 
 public class Room extends Node implements Runnable
-{
-    static {
-	Client compileMe;
-    }
-   
-    public static  void main(String args[]){
-	String host="localhost";
-	int port=2112;
-	String JMSReplyTo="Room";
-	
- 
-	System.out.println(args);
-	if(args.length>2)
-	    host=args[2];
-	if(args.length>1)
-	    port=Integer.valueOf(args[1]).intValue(); 
-	if(args.length>0)
-	    JMSReplyTo=args[0];
-	
-	new Room( JMSReplyTo);
-    }
+{ 
     //String dir=".";
     public Map usersList; //Contains users in the room
     
+   
+      public static void main(String[] args) { 
+	Map m=Env.parseCmdLine(args);
+	
+	if(!(m.containsKey("JMSReplyTo")  ))
+	    {
+		System.out.println(
+				   "\n\n******************** cmdline syntax error\n"+
+				   "Room Agent usage:\n\n"+
+				   "-name name\n"+  
+				   "$Id: Room.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+				   );
+		System.exit(2);
+	    };
+	Room d=new Room(m );
+	Thread t=new Thread();
+	try{
+	    t.start();
+	    while(true)
+		t.sleep(60000);
+	    
+	    
+	}catch (Exception e){
+	};
+      };
+
     /**
      * Constructor
      *
      * @param arg currently only a single filename is accepted if anything
      *
      */ 
-    public Room( String name)
+    public Room( Map m)
     { 
-	put("JMSReplyTo",name); 
+	super(m); 
 	usersList=new LinkRegistry();
 	Thread t=new Thread(this,"Room: "+getJMSReplyTo());
 	t.start();
@@ -167,8 +173,7 @@ public class Room extends Node implements Runnable
      *
      */
     public void run()
-    {
-        Env.getNodeCache().addNode(this);
+    { 
         linkTo(Env.getParentNode().getJMSReplyTo());
         
 
@@ -180,7 +185,7 @@ public class Room extends Node implements Runnable
 
 		// commented out - causes relink - much network traffic
 		linkTo(Env.getParentNode().getJMSReplyTo());
-		linkTo(Env.getProxyCache().enumProxies());
+		//linkTo(Env.getProxyCache().enumProxies());
 	    };
     };
     /** 

@@ -68,20 +68,23 @@ import java.net.*;
 
 public final class Env extends Thread
 { 
-    private static int debugLevel=500;
-    private static DatagramDispatch    datagramDispatch;
-    private static DatagramFactory  socketFactory;
-    private static DebugTimerOutputStream debugTimerOutputStream=new DebugTimerOutputStream(System.out);
-    private static HTTPFactory httpFactory;
-    private static Node GUINode;
-    private static NodeCache nodeCache;
-    private static NotificationFactory	notificationFactory;
-    private static ProtocolCache protocolCache;
-    private static ProxyCache proxyCache;
-    private static boolean parentFlag=false;
-    private static boolean alive=false;
-    private static java.util.Map formatCache;
-    private static HTTPRegistry webRegistry; 
+    private static owchDispatch        datagramDispatch;
+    private static owchFactory         socketFactory;
+    private static DebugTimerOutputStream  debugTimerOutputStream=new DebugTimerOutputStream(System.out);
+    private static httpFactory             httpFactory;
+    private static httpRegistry            webRegistry; 
+    private static Map                     formatCache;
+    private static Map                     routerCache=new HashMap(13);
+    private static Node                    GUINode; 
+    private static NotificationFactory	   notificationFactory;
+    private static ProtocolCache           protocolCache; 
+    private static String                  domainName=null;
+    private static boolean                 alive=false;
+    private static boolean                 parentFlag=false;
+    private static int                     debugLevel=500;
+    private static int                     hostPort=0;
+    private static int                     hostThreads=2;
+    private static int                     socketCount=3;
 
     /**
      * returns a MetaProperties suitable for parent routing.
@@ -91,7 +94,56 @@ public final class Env extends Thread
     //TODO:
     //MetaProperties parentNode;
     private static String host=null;
+    private static RouteHunter routeHunter=new RouteHunter();
+
+    public static final int getHostPort(){
+	return hostPort;
+    };
+    public static final void setHostPort(int port){
+	 hostPort=port;
+    };
+    public static final int getHostThreads(){
+	return hostThreads;
+    };
+    public static final void setHostThreads(int t){
+	 hostThreads=t;
+    };
+    public static final int getSocketCount(){
+	return socketCount;
+    };
+    public static final void setSocketCount(int t){
+	  socketCount=t;
+    };
+
+    public final static void send(Map item){
+	routeHunter.send(item);
+    };
+
+    public  final static  void unRoute(Object key){
+	routeHunter.remove(key);
+    };
     
+    public  final static  Router getRouter(Object key){
+
+	String className="owch."+(String)key+"Router";
+	Env.debug(500,"attempting to pull up router "+className);
+	Router r=(Router)routerCache.get(key);
+	
+	if (r==null) {
+	    try{
+		r=(Router)Class.forName( className).newInstance();
+	
+	    }catch(Exception e) {
+		e.printStackTrace();
+	    }
+	    routerCache.put(key,r);
+	} 
+	return r;
+    };
+    
+    /**
+       needs work being friendlier
+    */
     static public Map parseCmdLine(String args[]){
 	try{
 	    Notification map=new Notification();
@@ -105,6 +157,9 @@ public final class Env extends Thread
 		    String key=args[i].substring(1);
 		    String val=args[i+1];
 		    
+		    if(key.equals("help"))
+			throw new Exception ("requested help");
+
 		    if(key.equals("name"))
 			key="JMSReplyTo";
 		    
@@ -114,6 +169,15 @@ public final class Env extends Thread
 		    
 		    if(key.equals("debugLevel"))
 			setDebugLevel(Integer.decode(val).intValue());
+		     
+		    if(key.equals("HostPort"))
+			setHostPort(Integer.decode(val).intValue());
+		    	     
+		    if(key.equals("HostThreads"))
+			setHostThreads(Integer.decode(val).intValue());
+		    		    	     
+		    if(key.equals("SocketCount"))
+			setSocketCount(Integer.decode(val).intValue());
 		    
 		    if(key.equals("ParentURL"))
 			{
@@ -134,21 +198,31 @@ public final class Env extends Thread
 	    return map;
 	}
 	catch(Exception e){
-	    System.out.println("All cmdline params are of the pairs form -key 'Value'\n\n "+
-			       "valid environmental cmdline options are typically:\n"+
-			       "-config     - config file[s] to use having (RFC822) pairs of Key: Value\n"+
-			       "-JMSReplyTo - Name of agent\n"+
-			       "-name       - shorthand for JMSReplyTo\n"+
-			       "-Hostname   - a hostname or ip address to advertise in the case of several NIC's\n"+
-			       "-debugLevel - controls how much scroll is displayed\n"+
-			       "-ParentURL  - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n"+
-			       "\n\nthis Edition of the parser: $Id: Env.java,v 1.1 2001/04/14 20:35:27 grrrrr Exp $\n"
-			       );
 	    e.printStackTrace();
-	    System.exit(1);
-	};
+	    cmdlineHelp();
+	}
 	return null;
     }
+    public static final  void cmdlineHelp()
+    {  
+	System.out.println("All cmdline params are of the pairs form -key 'Value'\n\n "+
+			   "valid environmental cmdline options are typically:\n"+
+			   "-config     - config file[s] to use having (RFC822) pairs of Key: Value\n"+
+			   "-JMSReplyTo - Name of agent\n"+
+			   "-name       - shorthand for JMSReplyTo\n"+
+			   "-Hostname   - a hostname or ip address to advertise in the case of several NIC's\n"+
+			   "-HostPort   - port number\n"+ 
+			   "-HostThreads  - Host Thread count \n"+ 
+			   "-SocketCount- Multiple dynamic sockets for high load?\n"+
+			   "-debugLevel - controls how much scroll is displayed\n"+
+			   "-ParentURL  - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n"+
+			   " this Edition of the parser: $Id: Env.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+			   );
+	   
+	System.exit(1);    return ;
+    }; 
+
+ 
 
     static public String getHostname()
     {
@@ -164,16 +238,16 @@ public final class Env extends Thread
 	
     }
     
-    static public void  setHTTPRegistry( HTTPRegistry h)
+    static public void  sethttpRegistry( httpRegistry h)
     {
 	webRegistry=h;
     };
 
-    static public  HTTPRegistry getHTTPRegistry  ()
+    static public  httpRegistry gethttpRegistry  ()
     {
 	
 	if ( webRegistry==null){
-	    webRegistry=new  HTTPRegistry();
+	    webRegistry=new  httpRegistry();
 	} 
 	return  webRegistry; 
     };
@@ -193,6 +267,7 @@ public final class Env extends Thread
 	getFormatCache().put(name,f);
 	Env.debug(100 , "Registering Formatter: "+name);
     };
+    
     private final static Map getFormatCache()
     {
 	if(formatCache==null)
@@ -208,53 +283,33 @@ public final class Env extends Thread
     }
     public final static URLString getDefaultURL()
     {
-	if(!isParentNode())
-	    return new URLString(getProxyCache().getProxy("default").getURL());
+	if(!isParentHost())
+	    return new URLString( Env.getParentNode().getURL());
 
 	return null;
-    }
-    
-
+    } 
 
     public final static ProtocolCache getProtocolCache()
     {
-	if(protocolCache==null)
+	if( protocolCache==null )
 	    protocolCache=new ProtocolCache();
 	return protocolCache;
     };
 
     public  final static MetaProperties getLocation(String Protocol)
     {
-	MetaProperties l=getProtocolCache().getLocation(Protocol);
-
-	if(l==null)
-	    {
-		if(Protocol.equals("owch"))
-		    {
-			ListenerCache listenerCache=new ListenerCache();
-
-			ListenerFactory lf=getDatagramFactory();
-
-			//this should make life interesting
-			listenerCache.put(lf.create(0,2));
-			listenerCache.put(lf.create(0,2));
-			listenerCache.put(lf.create(0,2));
-			listenerCache.put(lf.create(0,2));
-
-			Env.getProtocolCache().put("owch",listenerCache);
-			return getLocation("owch");
-		    }
-	    };
+	Env.debug(50,"Env.getLocation - "+Protocol);
+	MetaProperties l=getProtocolCache().getLocation(Protocol); 
 	return l;
     };
-
+    
     /**
-     *
-     * sets the flag on the Factory Objects to act as parental sendr in all final location resolution.
+     * sets the flag on the Factory Objects to act as parental sendr
+     * in all final location resolution.
      *
      * @param flag sets the state to true or false
      */
-    final static public void setParentNode(boolean flag)
+    final static public void setParentHost(boolean flag)
     {
 	parentFlag=flag;
     }
@@ -287,12 +342,13 @@ public final class Env extends Thread
 	return debugLevel;
     }
     /**
-     * accessor for parental node being present in the current Process.
+     * accessor for parental node being present in the current
+     * Process.
      *
      * @return whether we are the Parent Sendr of all transactions
      */
 
-    public final static boolean isParentNode()
+    public final static boolean isParentHost()
     {
 	return parentFlag;
     }
@@ -355,11 +411,7 @@ public final class Env extends Thread
 	if(debugLevel>=lev)
 	    debugTimerOutputStream.println(s);
     } ;
-    static final void setNodeCache(NodeCache s)
-    {
-	nodeCache=s;
-    };
-
+ 
     /**
      *
      * Sets the Parent Node info Object.
@@ -369,7 +421,7 @@ public final class Env extends Thread
 
 
 
-    static final void setDatagramDispatch(DatagramDispatch s)
+    static final void setowchDispatch(owchDispatch s)
     {
 	datagramDispatch=s;
     };
@@ -384,25 +436,14 @@ public final class Env extends Thread
      * @param s New SocketEnv.
      */
 
-    public static final void setDatagramFactory(DatagramFactory s)
+    public static final void setowchFactory(owchFactory s)
     {
 	//TODO: insure that for Client Authorization Dialog, this
 	//      beast doesn't start prematurely to the POOPS download
 	socketFactory=s;
     }
-
-    static final void setProxyCache(ProxyCache s)
-    {
-	proxyCache=s;
-    }
-
-    public synchronized final static NodeCache getNodeCache()
-    {
-	if(nodeCache==null)
-	    nodeCache=new NodeCache();
-	return nodeCache;
-    };
-
+ 
+ 
     public final static MetaNode getParentNode()
     {
 	//TODO:  This oughta become System.Property stuff.  (shrug)
@@ -418,10 +459,10 @@ public final class Env extends Thread
 	return domain;
     }
 
-    final static DatagramDispatch			getDatagramDispatch()
+    final static owchDispatch getowchDispatch()
     {
 	if(datagramDispatch==null)
-	    datagramDispatch=new DatagramDispatch();
+	    datagramDispatch=new owchDispatch();
 	return datagramDispatch;
     }
 
@@ -434,34 +475,33 @@ public final class Env extends Thread
 	return notificationFactory;
     };
 
-    final public static DatagramFactory getDatagramFactory()
+    final public static owchFactory getowchFactory()
     {  
 	if(socketFactory==null)    {
-	    socketFactory=new DatagramFactory();
+	    socketFactory=new owchFactory();
 	};
 	return socketFactory;
     }
 
-    final public static HTTPFactory getHTTPFactory()
+    final public static httpFactory gethttpFactory()
     {  
 	if(httpFactory==null)    {
-	    httpFactory=new HTTPFactory();
+	    httpFactory=new httpFactory();
 	};
 	return httpFactory;
     }
-
-    /**
-     * returns the current Factory default ProxyCache.
-     *
-     */
-    public final static ProxyCache getProxyCache()
+    
+    final public static Object getDomainName()
     {
-	if(proxyCache==null)
-	    proxyCache=new ProxyCache();
-	return proxyCache;
-    };
-
-
+	if (domainName==null)
+	    setDomainName(getHostname());
+	
+	return domainName;
+    }
+    final public static void  setDomainName(String dName)
+    {
+	domainName=dName;
+    }
 }
 
 

@@ -26,7 +26,7 @@ final class NotificationFactory implements Runnable
         if(s!=null)
 	    {
 		Env.debug(13,"NotificationFactory.handleStream() ACK Notification: "+s);
-		Env.getDatagramDispatch().remove(s);
+		Env.getowchDispatch().remove(s);
 		return false;
 	    };
         if(n.getJMSReplyTo()==null)
@@ -65,7 +65,7 @@ final class NotificationFactory implements Runnable
 	
 	if(!recognize(n,s))
 	    { 
-		Env.getProxyCache().receive(n);
+		Env.send(n);
 	    }; 
     };
     
@@ -109,7 +109,7 @@ final class NotificationFactory implements Runnable
 	    istream.close();
 	}catch(IOException e)
 	    {
-		Env.debug(7,"handleDatagram(DatagramPacket p) threw "+e.toString());
+		Env.debug(7,"handleowch(DatagramPacket p) threw "+e.toString());
 	    };
     };
 

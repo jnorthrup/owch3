@@ -39,16 +39,17 @@ public class Location extends TreeMap implements MetaProperties
 
     public static  Location create(ListenerReference lr)
     {
+	
         String tstring=new String(lr.getProtocol()+":");
 	Location l=new Location();
         
-		tstring+="//"+Env.getHostname().trim()+":"+lr.getServer().getLocalPort();
-	  
+	tstring+="//"+Env.getHostname().trim()+":"+((Env.getHostPort()==0)?lr.getServer().getLocalPort():Env.getHostPort());
+		
         l.put("URL",tstring);
-
+	
 	return l;
     }
-
+    
     /**
      * RNODI specific Properties Serialization input.
      *

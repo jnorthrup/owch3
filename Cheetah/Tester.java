@@ -19,7 +19,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class Tester extends Node implements Runnable {
+public class Tester extends Node   {
    
     public static void main(String[] args) {
         String host = "localhost";
@@ -42,8 +42,7 @@ public class Tester extends Node implements Runnable {
      */
 
     public Tester(String name) {
-        put("JMSReplyTo", name);
-        Env.getNodeCache().addNode(this);
+        put("JMSReplyTo", name); 
         linkTo("Main");
         MetaProperties n = new Notification();
         n.put("JMSDestination", "Main");
@@ -76,14 +75,7 @@ public class Tester extends Node implements Runnable {
             catch (Exception e) { };
         }
     }; //end construct
-
-    /** test clients don't need threads */
-    public void run() {
-    }
-
-    public void unlink() {
-        Env.getNodeCache().remove(getJMSReplyTo());
-    };
+ 
 
     /**
      * @param to recipient owch node name

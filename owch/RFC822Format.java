@@ -36,7 +36,7 @@ public class  RFC822Format implements Format
 	for(Iterator i=m.keySet().iterator();i.hasNext();) {
 	    
 	    key=(String)i.next();
-	    line=key.toString()+": "+m.get(key).toString();
+	    line=key.toString()+": "+m.get(key) ;
 	    o.write((line+'\n').getBytes());
 	    Env.debug(200,"RFC822Format line saved:"+line);
 	}

@@ -52,8 +52,7 @@ public class Client extends Node implements Runnable
     {  
 	
 	
-	put("JMSReplyTo",JMSReplyTo);
-	Env.getNodeCache().addNode(this); 
+	put("JMSReplyTo",JMSReplyTo); 
 	linkTo("Main");
 
 	MetaProperties n=new Notification();
@@ -74,10 +73,7 @@ public class Client extends Node implements Runnable
      */
     public void run(){
     }
-    public void unlink()
-    {
-	Env.getNodeCache().remove(getJMSReplyTo());
-    };
+ 
 
  
 

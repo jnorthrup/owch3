@@ -15,44 +15,35 @@ import java.util.*;
 public class Domain
 extends Node
 {
-    static int port=2112;
- 
-    /**
-       args 1=port
-       args 2=iface
-     */
-    static void main(String args[])
-    {
-	int port=2112; 
-	String host="localhost";
-
+   
+      public static void main(String[] args) { 
+	Map m=Env.parseCmdLine(args);
 	
-	System.out.println(args);
-	if(args.length>1)
-	    port=Integer.valueOf(args[1]).intValue(); 
-
- 	ListenerCache lc;
-	lc=new ListenerCache();
-	if(args.length>0)
-	    Env.setHostname(args[0]);
-
-	lc=new ListenerCache();
-	lc.put(Env.getDatagramFactory().create(port,8 ));
-	Env.getProtocolCache().put("owch",lc);
-	lc=new ListenerCache();
-	lc.put(Env.getHTTPFactory().create(port,8 ));
-	Env.getProtocolCache().put("http",lc);
-    
-	
-	new Domain ();
-	try{
-	    while(true){
-		Thread.currentThread().sleep(60000);
+	if(!(m.containsKey("JMSReplyTo")&&m.containsKey("HostPort") ))
+	    {
+		System.out.println(
+				   "\n\n******************** cmdline syntax error\n"+
+				   "Domain Agent usage:\n\n"+
+				   "-name name\n"+ 
+				   "-HostPort port\n"+ 
+				   "$Id: Domain.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+				   );
+		System.exit(2);
 	    };
-	}
-	catch(Exception e){
+	Env.setParentHost(true);
+	Domain d=new Domain( m );
+	Thread t=new Thread();
+
+	try{
+	    t.start();
+	    while(true)
+		t.sleep(60000);
+	    
+	    
+	}catch (Exception e){
 	};
-    };
+      };
+
     /**
        contains user/room pairs*/
     public Hashtable userRoomList;
@@ -97,27 +88,13 @@ extends Node
      * default ctor
      *
      */
-    public Domain()
+    public Domain(Map p)
     {
-	super(); 
-	init();
+	super(p);  
+	Env.getLocation("owch");
     };
 
 
-    public void init()
-    {
-	//Set a Terminator Bit on the infrastructure "bus"
-	Env.setParentNode(true);
-
-        userRoomList = new Hashtable();
-
-        //Somehow we now assume getDomain will do something helpful for us.
-	putAll(Env.getProtocolCache().getLocation("owch") );
-
-	put("JMSReplyTo","default");
-        Env.getNodeCache().addNode(this);
- 
-    }
 
 
     /**
@@ -131,19 +108,13 @@ extends Node
         if(name!=null)
 	    { 
 		Env.debug(5,"debug: Domain.startRoom("+name+")");
-		new Room(name);
+		Location l=new Location();
+		l.put("JMSReplyTo",name);
+		new Room(l);
 	    };
     };
 
-    /**
-     * returns the portnumber
-     *
-     */
-
-    public int getPortNum()
-    {
-        return port;
-    };
+  
 };
 
 

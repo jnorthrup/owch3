@@ -1,11 +1,14 @@
 /*
-  Deploy.java
+   WebPage.java
 
   @author   Jim Northrup
 
   $Log: WebPage.java,v $
-  Revision 1.1  2001/04/14 20:35:26  grrrrr
-  Initial revision
+  Revision 1.2  2001/04/25 03:35:55  grrrrr
+  *** empty log message ***
+
+  Revision 1.1.1.1  2001/04/14 20:35:26  grrrrr
+
 
   Revision 1.2  2001/04/12 19:09:50  grrrrr
   *** empty log message ***
@@ -28,30 +31,7 @@ import java.util.*;
    
  */
 public class WebPage extends   Node implements Runnable{
-    
-    /** interval defines our random interval of re-registration
-	starting with 1/2n..n milliseconds
-    */
-    private long interval=60*1000 * 2; 
-    private boolean killFlag=false;
-    byte[]payload;//for now we'll just assume payload is a static buffer
-    //todo: servelet api
-
-    /** this tells our (potentially clone) web page to stop
-     * re-registering.  it will cease to spin.
-     */
-    public void dissolve (){
-	killFlag=true;
-	Notification	n2=new Notification(); 
-	n2.put("JMSDestination", "GateKeeper");
-	n2.put("JMSType", "UnRegister");
-	n2.put("URLSpec",get("Resource").toString());
-	send(n2);
-	Env.getHTTPRegistry().unregisterURLSpec(get("Resource").toString());
-	Env.getNodeCache().remove(getJMSReplyTo());
-	//unlink(null)  commented out here because we don't want to unlink a clone
-
-    };
+    protected  Thread thread;
     public static void main(String[] args) { 
 	Map m=Env.parseCmdLine(args);
 	
@@ -60,31 +40,90 @@ public class WebPage extends   Node implements Runnable{
 		System.out.println(
 				   "\n\n******************** cmdline syntax error\n"+
 				   "WebPage Agent usage:\n\n"+
-				   "-name name -Resource 'resource'\n\n"+
-				   "$Id: WebPage.java,v 1.1 2001/04/14 20:35:26 grrrrr Exp $\n"
+				   "-name name\n"+
+				   "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n"+
+				   "[-Clone 'host1[ ..hostn]']\n"+
+				   "[-Content-Type 'application/msword']\n"+
+				   "[-Clone 'host1[ ..hostn]']\n"+
+				   "$Id: WebPage.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };
-	new WebPage((String)m.get("JMSReplyTo"),(String)m.get("Resource"));
+	
+	new WebPage(m );
     };
+    
+    /**
+       this is a set of headers that is simply nice to have... 
+    */
+    private Notification nice=new Notification();
+    /**
+       this is a set of header fields that is simply nice to have... 
+    */
+    private final String[]nice_headers=
+    {
+	"Last-Modified", 
+	"Content-Type", 
+	"Content-Encoding"
+    };
+    /** interval defines our random interval of re-registration
+	starting with 1/2n..n milliseconds
+    */
+    private long interval=60*1000 * 2;  
+    byte[]payload;//for now we'll just assume payload is a static buffer
+    //todo: servelet api
 
+
+    /** this tells our (potentially clone) web page to stop
+     * re-registering.  it will cease to spin.
+     */
+    public void dissolve (){ 
+	thread.interrupt();
+
+	Notification n2=new Notification(); 
+	n2.put("JMSDestination", "GateKeeper");
+	n2.put("JMSType", "UnRegister");
+	n2.put("URLSpec",get("Resource").toString());
+	send(n2);
+	super.dissolve();
+    };
+ 
+    /*
+     *  WebPage Constructor
+     *
+     *  Initializes communication
+     * 
+     *  params:  a map -  lots o junk inside..
+     */ 
+    public WebPage( Map m) { 
+	super(m);
+	if(containsKey("Source"))
+	    init((String)get("JMSReplyTo"),(String)get("Source"),(String)get("Resource"));
+	else
+	    init((String)get("JMSReplyTo"),(String)get("Resource"));
+
+    }
+    
+    /*
+     *  WebPage Constructor
+     *
+     *  Initializes communication
+     * 
+     *  params: name -- we name our agent anything we want..
+     *           
+     *  url -- name of a file
+    */ 
+	public WebPage(String name,String file) {     
+	    super();
+	    init(name,file);
+	}
+    public void init(String name,String file) { 
+	put("JMSReplyTo",  name);
+
+	put("Resource", file); 
+	inductFile( file );
  
 
-    /*
-     *  WebPage Constructor
-     *
-     *  Initializes communication
-     * 
-     *  params: name -- we name our agent anything we want..
-     *           
-     *  url -- name of a file
-    */  
-    public WebPage(String name,String file) { 
-	put("JMSReplyTo",  name);
-	put("Resource", file);
-	inductFile( file );
-	Env.getNodeCache().addNode(this); 
-	new Thread(this).start();  
     }
     /*
      *  WebPage Constructor
@@ -95,19 +134,31 @@ public class WebPage extends   Node implements Runnable{
      *           
      *  url -- name of a file
     */  
-    public WebPage(String name,String url,String resource) { 
+    public WebPage(String name,String url,String resource) {  
 	put("JMSReplyTo",  name);
-	put("Resource", resource);
+	put("Resource", resource); 
+	remove("Source");
+	init(name,url,resource);
+    }
+
+    public void init(String name,String url,String resource) { 
 	inductURL(url);
-	Env.getNodeCache().addNode(this);    
-	new Thread(this).start();  
-    }
-        
-        
+	
+    } 
+ 
     public void inductURL(String url){
 	try{
 	    URL u=new URL(url);	    
-	    InputStream is = u.openStream();
+	    URLConnection uc= u.openConnection();
+	    for(int i=0;i<nice_headers.length;i++){
+		String hdr=uc.getHeaderField(nice_headers[i]);
+		if( hdr!=null)
+		    {
+			nice.put(nice_headers[i],get(nice_headers[i]));
+		    };
+	    };
+	    InputStream is=uc.getInputStream();
+	    
 	    inductStream(is); 	     
 	}catch(Exception e)
 	    {
@@ -135,6 +186,7 @@ public class WebPage extends   Node implements Runnable{
 	    };
     } 
     public void inductStream(InputStream is){
+	Env.getRouter("IPC").addElement(this);
 	try{ 
 	    ByteArrayOutputStream os=new ByteArrayOutputStream();
 	    byte buf[]=new byte[16384];
@@ -144,15 +196,17 @@ public class WebPage extends   Node implements Runnable{
 		avail=is.available();
 		actual=is.read(buf);
 		if(actual>=0)
-		  {  os.write(buf,0,actual);
-		  Env.debug(50,  getClass().getName()+":"+get("Resource").toString()+" slurped up "+actual+" bytes" );
-		  } 
-	
+		    {  os.write(buf,0,actual);
+		    Env.debug(50,  getClass().getName()+":"+get("Resource").toString()+" slurped up "+actual+" bytes" );
+		    } 
+		
 	    }
 	    payload=os.toByteArray();
 	    os.flush();
 	    os.close();
-
+	    thread=new Thread(this,getClass().getName()+":"+get("JMSReplyTo()")+":"+get("Resource")  );
+	    thread.start();
+	    Env.debug(50, "-=-=-=-=-"+ getClass().getName()+":"+get("Resource").toString()+" ThreadStart " );
 	}catch (Exception e)
 	    {
 		Env.debug(50, getClass().getName()+":"+get("Resource").toString()+" failure "+e.getMessage());
@@ -172,6 +226,7 @@ public class WebPage extends   Node implements Runnable{
     {
 	interval=ival;
     }
+
     /**
        our thread function is to periodically wake up and notify both
        the Domain and the Gatekeeper of our existance every so often.
@@ -183,9 +238,19 @@ public class WebPage extends   Node implements Runnable{
     public void run(){
 	while(!killFlag){
 	    sendRegistrations();
-	    pause();
-	};
-    } 
+	    doIntervalJobs();
+ 
+	    try{ 	
+		long tim=(long)(Math.random()*(interval/2.0)  +(interval/2.0));
+		Env.debug(12, getClass().getName()+" waiting for "+tim+" ms.");
+		Thread.currentThread().sleep(tim);
+	    }
+	    catch(Exception e){
+		return;
+	    }
+	}
+    }
+      
     
     public void sendRegistrations()
     {
@@ -193,8 +258,7 @@ public class WebPage extends   Node implements Runnable{
 	String resource= get("Resource").toString();
 	Location l=new Location(Env.getLocation("http"));
 	l.put("JMSReplyTo",getJMSReplyTo());
-
-	Env.getHTTPRegistry().registerURLSpec(resource,l);
+	Env.gethttpRegistry().registerItem(resource,l);
 	Notification n2=new Notification();
 	n2.put("JMSDestination", "GateKeeper");
 	n2.put("JMSType", "Register");
@@ -202,17 +266,7 @@ public class WebPage extends   Node implements Runnable{
 	n2.put("URLFwd",l.getURL() );
 	send(n2);
     }
-    public void pause()
-    { 
-	try{ 	
-	    long tim=(long)(Math.random()*(interval/2.0)  +(interval/2.0));
-	    Env.debug(12, getClass().getName()+" waiting for "+tim+" ms.");
-	    Thread.currentThread().sleep(tim);
-	}
-	catch(Exception e){
-	}
-    }
-    
+
     /**
        sendPayload(socket)
        dumps our byte[] to the socket client..
@@ -220,16 +274,50 @@ public class WebPage extends   Node implements Runnable{
      */
     public void sendPayload(Socket s)
     {
+	/**
+	   Thanks given where due...
+
+	   HEAD /pub/GNU/guile/guile-1.4.tar.gz HTTP/1.0
+	   
+	   
+	   HTTP/1.1 200 OK
+	   Date: Sat, 14 Apr 2001 20:58:40 GMT
+	   Server: Apache/1.2.1
+	   Last-Modified: Tue, 20 Jun 2000 23:05:36 GMT
+	   ETag: "854cf-114934-394ff8c0"
+	   Content-Length: 1132852
+	   Accept-Ranges: bytes
+	   Connection: close
+	   Content-Type: application/x-tar
+	   Content-Encoding: x-gzip
+	   
+	   Connection closed by foreign host.*/
+	
 	OutputStream os   =null;
 	try {
-	    String type=(String)get("Content-Type");
-	    if(type==null)
-		type="application/octet-stream";
-	    byte[] pref=("HTTP/1.0 200 OK\nContent-Type: "+type+"\n\n").getBytes();
+	    if (!nice.containsKey("Content-Type"))
+		{
+		    nice.put("Content-Type","application/octet-stream");
+		};
+	    if (!nice.containsKey("Content-Length"))
+		{
+		    nice.put("Content-Length",""+payload.length);
+		}; 
+
+	    byte[] pref=("HTTP/1.0 200 OK\n".getBytes());
+
+	    for (int i=0;i<nice_headers.length;i++)
+		{
+		    if(containsKey(nice_headers[i]))
+			{
+			    nice.put(nice_headers[i],get(nice_headers[i]));
+			};
+		};
 	    
 	    os=new BufferedOutputStream(s.getOutputStream());
 	    os.write(pref,0,pref.length);
-	    
+	    nice.save(os);
+
 	    byte buf[]=new byte[16384];
 	    int actual=0;
 	    int avail=0;
@@ -244,9 +332,7 @@ public class WebPage extends   Node implements Runnable{
 			    os.write(buf,0,actual);
 			};
 		    }; 
-	    }while(actual!=-1);
-	 
-	   
+	    }while(actual!=-1); 
 	    os.flush();
 	    os.close();
 	    s.close();
@@ -264,11 +350,20 @@ public class WebPage extends   Node implements Runnable{
      */
     public void doIntervalJobs()
     {
-	//INHERIT ME
+	
+	if(containsKey("Clone"))
+	    {
+		String clist=(String)get("Clone");
+		remove("Clone");
+		Env.debug(500,getClass().getName()+" **Cloning for "+clist);
+		StringTokenizer st=new StringTokenizer(clist);
+		while(st.hasMoreTokens())
+		    clone_state1(st.nextToken());
+	    };
     }
     
     synchronized public void receive(MetaProperties n) {
-        Thread.currentThread().yield();
+
         if (n == null)
 	    return;
         String type;
@@ -326,12 +421,13 @@ public class WebPage extends   Node implements Runnable{
  
     public void clone_state1(String host)
     { 
-	 MetaProperties n2=Env.getLocation("http");  
+	MetaProperties n2=Env.getLocation("http");  
 	n2.put("JMSType","Deploy"); 
 	n2.put("Class",getClass().getName());
 	n2.put("Signature","java.lang.String java.lang.String java.lang.String"); 
-	n2.put("Parameters",getJMSReplyTo()+" "+Env.getLocation("http").getURL()+get("Resource")+" "+get("Resource"));//produces 3 Strings
+	n2.put("Parameters",getJMSReplyTo()+"."+host+" "+Env.getLocation("http").getURL()+get("Resource")+" "+get("Resource"));//produces 3 Strings
 	n2.put("JMSDestination", host);
 	send(n2);
+ 
     }; 
 };

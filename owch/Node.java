@@ -10,54 +10,43 @@ import java.util.*;
 
 /** 
 $Log: Node.java,v $
-Revision 1.1  2001/04/14 20:35:26  grrrrr
-Initial revision
+Revision 1.2  2001/04/25 03:35:55  grrrrr
+*** empty log message ***
+
+Revision 1.1.1.1  2001/04/14 20:35:26  grrrrr
+
 
  
 */
 abstract public class Node extends TreeMap implements MetaNode 
 {
+    protected boolean killFlag=false;
     boolean virgin;
-	LinkRegistry acl = null;
-  
-
-
+    LinkRegistry acl = null; 
+    /** this tells our (potentially clone) web page to stop
+     *  re-registering.  it will cease to spin.
+     */
+    public void dissolve (){
+	killFlag=true;     
+    }; 
 
     public boolean isParent()
     {
         return false;
-    }
-;
+    }   ;
 
+    
     public void receive(MetaProperties n)
-    {
+    { 
 
-        if(n==null)
-        {
-    	    Env.debug(5,"debug: Node.receive(Notification) has been sent a null notification");
-    	    return;
-        };
+	String JMSType=(String)n.get("JMSType"); 
 
-		String Dest=(String)n.get("JMSDestination");
-		if(Dest==null)
-		    return;
-		    //worthless to us
-
-		String JMSType=(String)n.get("JMSType");
-		if(JMSType==null)JMSType="hi there";
-
-		if(JMSType.equals("Link"))
-		{
-			String name=n.getJMSReplyTo();
-    		if(name!=null)
-    		{
-    		    update(name);
-		    }else
-		    {
-		        Env.debug(5,"debug: Node.Handler(JMSType=Link) has been sent to link a null JMSReplyTo");
-		    };
-		    return;
-		};
+	if(JMSType.equals("Link"))
+	    {
+		String name=n.getJMSReplyTo(); 
+			update(name);
+			return; 
+	    };
     }
     /**
      *  Sends an update to another Node
@@ -65,67 +54,37 @@ abstract public class Node extends TreeMap implements MetaNode
      *  @param dest JMSReplyTo
      */
 
-    public void update(String dest)
+  public void update(String dest)
     {
         MetaProperties n=new Notification();
         n.put("JMSType","Update");
-   		n.put("JMSDestination",dest);
-        String s=null;
-        String u=null;
-        String mu=Env.getLocation("owch").getURL();
-
-        Map npm=Env.getProxyCache().nameProxyMap;
-        for (Iterator e = npm.keySet().iterator() ; e.hasNext() ;)
-        {
-            s=(String)e.next();
-
-            u=((String)((Proxy)npm.get(s)).getURL());
-
-            if(u!=null)
-            if(!u.equals(mu))
-            {
-                if(!u.equals(Env.getParentNode().getURL()))
-                {
-                    n.put(s,u);
-                };
-            };
-        };
-
-        send(n);
-        Env.debug(15,"debug: Node.update() sent for "+dest);
+	n.put("JMSDestination",dest);
+	send(n);
+        Env.debug(15,getClass().getName()+"::"+getJMSReplyTo()+" Node.update() sent for "+dest);
     }
-;
-
-	String getAclEntry(String Node)
-	{
-		//in the case where a proxy offers an
-		//expiration time, there exists a mutally
-		//known hashCode on both sides to infer an accurate
-		//Expiration time.
-
-		return (String)acl.get(Node);
-	};
-
-	void setAcl(MetaProperties m)
-	{
-		//in the case where a proxy offers an
-		//expiration time, there exists a mutally
-		//known hashCode on both sides to infer an accurate
-		//Expiration time.
-
-		acl=new LinkRegistry(m);
-	};
+ 
 
     public Node()
     { 
-        put("Created","Node()"); 
+
+	
     }
  
     public Node(Map p)
     { 
 	super(p);
-        put("Created","Node(map)"); 
+	Env.getRouter("IPC").addElement(this); 
+	if(! isParent ())
+	    linkTo("default");
     }
+    public void init(Map p)
+    {
+	putAll(p);
+	Env.getRouter("IPC").addElement(this); 
+	if(! isParent ())
+	    linkTo("default");
+    }
+
     /**
      *
      * Sends a Link notification other node(s)
@@ -140,12 +99,12 @@ abstract public class Node extends TreeMap implements MetaNode
     public void linkTo(String lk)
     {
         if(lk==null)
-        {
-	    Env.debug(5, getClass().getName()+"::"+this.getJMSReplyTo()+".link invoked. routing to default"); 
-            lk=Env.getParentNode().getJMSReplyTo();
-        };
+	    {
+		Env.debug(5, getClass().getName()+"::"+this.getJMSReplyTo()+".link invoked. routing to default"); 
+		lk=Env.getParentNode().getJMSReplyTo();
+	    };
         MetaProperties n=new Notification();
-		n.put("JMSDestination",lk);
+	n.put("JMSDestination",lk);
         n.put("JMSType","Link"); 
         send(n);
     }
@@ -164,12 +123,12 @@ abstract public class Node extends TreeMap implements MetaNode
     public void unlink(String lk)
     {
         if(lk==null)
-        {
-            Env.debug(5, getClass().getName()+"::"+this.getJMSReplyTo()+".unlink invoked. routing to default");
-	    lk=Env.getParentNode().getJMSReplyTo();
-        };
+	    {
+		Env.debug(5, getClass().getName()+"::"+this.getJMSReplyTo()+".unlink invoked. routing to default");
+		lk=Env.getParentNode().getJMSReplyTo();
+	    };
         MetaProperties n=new Notification();
-		n.put("JMSDestination",lk);
+	n.put("JMSDestination",lk);
         n.put("JMSType","UnLink"); 
         send(n);
     }
@@ -193,43 +152,18 @@ abstract public class Node extends TreeMap implements MetaNode
         //see if this works out
 
         if(n.getJMSReplyTo()==null)
-        {
-            n.put("JMSReplyTo",this.getJMSReplyTo());
-        };
+	    {
+		n.put("JMSReplyTo",this.getJMSReplyTo());
+	    };
 
         d=(String)n.get("JMSDestination");
 
         if(d==null)
-        {
-            Env.debug(8,"debug: Node.Send(Notification) dropping unsendd Notification from "+this.getJMSReplyTo());
-            return;
-        };
-
-        StringTokenizer st = new StringTokenizer(d);
-        while (st.hasMoreTokens())
-        {
-            w=(String)st.nextToken();
-            Env.debug(15,"debug: Node.Send(Notification) routing from "+n.getJMSReplyTo()+" to "+w+" type "+n.get("JMSType"));
-
-            node=(Node)(Env.getNodeCache().get(w));
-
-            if(node==null)
-            {
-                if(n.getJMSReplyTo()==null)
-                  n.put("JMSReplyTo",getJMSReplyTo());
-
-                Location l=new Location();
-                l.put("Created","send()");
-                l.put("JMSReplyTo",w);
-
-                Proxy proxy=(Proxy)Env.getProxyCache().getProxy(l);
-                proxy.addQueue(n);
-
-            }else
-            {
-                node.receive(n);
-            };
-        };
+	    {
+		Env.debug(8,"debug: Node.Send(Notification) dropping unsendd Notification from "+ getJMSReplyTo());
+		return;
+	    };
+	Env.send(n);
     };
 
     public final String getURL()

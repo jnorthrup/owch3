@@ -4,8 +4,11 @@
   @author   Jim Northrup
 
   $Log: Deploy.java,v $
-  Revision 1.1  2001/04/14 20:35:26  grrrrr
-  Initial revision
+  Revision 1.2  2001/04/25 03:35:55  grrrrr
+  *** empty log message ***
+
+  Revision 1.1.1.1  2001/04/14 20:35:26  grrrrr
+
 
   Revision 1.1.1.1  2001/04/12 19:07:26  grrrrr
 
@@ -22,49 +25,47 @@ import java.util.*;
 
 public class Deploy extends Node {
     
-    public static void main(String[] args) {
-        String host = "localhost";
-        int port = 2112;
-        String JMSReplyTo = "host_"+Env.getHostname(); //one per host should be adequate..
-
-	System.out.println(args);
-        if (args.length > 2)
-            host = args[2];
-        if (args.length > 1)
-            port = Integer.valueOf(args[1]).intValue();
-        if (args.length > 0)
-            JMSReplyTo = args[0];
-        new Deploy(JMSReplyTo);
+    public static void main(String[] args) { 
+	Map m=Env.parseCmdLine(args);
 	
-	while(true){
+	if(!(m.containsKey("JMSReplyTo")))
+	    {
+		System.out.println(
+				   "\n\n******************** cmdline syntax error\n"+
+				   "Deploy Agent usage:\n\n"+
+				   "-name name\n"+
+				   "$Id: Deploy.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+				   );
+		System.exit(2);
+	    };
+	
+	Deploy d=new Deploy( m );
+	Thread t=new Thread();	 
+	t.start();
+	while(!d.killFlag)
 	    try{
-		//we go snooze now..
-		Thread.currentThread().wait();
-	    }catch(Exception e){}
-	}
 
+		t.sleep(60*60*3);
+		d.linkTo(null);
+	    }catch(Exception e)
+		{
+		}
     };
-
+   
     /*
      *  Client Constructor
      *
      *  Initializes communication
      */
 
-    public Deploy(String name) {
-	put("JMSReplyTo", name);
-        Env.getNodeCache().addNode(this);
-        linkTo("default");
 
-    } 
-    public Deploy( ) {
-	put("JMSReplyTo",  "host_"+Env.getHostname()  );
-        Env.getNodeCache().addNode(this);
-        linkTo("default"); 
+    public Deploy(Map map){ 
+	super(map);
+	
     }
-    synchronized public void receive(MetaProperties n) {
-        Thread.currentThread().yield();
-        if (n == null) return;
+    synchronized public void receive(MetaProperties n) { 
+        if (n == null)
+	    return;
         String type;
         String subJMSType;
         type = (String)n.get("JMSType"); 
@@ -83,12 +84,27 @@ public class Deploy extends Node {
         if (type != null) {
             String sender;
             String room;
-            if (type.equals("Deploy")) {
+            if (type.equals("Deploy"))
+		{deploy(n);return;};
+	    if (type.equals("DeployNode"))
+		{deployNode(n);return;};
+	    
+	}; // if type != NULL
+	super.receive(n); // superclass might know the JMSType
+    }; // end handle MetaProperties 
+    
+    
+    public void deploy(MetaProperties n)
+	 {
              
-		    String _class=(String)n.get("Class");        Env.debug(500,"Deplying::Class "+_class);
-		    String path=(String)n.get("Path");	         Env.debug(500,"Deplying::Path "+ path);
-		    String parm=(String)n.get("Parameters");     Env.debug(500,"Deplying::Parameters "+  parm);
-		    String signature=(String)n.get("Signature"); Env.debug(500,"Deplying::Signature "+   signature);
+		    String _class=(String)n.get("Class");        
+		    Env.debug(45,"Deplying::Class "+_class);
+		    String path=(String)n.get("Path");	         
+		    Env.debug(45,"Deplying::Path "+ path);
+		    String parm=(String)n.get("Parameters");     
+		    Env.debug(45,"Deplying::Parameters "+  parm);
+		    String signature=(String)n.get("Signature");
+		    Env.debug(45,"Deplying::Signature "+   signature);
 		    int i;
 		    List tokens;
 		  
@@ -143,14 +159,14 @@ public class Deploy extends Node {
 		    
 		    /*this creates a new Object*/
 		    loader.loadClass(_class).getConstructor(sig_arr).newInstance(parm_arr);
-	 
-		}
-		catch(Exception e)
-		    {
-			e.printStackTrace();
-		    }
-	    }; // if type != NULL
-	    super.receive(n); // superclass might know the JMSType
-	}; // end handle MetaProperties 
-    };
+		    return;	}
+		     catch(Exception e)
+			 {
+			     e.printStackTrace();
+			 }
+	 }
+    public void deployNode(MetaProperties n)
+    {
+	
+    }
 }

@@ -112,14 +112,14 @@ public class PipeSocket {
 		    } catch (java.io.InterruptedIOException e){
 			try{os.flush(); }catch (IOException e1) {};
 		    } catch (InterruptedException e) {
-			//close something...
-			pipe.getClass().getMethod(
-						  "close",
-						  new Class[] { }).invoke(pipe,
-									  new Object[]{ });
-			//interrupt our sister thread... which
-			//should be asleep	
-
+			try{	//close something...
+			    pipe.getClass().getMethod(
+						      "close",
+						      new Class[] { }).invoke(pipe,
+									      new Object[]{ });
+			    //interrupt our sister thread... which
+			    //should be asleep	
+			}catch(Exception e1){};
 			Env.debug(500, name + " closing: " + e.getMessage()); 
 		    } catch (Exception e) {
 			Env.debug(500, name + " Error - - closing: " + e.getMessage());

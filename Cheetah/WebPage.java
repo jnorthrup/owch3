@@ -4,6 +4,9 @@
   @author   Jim Northrup
 
   $Log: WebPage.java,v $
+  Revision 1.1  2001/04/26 03:06:13  grrrrr
+  Initial revision
+
   Revision 1.2  2001/04/25 03:35:55  grrrrr
   *** empty log message ***
 
@@ -45,7 +48,7 @@ public class WebPage extends   Node implements Runnable{
 				   "[-Clone 'host1[ ..hostn]']\n"+
 				   "[-Content-Type 'application/msword']\n"+
 				   "[-Clone 'host1[ ..hostn]']\n"+
-				   "$Id: WebPage.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+				   "$Id: WebPage.java,v 1.1 2001/04/26 03:06:13 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };

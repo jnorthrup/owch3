@@ -10,6 +10,9 @@ import java.util.*;
 
 /** 
 $Log: Node.java,v $
+Revision 1.1  2001/04/26 03:06:15  grrrrr
+Initial revision
+
 Revision 1.2  2001/04/25 03:35:55  grrrrr
 *** empty log message ***
 

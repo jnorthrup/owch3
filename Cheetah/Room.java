@@ -32,7 +32,7 @@ public class Room extends Node implements Runnable
 				   "\n\n******************** cmdline syntax error\n"+
 				   "Room Agent usage:\n\n"+
 				   "-name name\n"+  
-				   "$Id: Room.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+				   "$Id: Room.java,v 1.1 2001/04/26 03:06:12 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };

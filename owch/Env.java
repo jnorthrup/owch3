@@ -216,7 +216,7 @@ public final class Env extends Thread
 			   "-SocketCount- Multiple dynamic sockets for high load?\n"+
 			   "-debugLevel - controls how much scroll is displayed\n"+
 			   "-ParentURL  - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n"+
-			   " this Edition of the parser: $Id: Env.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+			   " this Edition of the parser: $Id: Env.java,v 1.1 2001/04/26 03:06:15 grrrrr Exp $\n"
 			   );
 	   
 	System.exit(1);    return ;

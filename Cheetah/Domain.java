@@ -26,7 +26,7 @@ extends Node
 				   "Domain Agent usage:\n\n"+
 				   "-name name\n"+ 
 				   "-HostPort port\n"+ 
-				   "$Id: Domain.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+				   "$Id: Domain.java,v 1.1 2001/04/26 03:06:12 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };

@@ -4,6 +4,9 @@
   @author   Jim Northrup
 
   $Log: Deploy.java,v $
+  Revision 1.1  2001/04/26 03:06:12  grrrrr
+  Initial revision
+
   Revision 1.2  2001/04/25 03:35:55  grrrrr
   *** empty log message ***
 
@@ -34,7 +37,7 @@ public class Deploy extends Node {
 				   "\n\n******************** cmdline syntax error\n"+
 				   "Deploy Agent usage:\n\n"+
 				   "-name name\n"+
-				   "$Id: Deploy.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+				   "$Id: Deploy.java,v 1.1 2001/04/26 03:06:12 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };

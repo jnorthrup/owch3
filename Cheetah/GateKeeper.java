@@ -32,7 +32,7 @@ public class GateKeeper extends Node
 				   "GateKeeper Agent usage:\n\n"+
 				   "-name name\n"+ 
 				   "-HostPort port\n"+ 
-				   "$Id: GateKeeper.java,v 1.2 2001/04/25 03:35:55 grrrrr Exp $\n"
+				   "$Id: GateKeeper.java,v 1.1 2001/04/26 03:06:12 grrrrr Exp $\n"
 				   );
 		System.exit(2);
 	    };

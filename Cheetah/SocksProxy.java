@@ -49,7 +49,7 @@ public class SocksProxy extends Node implements Runnable {
                 "[-SocksPort (int)port]\n" +
                 "[-Clone 'host1[ ..hostn]']\n" +
                 "[-Deploy 'host1[ ..hostn]']\n" +
-                "$Id: SocksProxy.java,v 1.1 2001/09/30 05:47:42 grrrrr Exp $\n" );
+                "$Id: SocksProxy.java,v 1.2 2001/09/30 23:01:03 grrrrr Exp $\n" );
             System.exit( 2 );
         };
         SocketProxy d = new SocketProxy( m );
@@ -186,11 +186,11 @@ public class SocksProxy extends Node implements Runnable {
                     new byte[] {
                         ver, nmethods
                     } );
-                sockshost.getOutputStream().write( methods );
+                socks.getOutputStream().write( methods );
 
                 byte resp[] = new byte[ 2 ];
 
-                sockshost.getInputStream().read();
+                socks.getInputStream().read();
 
                 if ( !( resp[ 0 ] == 5 && resp[ 1 ] == 0 ) ) {
                     Env.debug( 2, this.getClass().getName() +
@@ -200,7 +200,7 @@ public class SocksProxy extends Node implements Runnable {
                     return;
                 };
 
-                this.send_request( socks )
+                this.send_request( socks );
                 if ( this.handle_response( socks ) ) {
                     ps.connectTarget( socks );
                     ps.spin();
@@ -374,6 +374,9 @@ VER <TH>REP<TH> RSV <TH> ATYP <TH> BND.ADDR <TH> BND.PORT </TR>
     }
 }
 //$Log: SocksProxy.java,v $
+//Revision 1.2  2001/09/30 23:01:03  grrrrr
+//IRC agent added
+//
 //Revision 1.1  2001/09/30 05:47:42  grrrrr
 //socks proxy written but untested
 //

@@ -18,6 +18,7 @@ agents=[
 
 import os
 for i in agents:
-    #cmdline="xterm  -title "+`i[0]`+" -sl 5000 -sb -rightbar -e "+ "/opt/jdk/bin/java -classpath . "+i[1] +"&" 
-    cmdline='cmd /c start \"owch2: '+ i[0]+'\" java -classpath . '+i[1] +"&" 
+    cmdline="java >>/tmp/Agent."+i[0]+".log -classpath . "+i[1] +"&"+"xterm  -title "+`i[0]`+" -sl 5000 -sb -rightbar -e "+ "tail -f /tmp/Agent."+i[0]+".log&" 
+    #cmdline='cmd /c start \"owch2: '+ i[0]+'\" java -classpath . '+i[1] +"&" 
     os.system(cmdline) 
+    

@@ -21,38 +21,8 @@ import java.net.*;
  * waiting pipeline
  */
 public class GateKeeper extends Node 
-{
-    /** references URL prefix-> NodeName */
-    private WeakHashMap URLNodeMap = new WeakHashMap(384);
-
-    /** URLSet is exported frequently after a change. */
-    private Object[] arrayCache;
-
-    /** when URLSet next used will rewrite
-     * cacheArray
-     */
-    private boolean cacheInvalid = true;
- 
-    /** this is used to store the URLS in order of length */
-    private SortedSet URLSet =
-	new TreeSet( /** sorts strings based on length */
-		    new Comparator() {
-			    /** Compares its two arguments for order.
-			     * In this case order is defined by strlen
-			     * and then by content sorting.*/
-			    public int compare(Object o1, Object o2) {
-				int res= o1.toString().length() - o2.toString().length();
-				if(res==0)
-				    res=o1.toString().compareTo(o2.toString());//equal length objects are then copmred as strings
-				return res;
-			    };
-			    /** Indicates whether some other object is
-			     * "equal to" this Comparator. */
-			    public boolean equals(Object obj) {
-				return true;
-			    };
-			}); //holds the refetrence to url strings
-
+{ 
+    
     /**
      * @param to recipient owch node name
      * @param arg the text of the message
@@ -66,13 +36,23 @@ public class GateKeeper extends Node
         
         Env.debug(8, "GateKeeper - receive type = " + type);
         if (type != null) {
-            String sender;
-            String room;
+            String sender; 
             if (type.equals("Register")) {
                 try {
 		    String URLSpec=notificationIn.get("URLSpec").toString();
 		    notificationIn.put("URL",notificationIn.get("URLFwd"));
-		    registerURLSpec(URLSpec,notificationIn);
+		    Env.getHTTPRegistry().registerURLSpec(URLSpec,notificationIn);
+		    return;
+                }
+                catch (Exception e) {
+                };
+                return;
+            }  ;
+	    if (type.equals("UnRegister")) {
+                try {
+		    String URLSpec=notificationIn.get("URLSpec").toString();
+		    notificationIn.put("URL",notificationIn.get("URLFwd"));
+		    Env.getHTTPRegistry().unregisterURLSpec(URLSpec );
 		    return;
                 }
                 catch (Exception e) {
@@ -82,58 +62,19 @@ public class GateKeeper extends Node
         }; // if type != NULL
         super.receive( notificationIn); // superclass might know the JMSType
     };
+    
+    /**
+       this has the effect of taking over the command of the http
+       service on the agent host and handling messages to marshal HTTP
+       registrations
 
+     */
     public GateKeeper(int port,String name,String externalHost,int  threads) {
-
-	ListenerCache lc=new ListenerCache(); 
-	try{
-	    HTTPServer extSrv=new HTTPServer(port,threads) 
-		{
-		    public void dispatchRequest(Socket s,MetaProperties n)
-		    {
-			String resource=n.get ("Resource").toString();
-			String method  =n.get ("Method"  ).toString();
-			n.put("Proxy-Request",n.get("Request"));
-			
-			//1 check resource for an exact match in our WeakRefMap
-			
-			MetaNode l;
-			
-			l=(MetaNode)URLNodeMap.get(resource);
-			
-			
-			if(l==null)
-			    {
-				int len=resource.length();   
-			 
-				if(cacheInvalid)
-				    reCache();
-			 
-				for(int i=arrayCache.length-1 ;i>=0;i--)
-				    {
-					String temp=arrayCache[i].toString();
-					Env.debug(500,"Pattern test on "+resource+":"+temp);
-					if(temp.length()>len)
-					    continue;
-					if(resource.startsWith(temp)){
-					    l=(MetaNode)URLNodeMap.get(temp);
-					    Env.debug(500,"Pattern match on "+resource+":"+temp);
-					}
-				    } 
-			    }
-			if(l!=null)
-			    {
-				//3 create PipeConnection to registered location
-				Env.debug(15,"GateKeeper::: creating  PipeSocket for   "+n.get("Resource").toString());
-				PipeSocket p= new PipeSocket (s,l,n);
-				return;
-			    }; 
-			//4 else super.sendFile 
-			super.dispatchRequest(s,n);
-			return;
-		    }
-		};  
-	    
+ 	try{
+	    ListenerCache lc=new ListenerCache(); 
+	    lc.put(Env.getHTTPFactory().create(port,threads)); 
+	    Env.getProtocolCache().put("http",lc);
+	    Env.setHostname(externalHost);
 	    put("JMSReplyTo",   name);
 	    put("ExternalHost", externalHost);
 	    put("threads",      new Integer(threads));
@@ -165,37 +106,8 @@ public class GateKeeper extends Node
             name = args[2];
 	
 	if (args.length > 3)
-            threads = Integer.valueOf(args[3]).intValue(); 
-	
+            threads = Integer.valueOf(args[3]).intValue();  
         GateKeeper g=new GateKeeper(port,name,host,threads);
     }
-    
-    /** register the beginning of a tree */
-    public void registerURLSpec(String URLSpec, MetaNode l) {
-	
-     	synchronized(URLSet){ 
-	    URLSet.add(URLSpec);
-	    cacheInvalid=true;
-	};
-        URLNodeMap.put(URLSpec, l);
-	Env.debug(15,"URL Registration:" + URLSpec +"@"+l.getJMSReplyTo( )+" -- "+l.getURL());
- 
-    };
-    public void unregisterURLSpec(String URLSpec ) {
-	synchronized(URLSet){      
-	    URLSet.remove(URLSpec); 
-	    cacheInvalid=true
-		;	};
-	Env.debug(15,"URL DeRegistration:" + URLSpec );
-	
-    };
-    public void reCache(){
-	Env.debug(150,"GateKeeper recache starting..");
-	synchronized(URLSet){
-	    arrayCache=URLSet.toArray();
-	    cacheInvalid=false;
-	    
-	};
-	Env.debug(150,"GateKeeper recache fin..");	
-    };
+     
 };

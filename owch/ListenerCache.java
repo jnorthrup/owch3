@@ -7,23 +7,22 @@ import java.util.*;
  * ListenerCache
  *
  */
-public class ListenerCache implements java.lang.Runnable
+public class ListenerCache   implements java.lang.Runnable
 {
-
-      HashMap cache=new HashMap(7);
+    
+    Map cache=new TreeMap();
     //stores PortNumber->ListenerReference
-      Iterator enumCycle=null;
-      boolean  enumFlag;
-
+    Iterator enumCycle=null;
+    boolean  enumFlag;
+    
     public Location getLocation()
     {
-	//Seems done
-
-	Integer key;
+	//Seems done 
 	ListenerReference lr=getNextInLine();
-
+	
 	//do the work of taking ls and making a Location for it
 	return Location.create(lr);
+
     };
 
     //for UDP ListenerCaches this can be used to stripe the output ports of a protocol
@@ -53,13 +52,15 @@ public class ListenerCache implements java.lang.Runnable
     };
 
     public void put(ListenerReference l)
-    {
+    {	
+ 
 	cache.put(new Integer(l.getServer().getLocalPort()),l);
+	
 	if(l.getExpiration()<lowscore)
 	    resetExpire();
 	enumFlag=false;
     }
-
+    
     public ListenerReference remove(int port)
     {
 	ListenerReference l=(ListenerReference)cache.remove( new Integer(port) );
@@ -68,7 +69,7 @@ public class ListenerCache implements java.lang.Runnable
 	enumFlag=false;
 	return l;
     };
-
+    
     public ListenerCache()
     {
 	Thread t=new Thread(this,"ListenerCache");

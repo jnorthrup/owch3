@@ -3,7 +3,7 @@ package owch;
 
 import java.util.*;
 
-public class NodeCache
+public class NodeCache extends Hashtable
 {
     public final void addNode(Node n)
     {
@@ -22,7 +22,7 @@ public class NodeCache
         };
 
         Env.debug(10,"debug: NodeCache.addNode("+s+")");
-        nameNodeMap.put(s,n);
+        this.put(s,n);
 
         if(n.isParent()==true)
         {
@@ -42,18 +42,17 @@ public class NodeCache
  
     public void remove(String n)
     {
-        nameNodeMap.remove(n);
+        this.remove(n);
     };
-
-    Hashtable nameNodeMap;
+ 
 
     NodeCache()
     {
-        nameNodeMap=new Hashtable(10, 0.75f);
+      super(10, 0.75f);
     }
 
     Node getNode(String s)
     {
-        return (Node)nameNodeMap.get(s);
+        return (Node)this.get(s);
     };
 };

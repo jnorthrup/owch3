@@ -4,8 +4,11 @@
   @author   Jim Northrup
 
   $Log: Deploy.java,v $
-  Revision 1.1  2001/04/12 19:07:26  grrrrr
+  Revision 1.1  2001/04/14 20:35:26  grrrrr
   Initial revision
+
+  Revision 1.1.1.1  2001/04/12 19:07:26  grrrrr
+
 
 */
 
@@ -17,7 +20,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class Deploy extends   Node {
+public class Deploy extends Node {
     
     public static void main(String[] args) {
         String host = "localhost";
@@ -32,6 +35,14 @@ public class Deploy extends   Node {
         if (args.length > 0)
             JMSReplyTo = args[0];
         new Deploy(JMSReplyTo);
+	
+	while(true){
+	    try{
+		//we go snooze now..
+		Thread.currentThread().wait();
+	    }catch(Exception e){}
+	}
+
     };
 
     /*
@@ -73,72 +84,73 @@ public class Deploy extends   Node {
             String sender;
             String room;
             if (type.equals("Deploy")) {
-                try {
+             
+		    String _class=(String)n.get("Class");        Env.debug(500,"Deplying::Class "+_class);
+		    String path=(String)n.get("Path");	         Env.debug(500,"Deplying::Path "+ path);
+		    String parm=(String)n.get("Parameters");     Env.debug(500,"Deplying::Parameters "+  parm);
+		    String signature=(String)n.get("Signature"); Env.debug(500,"Deplying::Signature "+   signature);
+		    int i;
+		    List tokens;
+		  
+		    //we use a classloader based on our reletive origin..
+		    ClassLoader loader=getClass().getClassLoader();
 		    
-		    
-		    String _class=n.get("Class").toString();
-		    String path=n.get("Path").toString();
-		    String parm=n.get("Parameters").toString();
-		    String signature=n.get("Signature").toString();
+
+		    String[]tok_arr=new String[]{
+			path,parm,signature
+		    };
+		    Object[][] res_arr=new Object[tok_arr.length][];
 		    
 		    StringTokenizer st;
-		    List l;
-		    
-		    st=	new StringTokenizer(parm);
-		    l=new ArrayList();
-		    while (st.hasMoreTokens()) {
-			l.add(new URL(st.nextToken()));
-		    };
-		    List parms=l;
-		    Class c;
-		    if (!path.equals("default")){
-			st= new StringTokenizer(path);
-			l=new ArrayList();
-			while (st.hasMoreTokens()) {
-			    l.add(new URL(st.nextToken()));
-			};
-			URL[]ul=new URL[l.size()]; 
-			System.arraycopy(l.toArray(), 0, ul, 0,ul.length); 
-			URL p1 = new URL(n.get("Path").toString());
-			URLClassLoader loader = new URLClassLoader( ul );
-			c=loader.loadClass(_class);
-		    }
-		    else//default path case -- simple Cheetah  agents prolly
+		    for(  i=0;i<tok_arr.length;i++)
 			{
-			    c=Class.forName(_class);
-			}
-		    if(parm.equals(""))
-			{
-			    c.newInstance();
-			}else
-			    {
-				Class []sig;
-				if (signature==null)
-				    sig=new Class[]{
-					Object[].class
-				    };
-				else{
-				    //parse Signature
-				    
-				    st= new StringTokenizer(signature);
-				    l=new ArrayList();
-
-				    while (st.hasMoreTokens()) {
-					l.add(Class.forName(st.nextToken()));
-				    };
-				    sig=new Class[l.size()]; 
-				    System.arraycopy(l.toArray(), 0, sig, 0,sig.length);   
-				};
-				c.getConstructor(sig).newInstance(parms.toArray());
+			    String temp_str=tok_arr[i];
+			    tokens=new ArrayList();
+			    if(temp_str==null ){
+				Env.debug(500,"Deploy tokenizing nullinating  "+i);
+				temp_str="";
 			    }
-                }
-	    catch (Exception e) {
-		Env.debug(10,getClass().getName()+" recv failure "+e.getMessage());
+			    st=new StringTokenizer(temp_str);
+				
+			    while(st.hasMoreElements())
+				tokens.add(st.nextElement());
+
+			    res_arr[i]=tokens.toArray();
+			    Env.debug(500,"Deploy arr"+i+" found "+ res_arr[i].length+" tokens");
+			}
+			
+		    URL   [] path_arr= new URL[res_arr[0].length];
+		    Object[] parm_arr= new Object[res_arr[1].length];
+		    Class [] sig_arr = new Class[res_arr[2].length]; 
 		    
-	    };
-		return;
-	    }
-	}; // if type != NULL
-	super.receive(n); // superclass might know the JMSType
-    }; // end handle MetaProperties 
-};
+		     try { 
+		    //path is URL's, gotta do a loop to instantiate URL's... 
+		    for (i=0;i<res_arr[0].length;i++) 
+			   path_arr[i]=new URL((String)res_arr[0][i]);
+		 
+
+		    //parms are strings, easy copy there...
+		    System.arraycopy(res_arr[1],0, parm_arr,0,res_arr[1].length);
+		    
+		    //determine if our loader is based on URLS....
+		    if( path_arr.length!=0)//if we have URL's we need to make a new loader that adds these URLS to our path
+			loader=new URLClassLoader(path_arr,loader);
+		    
+		    //user our loader to populate sig_arr with a Class[]
+		    for (i=0;i<res_arr[2].length;i++) 
+			    sig_arr[i]=loader.loadClass((String)res_arr[2][i]);
+		 
+		    
+		    /*this creates a new Object*/
+		    loader.loadClass(_class).getConstructor(sig_arr).newInstance(parm_arr);
+	 
+		}
+		catch(Exception e)
+		    {
+			e.printStackTrace();
+		    }
+	    }; // if type != NULL
+	    super.receive(n); // superclass might know the JMSType
+	}; // end handle MetaProperties 
+    };
+}

@@ -63,6 +63,12 @@ public class Tester extends Node implements Runnable {
 	n.put("URLFwd", Env.getProtocolCache().getLocation("http").getURL()); 
         send(n);
 
+	n = new Notification();
+        n.put("JMSDestination", "Quick");
+        n.put("JMSType", "Clone");
+	n.put("Host", "host_lx");
+        send(n);
+
         while (true) {
             try {
                 Thread.currentThread().sleep(200000);
@@ -103,8 +109,7 @@ public class Tester extends Node implements Runnable {
                 catch (Exception e) {
                 };
                 return;
-            }; // end class
-
+            }; // end class 
 	}; // if type != NULL
 	super.receive(n); // superclass might know the JMSType
     }; // end handle MetaProperties

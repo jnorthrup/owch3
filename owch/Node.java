@@ -5,40 +5,15 @@ import java.io.*;
 import java.util.*;
 
 /*
-http://www.iconcomp.com/papers/comp/comp_41.html
+  http://www.iconcomp.com/papers/comp/comp_41.html
 */
 
-/*
-<HTML>
-<HEAD>
-<TITLE> Design Pattern [17]: Recursive Composite</TITLE>
-</HEAD>
-<BODY BGCOLOR=#ffffff>
-<A NAME=HEADING40>
-<A HREF="comp_40.html"><IMG SRC="prev_1.gif" ALIGN=TOP></A><A HREF="comp_1.html"><IMG SRC="top_1.gif" ALIGN=TOP></A><A HREF="comp_42.html"><IMG SRC="next_1.gif" ALIGN=TOP></A><P>
-Section 2:  A Framework<P>
-<H1>Design Pattern [17]: Recursive Composite<P></H1>
-<HR>
- Problem:<P>
-<UL>
-<LI>An object may consist of, or contain, other very similar objects<P>
-<LI>This containment is sometimes limited artificially to just 2 or 3 levels<P>
-<LI>In any case, modeling and designing based on this could be too restrictive<BR><IMG SRC="comp_AFrame_103.gif"><BR>
-<P>
-</UL>
- Solution:<P>
-<UL>
-<LI>Model and design using a Recursive Composite<P>
-<LI>Minimize interface differences between atomic and composite cases<P>
-<LI>Consider Constructor-Enforced Semantics [41] for different composites<P>
-</UL>
+/** 
+$Log: Node.java,v $
+Revision 1.1  2001/04/14 20:35:26  grrrrr
+Initial revision
 
-<HR>
-<ADDRESS>A Comparison of OOA and OOD Methods - Copyright 1995 <A HREF="http://www.iconcomp.com">ICON Computing, Inc.</A></ADDRESS>
-<HR>
-<A HREF="comp_40.html"><IMG SRC="prev_1.gif" ALIGN=TOP></A><A HREF="comp_1.html"><IMG SRC="top_1.gif" ALIGN=TOP></A><A HREF="comp_42.html"><IMG SRC="next_1.gif" ALIGN=TOP></A><P>
-</BODY>
-</HTML>
+ 
 */
 abstract public class Node extends TreeMap implements MetaNode 
 {
@@ -166,12 +141,36 @@ abstract public class Node extends TreeMap implements MetaNode
     {
         if(lk==null)
         {
-            Env.debug(5,"debug: (Node)"+this.getJMSReplyTo()+".linkTo(null) invoked. routing to default");
-            lk="default";
+	    Env.debug(5, getClass().getName()+"::"+this.getJMSReplyTo()+".link invoked. routing to default"); 
+            lk=Env.getParentNode().getJMSReplyTo();
         };
         MetaProperties n=new Notification();
 		n.put("JMSDestination",lk);
         n.put("JMSType","Link"); 
+        send(n);
+    }
+ 
+    /**
+     *
+     * Sends a Link notification other node(s)
+     *
+     * intended to establish direct socket communication.
+     *
+     * @param lk node(s) to link to
+     *
+     */
+
+
+    public void unlink(String lk)
+    {
+        if(lk==null)
+        {
+            Env.debug(5, getClass().getName()+"::"+this.getJMSReplyTo()+".unlink invoked. routing to default");
+	    lk=Env.getParentNode().getJMSReplyTo();
+        };
+        MetaProperties n=new Notification();
+		n.put("JMSDestination",lk);
+        n.put("JMSType","UnLink"); 
         send(n);
     }
  
@@ -212,7 +211,7 @@ abstract public class Node extends TreeMap implements MetaNode
             w=(String)st.nextToken();
             Env.debug(15,"debug: Node.Send(Notification) routing from "+n.getJMSReplyTo()+" to "+w+" type "+n.get("JMSType"));
 
-            node=(Node)(Env.getNodeCache().nameNodeMap.get(w));
+            node=(Node)(Env.getNodeCache().get(w));
 
             if(node==null)
             {

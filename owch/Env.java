@@ -68,7 +68,7 @@ import java.net.*;
 
 public final class Env extends Thread
 { 
-    private final static int debugLevel=500;
+    private static int debugLevel=500;
     private static DatagramDispatch    datagramDispatch;
     private static DatagramFactory  socketFactory;
     private static DebugTimerOutputStream debugTimerOutputStream=new DebugTimerOutputStream(System.out);
@@ -81,6 +81,8 @@ public final class Env extends Thread
     private static boolean parentFlag=false;
     private static boolean alive=false;
     private static java.util.Map formatCache;
+    private static HTTPRegistry webRegistry; 
+
     /**
      * returns a MetaProperties suitable for parent routing.
      *
@@ -89,6 +91,64 @@ public final class Env extends Thread
     //TODO:
     //MetaProperties parentNode;
     private static String host=null;
+    
+    static public Map parseCmdLine(String args[]){
+	try{
+	    Notification map=new Notification();
+	    
+	    //harsh but effective, asume everything is key value pairs.
+	    for(int i=0;i<(args.length-args.length%2);i+=2)
+		{
+		    if(!args[i].startsWith("-"))
+			throw new Exception("Params must all start with -");
+		    
+		    String key=args[i].substring(1);
+		    String val=args[i+1];
+		    
+		    if(key.equals("name"))
+			key="JMSReplyTo";
+		    
+		    //intercept a few Env specific keywords...
+		    if(key.equals("Hostname"))
+			setHostname(val);
+		    
+		    if(key.equals("debugLevel"))
+			setDebugLevel(Integer.decode(val).intValue());
+		    
+		    if(key.equals("ParentURL"))
+			{
+			    Location l=new Location((Location)getParentNode());
+			    l.put("URL",val);
+			    setParentNode(l);
+			    continue;
+			};
+		    
+		    if(key.equals("config"))
+			{
+			    FileInputStream is=new FileInputStream(val);
+			    map.load(is);
+			    continue;
+			};
+		    map.put(key,val);
+		}
+	    return map;
+	}
+	catch(Exception e){
+	    System.out.println("All cmdline params are of the pairs form -key 'Value'\n\n "+
+			       "valid environmental cmdline options are typically:\n"+
+			       "-config     - config file[s] to use having (RFC822) pairs of Key: Value\n"+
+			       "-JMSReplyTo - Name of agent\n"+
+			       "-name       - shorthand for JMSReplyTo\n"+
+			       "-Hostname   - a hostname or ip address to advertise in the case of several NIC's\n"+
+			       "-debugLevel - controls how much scroll is displayed\n"+
+			       "-ParentURL  - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n"+
+			       "\n\nthis Edition of the parser: $Id: Env.java,v 1.1 2001/04/14 20:35:27 grrrrr Exp $\n"
+			       );
+	    e.printStackTrace();
+	    System.exit(1);
+	};
+	return null;
+    }
 
     static public String getHostname()
     {
@@ -103,6 +163,20 @@ public final class Env extends Thread
 	return host;
 	
     }
+    
+    static public void  setHTTPRegistry( HTTPRegistry h)
+    {
+	webRegistry=h;
+    };
+
+    static public  HTTPRegistry getHTTPRegistry  ()
+    {
+	
+	if ( webRegistry==null){
+	    webRegistry=new  HTTPRegistry();
+	} 
+	return  webRegistry; 
+    };
     
     static public void setHostname(String h)
     {
@@ -196,11 +270,11 @@ public final class Env extends Thread
      *
      * @param i debug level
      *
-     *
-     public final void setDebugLevel(int i)
-     {
-     debugLevel=i;
-     };*/
+     **/
+    public static  final void setDebugLevel(int i) 
+    {
+	debugLevel=i;
+    };
 
     /**
      * Debug Level Accessor

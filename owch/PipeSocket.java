@@ -99,7 +99,7 @@ public class PipeSocket
 	    os=o;
 	    term=terminate;
 	    label=name;
-	    new Thread(this,label).start();
+	    new Thread(tg,this,label).start();
 	};
 	/**worker thread 
 	 */

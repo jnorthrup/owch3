@@ -1,0 +1,43 @@
+
+Some historical notes and trivia...
+
+None of the original use cases or chat client code have been retained
+in favor of a clean break from the java 1.0 era that this was designed
+around.  Now is the chance to engineer something really great with a
+parsimonious code-base and protocol.
+
+This project was originally part of the Collaborative Healthcare
+Environment (CHE) project at OSD/Tricare in 1996 which was a collaboration and
+therafter competitor with Miter's Collaborative Virtual Workstation
+(CVW on Sourceforge).
+
+None of the original documentation, white papers, project status
+reports, or requirements documents remain.  None of the previous
+software staff has been in touch.  This code had at one time been
+worked on under no less than 5 contract monies but may be closer to a
+dozen.  This is the revival of an early 1st version development
+snapshot.  3 applications and source trees were at least prototyped
+with different enhancements such as domain gateways, applet delivery,
+and pre-xml era html forms and tag parsing for use in push-model agent
+transactions.
+
+Additionally a fellow by the name of Patrick Hollins built and
+integrated a corresponding file-store called soops and poops in a
+package called oops.  This used sockets to request files from a secure
+mangled remote file tree.
+
+A visual basic embedded browser was written with a Cheetah motif and
+the source code was promptly lost the following day.  This would open
+up MS-Windows explorer folders with poops files and web pages guided
+by the owch-chat interactions of the users of the CHE system.  Users
+could trade and persist documents seamlessly in a windows environment
+using jdk 1.0 as the centerpeice application. Don't ever try this at
+home.  (The modern day equivalent of CHE's architecture turns out to be
+ICQ-- A thin universal client with just enough smarts to spawn other
+apps.)
+
+The test plan originally propsed for the owch kernel was rejected time
+& time again by the funding parties.  Basically it was the goal to
+make the namespace routing robust enough to survive in warfare
+settings, and we requested a hand grenade be used in a field
+simulation of network stress.

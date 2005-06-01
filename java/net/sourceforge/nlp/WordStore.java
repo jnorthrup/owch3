@@ -1,20 +1,21 @@
 package net.sourceforge.nlp;
 
 import java.io.*;
-import java.util.*;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class WordStore extends VerbKnowledge {
-    private Map wordMap = new TreeMap();
+    private Map<String, Occurence> wordMap = new TreeMap<String, Occurence>();
 
     protected WordStore(String InputObjResource) throws Exception {
         read(InputObjResource);
     }
 
-    public Map getWordMap() {
+    public Map<String, Occurence> getWordMap() {
         return wordMap;
     }
 
-    public void setWordMap(Map wordMap) {
+    public void setWordMap(Map<String, Occurence> wordMap) {
         this.wordMap = wordMap;
     }
 
@@ -24,15 +25,13 @@ public class WordStore extends VerbKnowledge {
 
         Object[] w = (Object[])
                 is.readObject();
-        metaClause = (Map) w[0];
-        clauseVerb = (Map) w[1];
+        metaClause = (Map<String, String>) w[0];
+        clauseVerb = (Map<String, Object[]>) w[1];
         if (w.length < 3) {
-            wordMap = (Map) new TreeMap();
+            wordMap = (Map<String, Occurence>) new TreeMap<String, Occurence>();
+        } else {
+            wordMap = (Map<String, Occurence>) w[2];
         }
-        else {
-            wordMap = (Map) w[2];
-        }
-        ;
 
     }
 
@@ -47,8 +46,9 @@ public class WordStore extends VerbKnowledge {
             };
 
             os.writeObject(w);
-        }
-        catch (Exception e) {
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

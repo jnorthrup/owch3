@@ -1,18 +1,22 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.idyuts.IOLayer.*;
-
 import java.io.*;
-import java.lang.ref.*;
-import java.net.*;
-import java.util.*;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
- * @version $Id: NotificationFactory.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $
  * @author James Northrup
+ * @version $Id: NotificationFactory.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 final public class NotificationFactory implements Runnable, DatagramPacketFilter, StreamFilter {
-
     private Set recv = new HashSet();
     private ReferenceQueue q = new ReferenceQueue();
     private DatagramSocket ds;
@@ -35,8 +39,9 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
         String s = (String) n.get("ACK"); //priority notification
         //check for ACK
         if (s != null) {
-            if (Env.logDebug) Env.log(13, "NotificationFactory.handleStream() ACK Notification: " + s);
-            Env.getowchDispatch().remove(s);
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(13, "NotificationFactory.handleStream() ACK Notification: " + s);
+            Env.getInstance().getowchDispatch().remove(s);
             return false;
         }
         ;
@@ -56,7 +61,7 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
             //create the datagram
             DatagramPacket p = new DatagramPacket(buf, buf.length, dest, url.getPort());
             //grab an owch listener and send with it
-            //DatagramSocket ds = (DatagramSocket)Env.getProtocolCache().getListenerCache("owch").getNextInLine().getServer();
+            //DatagramSocket ds = (DatagramSocket)Env.getInstance().getProtocolCache().getListenerCache("owch").getNextInLine().getServer();
             ds.send(p);
             return true;
         }
@@ -66,10 +71,12 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
     public final void routePacket(MetaProperties n) {
         String s = (String) n.get("JMSMessageID");
         if (!recognize(n, s)) {
-            Env.send(n);
+            Env.getInstance().send(n);
         }
         ;
-    };
+    }
+
+    ;
 
     public boolean recognize(MetaProperties n, String s) {
         boolean res = false;
@@ -92,7 +99,9 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
         }
         ;
         return res;
-    };
+    }
+
+    ;
 
 
     public NotificationFactory() throws SocketException {
@@ -100,7 +109,9 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
         Thread t = new Thread();
         t.setDaemon(true);
         t.start();
-    };
+    }
+
+    ;
 
     public void recv(DatagramPacket p) {
         ByteArrayInputStream istream = new ByteArrayInputStream(p.getData());
@@ -112,17 +123,20 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
             e.printStackTrace();
         }
         ;
-    };
+    }
+
+    ;
 
     public void run() {
         try {
             Reference ref;
-            while (!Env.shutdown) {
+            while (!Env.getInstance().shutdown) {
                 ref = q.remove(3000L); //3 seconds
                 if (ref != null) {
                     synchronized (recv) {
                         recv.remove(ref);
-                        if (Env.logDebug) Env.log(40, getClass().getName() + "::collecting softref ---- ");
+                        if (Env.getInstance().logDebug)
+                            Env.getInstance().log(40, getClass().getName() + "::collecting softref ---- ");
                     }
                 }
                 ;
@@ -132,7 +146,9 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
             e.printStackTrace();
         }
         ;
-    };
+    }
+
+    ;
 }
 
 

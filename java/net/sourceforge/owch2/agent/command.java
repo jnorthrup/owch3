@@ -14,7 +14,8 @@ public class command {
     private String name;
     private char code;
     private String description;
-    private static Map names = new TreeMap(),        codes = new TreeMap();
+    private static Map<String, command> names = new TreeMap<String, command>();
+    private static Map<Character, command> codes = new TreeMap<Character, command>();
 
     private command(String name, int code, String des) {
         this.setName(name);
@@ -126,19 +127,19 @@ public class command {
         this.description = description;
     }
 
-    public static Map getNames() {
+    public static Map<String, command> getNames() {
         return names;
     }
 
-    public static void setNames(Map names) {
+    public static void setNames(Map<String, command> names) {
         command.names = names;
     }
 
-    public static Map getCodes() {
+    public static Map<Character, command> getCodes() {
         return codes;
     }
 
-    public static void setCodes(Map codes) {
+    public static void setCodes(Map<Character, command> codes) {
         command.codes = codes;
     }
 

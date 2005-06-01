@@ -1,32 +1,34 @@
 package net.sourceforge.nlp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class SentenceParser extends WordStore {
     public SentenceParser(String InputObjResource) throws Exception {
         super(InputObjResource);
     }
 
-    public List tokenize(String line) {
+    public List<Report> tokenize(String line) {
 
-        List ret = new ArrayList();
+        List<Report> ret = new ArrayList<Report>();
         StringTokenizer st = new StringTokenizer(line, ":,;'/ ");
 
         while (st.hasMoreTokens()) {
             String t = st.nextToken();
-            Map wm = getWordMap();
-            Occurence w = (Occurence) wm.get(t);
+            Map<String, Occurence> wm = getWordMap();
+            Occurence w = wm.get(t);
 
             if (w == null) {
                 wm.put(t, w = new Occurence());
-            }
-            else {
+            } else {
                 w.incr();
             }
             ret.add(new Report(t, w));
         }
         return ret;
-    };
+    }
 }
 
 

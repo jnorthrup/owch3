@@ -1,25 +1,27 @@
 package net.sourceforge.gui;
 
-import net.sourceforge.gui.IRC.*;
-import net.sourceforge.owch2.kernel.*;
+import net.sourceforge.gui.IRC.IRCVisitor;
+import net.sourceforge.owch2.kernel.Env;
 
-import javax.swing.*;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
 
-public class AgentGUI  {
+public class AgentGUI {
     private AgentVisitor gui = new IRCVisitor();
 
     public AgentGUI() {
         super();
 
-    };
+    }
+
+    ;
 
     public static void main(String[ ] args) throws Exception {
-        Map map = Env.parseCommandLineArgs(args);
+        Map map = Env.getInstance().parseCommandLineArgs(args);
         AgentGUI f = new AgentGUI();
         Iterator i = map.keySet().iterator();
         while (i.hasNext()) {
-            Object key = (Object) i.next();
+            Object key = i.next();
             f.getGui().put(key, pair(map, key));
         }
         Thread.currentThread().sleep(10000);

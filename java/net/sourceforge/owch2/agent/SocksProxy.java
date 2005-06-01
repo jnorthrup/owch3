@@ -22,29 +22,31 @@ public class SocksProxy extends AbstractAgent implements Runnable {
     };
 
     public static void main(String[] args) {
-        Map m = Env.parseCommandLineArgs(args);
+        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
         if (!(m.containsKey("JMSReplyTo") && m.containsKey("SocksHost") && m.containsKey("SourcePort") &&
                 m.containsKey("SourceHost") && m.containsKey("AgentPort"))) {
-            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "SocketProxy Agent usage:\n\n" +
+            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "SocketProxy Agent usage:\n\n" +
                     "-name       (String)name\n" + "-SourceHost (String)hostname/IP\n" + "-SocksHost (String)hostname/IP\n" +
                     "-SourcePort (int)port\n" + "-AgentPort  (int)port\n" +
                     //            "[-SocksAuth (String)User/Password]\n" +
                     "[-SocksPort (int)port]\n" + "[-Clone 'host1[ ..hostn]']\n" + "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: SocksProxy.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $\n");
+                    "$Id: SocksProxy.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
         }
         ;
         SocketProxy d = new SocketProxy(m);
         Thread t = new Thread();
         try {
             t.start();
-            while (!Env.shutdown) {
+            while (!Env.getInstance().shutdown) {
                 t.sleep(6000);
             } //todo: something
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-    };
+    }
+
+    ;
 
     public int getSourcePort() {
         return Integer.decode((String) get("SourcePort")).intValue();
@@ -53,8 +55,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
     public int getSocksPort() {
         if (this.containsKey("SocksPort")) {
             return Integer.decode((String) get("SocksPort")).intValue();
-        }
-        else {
+        } else {
             return 1080;
         }
     }
@@ -63,7 +64,9 @@ public class SocksProxy extends AbstractAgent implements Runnable {
         return Integer.decode((String) get("AgentPort")).intValue();
     }
 
-    /** handy remote deployment code */
+    /**
+     * handy remote deployment code
+     */
     public SocksProxy(Map m) {
         super(m);
         try {
@@ -74,7 +77,9 @@ public class SocksProxy extends AbstractAgent implements Runnable {
             e.printStackTrace();
         }
         ;
-    };
+    }
+
+    ;
 
     PipeFactory pf = new PipeFactory();
     private int socksPort = 1080;
@@ -109,8 +114,8 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                 byte[] resp = new byte[2];
                 socks.getInputStream().read();
                 if (!(resp[0] == 5 && resp[1] == 0)) {
-                    if (Env.logDebug)
-                        Env.log(2, this.getClass().getName() +
+                    if (Env.getInstance().logDebug)
+                        Env.getInstance().log(2, this.getClass().getName() +
                                 " Socks proxy failures returned other than socks5 Auth0; aborting  ");
                     inbound.close();
                     return;
@@ -123,16 +128,20 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                 }
             }
             catch (InterruptedIOException e) {
-                if (Env.logDebug) Env.log(500, getClass().getName() + "::interrupt " + e.getMessage());
+                if (Env.getInstance().logDebug)
+                    Env.getInstance().log(500, getClass().getName() + "::interrupt " + e.getMessage());
             }
             catch (Exception e) {
-                if (Env.logDebug) Env.log(10, getClass().getName() + "::run " + e.getMessage());
+                if (Env.getInstance().logDebug)
+                    Env.getInstance().log(10, getClass().getName() + "::run " + e.getMessage());
                 e.printStackTrace();
             }
             ;
         }
         ;
-    };
+    }
+
+    ;
 
     /**
      * <p> Requests Once the method-dependent subnegotiation has completed, the client sends the request details.  If the
@@ -141,8 +150,8 @@ public class SocksProxy extends AbstractAgent implements Runnable {
      * <TABLE BORDER WIDTH=1>
      * <TR> <TH>VER <TH>CMD <TH>RSV  <TH>ATYP <TH>DST.ADDR<TH>DST.PORT </TR>
      * <TR> <TD>1   <TD>1   <TD>X'00'<TD>1    <TD>Variable<TD>2 </TABLE>
-     *
-     *
+     * <p/>
+     * <p/>
      *      <P>
      *         Where:<UL>
      *                <LI>VER    protocol version: X'05'
@@ -157,12 +166,13 @@ public class SocksProxy extends AbstractAgent implements Runnable {
      *                   <LI>IP V6 address: X'04'</UL>
      *                <LI>DST.ADDR       desired destination address
      *                <LI>DST.PORT desired destination port in network octet order </UL>
-     *
-     *
+     * <p/>
+     * <p/>
      *                   <P>The SOCKS server will typically evaluate the
      *                   request based on source and destination addresses,
      *                   and return one or more reply messages, as
-     *                   appropriate for the request type. */
+     *                   appropriate for the request type.
+     */
     void send_request(Socket socks) {
         try {
             DataOutputStream os = new DataOutputStream(socks.getOutputStream());
@@ -179,53 +189,53 @@ public class SocksProxy extends AbstractAgent implements Runnable {
             os.write(sport);
         }
         catch (Exception e) {
-            if (Env.logDebug)
-                Env.log(2, this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(2, this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
                         "/" + e.getMessage());
         }
     }
 
     /**
      * <PRE>
-     *
-     *    The SOCKS request information is sent by the client as soon as it has
-     *    established a connection to the SOCKS server, and completed the
-     *    authentication negotiations.  The server evaluates the request, and
-     *    returns a reply formed as follows:
-     *    <P>
-     *       <TABLE BORDER WIDTH=1>
-     *       <TR><TH>
+     * <p/>
+     * The SOCKS request information is sent by the client as soon as it has
+     * established a connection to the SOCKS server, and completed the
+     * authentication negotiations.  The server evaluates the request, and
+     * returns a reply formed as follows:
+     * <P>
+     * <TABLE BORDER WIDTH=1>
+     * <TR><TH>
      * VER <TH>REP<TH> RSV <TH> ATYP <TH> BND.ADDR <TH> BND.PORT </TR>
      * <TR><TD>1  <TD> 1  <TD> X'00' <TD>  1   <TD> Variable<TD>    2  </TABLE>
-     *
+     * <p/>
      * <P>
-     *         Where:<UL>
-     *           <LI>VER    protocol version: X'05'
-     *           <LI>REP    Reply field:
-     *              <UL>
-     *           <LI>  X'00' succeeded
-     *           <LI>  X'01' general SOCKS server failure
-     *              <LI>  X'02' connection not allowed by ruleset
-     *              <LI> X'03' Network unreachable
-     *              <LI>  X'04' Host unreachable
-     *              <LI>  X'05' Connection refused
-     *              <LI>  X'06' TTL expired
-     *              <LI>  X'07' Command not supported
-     *              <LI>  X'08' Address type not supported
-     *              <LI>  X'09' to X'FF' unassigned</UL>
-     *           <LI>  RSV    RESERVED
-     *           <LI>ATYP   address type of following address
-     *           <UL><LI>  IP V4 address: X'01'
-     *              <LI>DOMAINNAME: X'03'
-     *              <LI>IP V6 address: X'04'<UL>
-     *           <LI>BND.ADDR       server bound address
-     *           <LI>BND.PORT       server bound port in network octet order
+     * Where:<UL>
+     * <LI>VER    protocol version: X'05'
+     * <LI>REP    Reply field:
+     * <UL>
+     * <LI>  X'00' succeeded
+     * <LI>  X'01' general SOCKS server failure
+     * <LI>  X'02' connection not allowed by ruleset
+     * <LI> X'03' Network unreachable
+     * <LI>  X'04' Host unreachable
+     * <LI>  X'05' Connection refused
+     * <LI>  X'06' TTL expired
+     * <LI>  X'07' Command not supported
+     * <LI>  X'08' Address type not supported
+     * <LI>  X'09' to X'FF' unassigned</UL>
+     * <LI>  RSV    RESERVED
+     * <LI>ATYP   address type of following address
+     * <UL><LI>  IP V4 address: X'01'
+     * <LI>DOMAINNAME: X'03'
+     * <LI>IP V6 address: X'04'<UL>
+     * <LI>BND.ADDR       server bound address
+     * <LI>BND.PORT       server bound port in network octet order
      * </UL></UL>
-     *           <P>Fields marked RESERVED (RSV) must be set to X'00'.
-     *           If the chosen method includes encapsulation for purposes of
-     *    authentication, integrity and/or confidentiality, the replies are
-     *    encapsulated in the method-dependent encapsulation.
-     **/
+     * <P>Fields marked RESERVED (RSV) must be set to X'00'.
+     * If the chosen method includes encapsulation for purposes of
+     * authentication, integrity and/or confidentiality, the replies are
+     * encapsulated in the method-dependent encapsulation.
+     */
     public boolean handle_response(Socket socks) {
         try {
             DataInputStream is = new DataInputStream(socks.getInputStream());
@@ -235,14 +245,14 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                     BND_ADDR[] = new byte[BND_ADDR_LEN];
             is.read(BND_ADDR);
             short BND_PORT = is.readShort();
-            if (Env.logDebug)
-                Env.log(15, this.getClass().getName() + "::Connect request returned " + " VER:" + (int) VER + " REP:" +
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(15, this.getClass().getName() + "::Connect request returned " + " VER:" + (int) VER + " REP:" +
                         errs[REP] + " ATYP:" + (int) ATYP + " " + new String(BND_ADDR) + " BND_PORT:" + BND_PORT);
             return (REP == 0);
         }
         catch (Exception e) {
-            if (Env.logDebug)
-                Env.log(2, this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(2, this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
                         "/" + e.getMessage());
             return false;
         }
@@ -258,8 +268,11 @@ public class SocksProxy extends AbstractAgent implements Runnable {
 }
 
 //$Log: SocksProxy.java,v $
-//Revision 1.1  2002/12/08 16:05:50  grrrrr
-//Initial revision
+//Revision 1.2  2005/06/01 06:43:11  grrrrr
+//no message
+//
+//Revision 1.1.1.1  2002/12/08 16:05:50  grrrrr
+//
 //
 //Revision 1.1.1.1  2002/12/08 16:41:52  jim
 //

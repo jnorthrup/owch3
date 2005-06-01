@@ -9,12 +9,11 @@
 package net.sourceforge.gui;
 
 import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 
 
 public class TextPanel extends JPanel {
-
     private JLabel label;
     private JTextComponent textField;
 

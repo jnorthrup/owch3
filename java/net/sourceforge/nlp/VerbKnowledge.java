@@ -2,11 +2,12 @@
 
 package net.sourceforge.nlp;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VerbKnowledge {
-    protected Map metaClause = new HashMap(96);
-    protected Map clauseVerb = new HashMap(96);
+    protected Map<String, String> metaClause = new HashMap<String, String>(96);
+    protected Map<String, Object[]> clauseVerb = new HashMap<String, Object[]>(96);
 }
 
 

@@ -1,81 +1,112 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.router.*;
+import net.sourceforge.owch2.router.LeafRouteHunter;
+import net.sourceforge.owch2.router.RouteHunter;
+import net.sourceforge.owch2.router.Router;
 
-import java.io.*;
-import java.net.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.*;
-
-import org.omg.CORBA.portable.UnknownException;
 
 /**
  * Env class: mobile agent host environment; <P>intent: the master object factory
  * <P>Summary: This holds quite a few package-local and global variables and accessors.
- * @version $Id: Env.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $
+ *
  * @author James Northrup
+ * @version $Id: Env.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
-public final class Env extends Log {
-    public static boolean shutdown = false;
-    private static boolean parentFlag = false;
-    private static int hostPort = 0;
-    private static int hostThreads = 2;
-    private static int socketCount = 2;
-    private static String domainName = null;
-    private static Map routerCache = new HashMap(13);
-    private static httpFactory httpFactory;
-    private static httpRegistry webRegistry;
-    private static Map formatCache;
-    private static NotificationFactory notificationFactory;
-    private static ProtocolCache protocolCache;
-    private static owchDispatch datagramDispatch;
-    private static owchFactory socketFactory;
-    /** returns a MetaProperties suitable for parent routing. */
-    static MetaAgent parentNode = null;
+public class Env {
+    public boolean shutdown = false;
+    private boolean parentFlag = false;
+    private int hostPort = 0;
+    private int hostThreads = 2;
+    private int socketCount = 2;
+    private String domainName = null;
+    private Map<String, Router> routerCache = new HashMap<String, Router>(13);
+    private httpFactory httpFactory;
+    private httpRegistry webRegistry;
+    private Map<String, Format> formatCache;
+    private NotificationFactory notificationFactory;
+    private ProtocolCache protocolCache;
+    private owchDispatch datagramDispatch;
+    private owchFactory socketFactory;
 
-    private static RouteHunter routeHunter = new LeafRouteHunter();
-
-    private static InetAddress hostAddress;
-    static private NetworkInterface hostInterface;
+    /**
+     * returns a MetaProperties suitable for parent routing.
+     */
+    MetaAgent parentNode = null;
 
 
-    public static final int getHostPort() {
+    private RouteHunter routeHunter = new LeafRouteHunter();
+
+    private InetAddress hostAddress;
+    private NetworkInterface hostInterface;
+
+    private static Env instance;
+    public boolean logDebug = false;
+
+    private Env() {
+    }
+
+
+    public int getHostPort() {
         return hostPort;
-    };
+    }
 
-    public static final void setHostPort(int port) {
+    ;
+
+    public void setHostPort(int port) {
         hostPort = port;
-    };
+    }
 
-    public static final int getHostThreads() {
+    ;
+
+    public int getHostThreads() {
         return hostThreads; //
-    };
+    }
 
-    public static final void setHostThreads(int t) {
+    ;
+
+    public void setHostThreads(int t) {
         hostThreads = t;
-    };
+    }
 
-    public static final int getSocketCount() {
+    ;
+
+    public int getSocketCount() {
         return socketCount; //
-    };
+    }
 
-    public static final void setSocketCount(int t) {
+    ;
+
+    public void setSocketCount(int t) {
         socketCount = t;
-    };
+    }
 
-    public final static void send(Map item) {
+    ;
+
+    public void send(Map item) {
         routeHunter.send(item); //
-    };
+    }
 
-    public final static void unRoute(Object key) {
+    ;
+
+    public void unRoute(Object key) {
         routeHunter.remove(key); //
-    };
+    }
 
-    public final static Router getRouter(Object key) {
+    ;
+
+    public Router getRouter(String key) {
         String className;
         className = Router.class.getPackage().getName() + "." + key + "Router";
-        if (Env.logDebug) Env.log(500, "attempting to pull up router " + className);
         Router theRouter;
-        theRouter = (Router) routerCache.get(key);
+        theRouter = routerCache.get(key);
         if (theRouter == null) {
             try {
                 theRouter = (Router) Class.forName(className).newInstance();
@@ -85,10 +116,14 @@ public final class Env extends Log {
             routerCache.put(key, theRouter);
         }
         return theRouter;
-    };
+    }
 
-    /** needs work being friendlier */
-    static public Map parseCommandLineArgs(String[] arguments) {
+    ;
+
+    /**
+     * needs work being friendlier
+     */
+    public Map parseCommandLineArgs(String[] arguments) {
         try {
             Notification bootNotification = new Notification();
             //harsh but effective, asume everything is key value pairs.
@@ -117,9 +152,10 @@ public final class Env extends Log {
                     setHostInterface(NetworkInterface.getByName(valueString));
 
                 }
-                if (key.equals("debugLevel")) {
-                    setDebugLevel(Integer.decode(valueString).intValue());
-                }
+//                if (key.equals("debugLevel")) {
+//
+//                    setDebugLevel(Integer.decode(valueString).intValue());
+//                }
                 if (key.equals("HostPort")) {
                     setHostPort(Integer.decode(valueString).intValue());
                 }
@@ -130,7 +166,7 @@ public final class Env extends Log {
                     setSocketCount(Integer.decode(valueString).intValue());
                 }
                 if (key.equals("ParentURL")) {
-                    Location location = (Location) Env.getParentNode();
+                    Location location = (Location) getParentNode();
                     location.put("URL", valueString);
                     setParentNode(location);
                     continue;
@@ -160,7 +196,8 @@ public final class Env extends Log {
         return null;
     }
 
-    public static final void cmdLineHelp(String t) {
+
+    public void cmdLineHelp(String t) {
         System.out.println("**********" + "***owch kernel Env (global) cmdline options" + "***********\n" +
                 "All cmdline params are of the pairs form -key 'Value'\n\n " +
                 "valid environmental cmdline options are typically:\n" +
@@ -174,104 +211,127 @@ public final class Env extends Log {
                 "-SocketCount - Multiple dynamic sockets for high load?\n" +
                 "-debugLevel  - controls how much scroll is displayed\n" +
                 "-ParentURL   - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n" +
-                " this Edition of the parser: $Id: Env.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $\n\n\n" +
+                " this Edition of the parser: $Id: Env.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n\n\n" +
                 "**********" + "*** Agent Env cmdline specification:" + "***********\n" + t);
 
         System.exit(2);
-    };
+    }
+
+    ;
 
 
-    static public void sethttpRegistry(httpRegistry h) {
+    public void sethttpRegistry(httpRegistry h) {
         webRegistry = h;
-    };
+    }
 
-    static public httpRegistry gethttpRegistry() {
+    ;
+
+    public httpRegistry gethttpRegistry() {
         if (webRegistry == null) {
             webRegistry = new httpRegistry();
         }
         return webRegistry;
-    };
+    }
+
+    ;
 
 
+    public Format getFormat(String name) {
+        return getFormatCache().get(name);
+    }
 
-    public final static Format getFormat(String name) {
-        return (Format) getFormatCache().get(name);
-    };
+    ;
 
-    public final static void registerFormat(String name, Format f) {
+    public void registerFormat(String name, Format f) {
         getFormatCache().put(name, f);
-        if (Env.logDebug) Env.log(100, "Registering Formatter: " + name);
-    };
+        //  if (Env.logDebug) Env.log(100, "Registering Formatter: " + name);
+    }
 
-    private final static Map getFormatCache() {
+    ;
+
+    private Map<String, Format> getFormatCache() {
         if (formatCache == null) {
-            formatCache = new TreeMap();
+            formatCache = new TreeMap<String, Format>();
         }
         return formatCache;
-    };
+    }
 
-    public final static URLString getDefaultURL() {
+    ;
+
+    public URLString getDefaultURL() {
         if (!isParentHost()) {
-            return new URLString(Env.getParentNode().getURL());
+            return new URLString(getParentNode().getURL());
         } else {
             return null;
         }
     }
 
-    public final static ProtocolCache getProtocolCache() {
+    public ProtocolCache getProtocolCache() {
         if (protocolCache == null) {
             protocolCache = new ProtocolCache();
         }
         return protocolCache;
-    };
+    }
 
-    public final static MetaProperties getLocation(String Protocol) {
-        if (Env.logDebug) Env.log(50, "Env.getLocation - " + Protocol);
+    ;
+
+    public MetaProperties getLocation(String Protocol) {
+        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Protocol);
         MetaProperties l = getProtocolCache().getLocation(Protocol);
         return l;
-    };
+    }
+
+    ;
 
     /**
-     * sets the flag on the Factory Objects to act as parental sendr in all final location resolution.
+     * sets the flag on the Factory Objects to act as parental sendr in all  location resolution.
+     *
      * @param flag sets the state to true or false
      */
-    final static public void setParentHost(boolean flag) {
+    public void setParentHost(boolean flag) {
         parentFlag = flag;
     }
 
-    final static public void setParentNode(MetaAgent l) {
+    public void setParentNode(MetaAgent l) {
         parentNode = l;
     }
 
     /**
      * accessor for parental node being present in the current Process.
+     *
      * @return whether we are the Parent Sendr of all transactions
      */
-    public final static boolean isParentHost() {
+    public boolean isParentHost() {
         return parentFlag; //
     }
 
     /**
      * Sets the Parent AbstractAgent info Object.
+     *
      * @param s a MetaProperties
      */
-    static final void setowchDispatch(owchDispatch s) {
+    void setowchDispatch(owchDispatch s) {
         datagramDispatch = s;
-    };
+    }
 
-    static final void setNotificationFactory(NotificationFactory s) {
+    ;
+
+    void setNotificationFactory(NotificationFactory s) {
         notificationFactory = s;
-    };
+    }
+
+    ;
 
     /**
      * sets the process's ServerSocket provider Env.
+     *
      * @param s New SocketEnv.
      */
-    public static final void setowchFactory(owchFactory s) {
+    public void setowchFactory(owchFactory s) {
         socketFactory = s;
     }
 
-    public final static MetaAgent getParentNode() {
+    public MetaAgent getParentNode() {
         if (parentNode == null) {
             Location l = new Location();
             l.put("Created", "env.getDomain()");
@@ -282,14 +342,16 @@ public final class Env extends Log {
         return parentNode;
     }
 
-    public final static owchDispatch getowchDispatch() {
+    public owchDispatch getowchDispatch() {
         if (datagramDispatch == null) {
             datagramDispatch = new owchDispatch();
         }
         return datagramDispatch;
-    };
+    }
 
-    final static NotificationFactory getNotificationFactory() {
+    ;
+
+    NotificationFactory getNotificationFactory() {
         if (notificationFactory == null) {
             try {
                 notificationFactory = new NotificationFactory();
@@ -298,16 +360,18 @@ public final class Env extends Log {
             }
         }
         return notificationFactory;
-    };
+    }
 
-    final public static owchFactory getowchFactory() {
+    ;
+
+    public owchFactory getowchFactory() {
         if (socketFactory == null) {
             socketFactory = new owchFactory();
         }
         return socketFactory;
     }
 
-    final public static httpFactory gethttpFactory() {
+    public httpFactory gethttpFactory() {
         if (httpFactory == null) {
             httpFactory = new httpFactory();
         }
@@ -315,20 +379,20 @@ public final class Env extends Log {
     }
 
 
-    final public static void setDomainName(String dName) {
+    public void setDomainName(String dName) {
         domainName = dName;
     }
 
-    public static RouteHunter getRouteHunter() {
+    public RouteHunter getRouteHunter() {
         return routeHunter;
     }
 
-    static public void setRouteHunter(RouteHunter r) {
+    public void setRouteHunter(RouteHunter r) {
         routeHunter = r;
     }
 
 
-    public static InetAddress getHostAddress() {
+    public InetAddress getHostAddress() {
         if (null == hostAddress) {
             NetworkInterface hostInterface;
             hostInterface = getHostInterface();
@@ -336,7 +400,7 @@ public final class Env extends Log {
                 return hostAddress = getExternalAddress(hostInterface);
 
 
-            Enumeration networkInterfaces = null;
+            Enumeration<NetworkInterface> networkInterfaces = null;
 
 
             try {
@@ -346,30 +410,30 @@ public final class Env extends Log {
                 return null;
             }
             while (networkInterfaces.hasMoreElements() && hostAddress == null) {
-                hostInterface = (NetworkInterface) networkInterfaces.nextElement();
+                hostInterface = networkInterfaces.nextElement();
                 setHostInterface(hostInterface);
-                Env.log(133, "Interface name: " + hostInterface.getName());
-                Env.log(133, "Interface DisplayName: " + hostInterface.getDisplayName());
+//                Env.log(133, "Interface name: " + hostInterface.getName());
+//                Env.log(133, "Interface DisplayName: " + hostInterface.getDisplayName());
                 hostAddress = getExternalAddress(hostInterface);
             }
         }
         return hostAddress;
     }
 
-    private static InetAddress getExternalAddress(NetworkInterface hostInterface) {
+    private InetAddress getExternalAddress(NetworkInterface hostInterface) {
         InetAddress linkLocalAddress;
         linkLocalAddress = null;
         InetAddress siteLocalAddress;
         siteLocalAddress = null;
         InetAddress loopLocal;
         loopLocal = null;
-        Enumeration inetAddresses;
+        Enumeration<InetAddress> inetAddresses;
 
         if (hostInterface != null) {
             inetAddresses = hostInterface.getInetAddresses();
             while (inetAddresses.hasMoreElements()) {
                 InetAddress inetAddr = null;
-                inetAddr = (InetAddress) inetAddresses.nextElement();
+                inetAddr = inetAddresses.nextElement();
                 if (inetAddr.isSiteLocalAddress()) {
                     siteLocalAddress = inetAddr;
                 }
@@ -379,54 +443,58 @@ public final class Env extends Log {
                     return (inetAddr);
             }
         }
-       return siteLocalAddress;
-//        if (null != linkLocalAddress) return linkLocalAddress;
-//        if (null != loopLocal) return loopLocal;
-//        try {
-//            return Inet4Address.getByName("0.0.0.0");
-//        } catch (UnknownHostException e) {
-//            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
-//        }
-    }                                          ;
+        return siteLocalAddress;
+    }
+
+    ;
 
 
-    private static boolean isExternalAddress(InetAddress inetAddr) {
-        Env.log(133, "addr hostname: " + inetAddr.getHostName());
-        Env.log(133, "addr cannonical hostname: " + inetAddr.getCanonicalHostName());
+    private boolean isExternalAddress(InetAddress inetAddr) {
         boolean anyLocalAddress = inetAddr.isAnyLocalAddress();
-        Env.log(133, "addr isAnyLocalAddress " + anyLocalAddress);
         boolean linkLocalAddress = inetAddr.isLinkLocalAddress();
-        Env.log(133, "addr isLinkLocalAddress " + linkLocalAddress);
+//        Env.log(133, "addr isLinkLocalAddress " + linkLocalAddress);
         boolean loopbackAddress = inetAddr.isLoopbackAddress();
-        Env.log(133, "addr isLoopbackAddress " + loopbackAddress);
+//        Env.log(133, "addr isLoopbackAddress " + loopbackAddress);
         boolean multicastAddress = inetAddr.isMulticastAddress();
-        Env.log(133, "addr isMulticastAddress " + multicastAddress);
+//        Env.log(133, "addr isMulticastAddress " + multicastAddress);
         boolean siteLocalAddress = inetAddr.isSiteLocalAddress();
-        Env.log(133, "addr isSiteLocalAddress " + siteLocalAddress);
+//        Env.log(133, "addr isSiteLocalAddress " + siteLocalAddress);
 
-        if (anyLocalAddress || linkLocalAddress || loopbackAddress || multicastAddress || siteLocalAddress) return false;
+        if (anyLocalAddress || linkLocalAddress || loopbackAddress || multicastAddress || siteLocalAddress)
+            return false;
         return true;
     }
 
-    private static void setHostAddress(InetAddress s333s) {
+    private void setHostAddress(InetAddress s333s) {
         hostAddress = s333s;
     }
 
-    public static String getHostname() {
+    public String getHostname() {
         return getHostAddress().getHostName();
     }
 
-    public static String getDomainName() {
+    public String getDomainName() {
         return domainName;
     }
 
-    static public NetworkInterface getHostInterface() {
+
+    public void setHostInterface(NetworkInterface a2) {
+        hostInterface = a2;
+    }
+
+    public NetworkInterface getHostInterface() {
         return hostInterface;
     }
 
-    static public void setHostInterface(NetworkInterface a2) {
-        hostInterface = a2;
+    public static Env getInstance() {
+        if (null == instance) instance = new Env();
+        return instance;
     }
+
+    public void log(int i, String s) {
+
+    }
+
 }
 
 

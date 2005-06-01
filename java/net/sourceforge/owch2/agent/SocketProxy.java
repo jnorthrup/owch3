@@ -7,30 +7,34 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
-/** SocketProxy
-
-connects incoming sockets to outbound host,port destinations.
-
-note:
-hosts and ports can be specified 1:1, 1:n, n:1 or n:n.
-
-lists of ports and hosts are tried in order specified.
- @version $Id: SocketProxy.java,v 1.1 2002/12/08 16:05:49 grrrrr Exp $
+/**
+ * SocketProxy
+ * <p/>
+ * connects incoming sockets to outbound host,port destinations.
+ * <p/>
+ * note:
+ * hosts and ports can be specified 1:1, 1:n, n:1 or n:n.
+ * <p/>
+ * lists of ports and hosts are tried in order specified.
+ *
+ * @version $Id: SocketProxy.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public class SocketProxy extends AbstractAgent implements Runnable {
-    private Collection srcPort = new ArrayList(),srcHost = new ArrayList();
-    private Iterator srcPort_i,srcHost_i;
+    private Collection<Integer> srcPort = new ArrayList<Integer>();
+    private Collection<String> srcHost = new ArrayList<String>();
+    private Iterator<Integer> srcPort_i;
+    private Iterator<String> srcHost_i;
     String AgentPort;
     private ServerSocket ss;
     private PipeFactory pf = new PipeFactory();
 
     public static void main(String[] args) {
-        Map m = Env.parseCommandLineArgs(args);
+        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
         final String[] ka = {"JMSReplyTo", "SourcePort", "SourceHost", "AgentPort"};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
-            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" +
-                            "SocketProxy Agent usage:\n\n" +
+            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
+                    "SocketProxy Agent usage:\n\n" +
                     "-name       (String)name\n" +
                     "-SourceHost (String)'hostname/IP[ ...n]'\n" +
                     "-SourcePort (int)'port[ ...n]'\n" +
@@ -40,21 +44,23 @@ public class SocketProxy extends AbstractAgent implements Runnable {
                     "[-ZipBuf (int)<128+]]\n" +
                     "[-Clone 'host1[ ..hostn]']\n" +
                     "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: SocketProxy.java,v 1.1 2002/12/08 16:05:49 grrrrr Exp $\n");
+                    "$Id: SocketProxy.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
         }
         SocketProxy d = new SocketProxy(m);
-    };
+    }
+
+    ;
 
     public int getSourcePort() {
         if (!srcPort_i.hasNext())
             srcPort_i = srcPort.iterator();
-        return ((Integer) srcPort_i.next()).intValue();
+        return (srcPort_i.next()).intValue();
     }
 
     public String getSourceHost() {
         if (!srcHost_i.hasNext())
             srcHost_i = srcHost.iterator();
-        return (String) srcHost_i.next();
+        return srcHost_i.next();
     }
 
     public int getProxyPort() {
@@ -92,7 +98,9 @@ public class SocketProxy extends AbstractAgent implements Runnable {
         catch (Exception e) {
             e.printStackTrace();
         }
-    };
+    }
+
+    ;
 
     public void spin() {
         Thread t = new Thread();
@@ -120,31 +128,33 @@ public class SocketProxy extends AbstractAgent implements Runnable {
                 ps.spin();
             }
             catch (InterruptedIOException e) {
-                if (Env.logDebug) Env.log(500, getClass().getName() + "::interrupt " + e.getMessage());
+                if (Env.getInstance().logDebug)
+                    Env.getInstance().log(500, getClass().getName() + "::interrupt " + e.getMessage());
             }
             catch (Exception e) {
-                if (Env.logDebug) Env.log(10, getClass().getName() + "::run " + e.getMessage());
+                if (Env.getInstance().logDebug)
+                    Env.getInstance().log(10, getClass().getName() + "::run " + e.getMessage());
                 e.printStackTrace();
             }
         }
     }
 
     private StreamDesc sourceStreamDesc() {
-        final String[] a =  {"source", "both"};
+        final String[] a = {"source", "both"};
         return new StreamDesc(
-                containsKey("Inflate")?Arrays.asList(a).contains(get("Inflate")):false,
-                containsKey("Deflate")?Arrays.asList(a).contains(get("Deflate")):false,
-                containsKey("ZipBuf")?Integer.decode(get("ZipBuf").toString()).intValue():4096,
-                containsKey("Buffer")?Integer.decode(get("Buffer").toString()).intValue():0);
+                containsKey("Inflate") ? Arrays.asList(a).contains(get("Inflate")) : false,
+                containsKey("Deflate") ? Arrays.asList(a).contains(get("Deflate")) : false,
+                containsKey("ZipBuf") ? Integer.decode(get("ZipBuf").toString()).intValue() : 4096,
+                containsKey("Buffer") ? Integer.decode(get("Buffer").toString()).intValue() : 0);
     }
 
     private StreamDesc agentStreamDesc() {
-        final String[] a =  {"agent", "both"};
+        final String[] a = {"agent", "both"};
         return new StreamDesc(
-                containsKey("Inflate")?Arrays.asList(a).contains(get("Inflate")):false,
-                containsKey("Deflate")?Arrays.asList(a).contains(get("Deflate")):false,
-                containsKey("ZipBuf")?Integer.decode(get("ZipBuf").toString()).intValue():4096,
-                containsKey("Buffer")?Integer.decode(get("Buffer").toString()).intValue():0);
+                containsKey("Inflate") ? Arrays.asList(a).contains(get("Inflate")) : false,
+                containsKey("Deflate") ? Arrays.asList(a).contains(get("Deflate")) : false,
+                containsKey("ZipBuf") ? Integer.decode(get("ZipBuf").toString()).intValue() : 4096,
+                containsKey("Buffer") ? Integer.decode(get("Buffer").toString()).intValue() : 0);
     }
 
     public ServerSocket getSs() {

@@ -3,12 +3,13 @@ package net.sourceforge.owch2.agent;
 import net.sourceforge.owch2.kernel.AbstractAgent;
 import net.sourceforge.owch2.kernel.Env;
 import net.sourceforge.owch2.kernel.Notification;
-import net.sourceforge.owch2.kernel.MetaProperties;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -16,24 +17,24 @@ public class PCTScanner extends AbstractAgent {
     protected static final int PORT = 4050;
 
     protected static final String CHANNEL_NAME = "store";
-     ;
+    ;
     protected static final String MSG_DEST = "JMSDestination";
 
-    public PCTScanner(Map m) {
+    public PCTScanner(Map<? extends Object, ? extends Object> m) {
         super(m);
 
 
         ServerSocket serverSocket;
         try {
 
-            InetAddress theAddr = Env.getHostAddress();
+            InetAddress theAddr = Env.getInstance().getHostAddress();
             try {
 
-                String host     =theAddr.getHostAddress();
-                Env.log(33, "attempting to bind addr: " + host);
+                String host = theAddr.getHostAddress();
+                Env.getInstance().log(33, "attempting to bind addr: " + host);
 
                 theAddr = InetAddress.getByName(host);
-                Env.log(33, "post-bind addr: " + theAddr);
+                Env.getInstance().log(33, "post-bind addr: " + theAddr);
             } catch (Exception e) {
                 // e.printStackTrace();  //To change body of catch statement use Options | File Templates.
             }
@@ -73,16 +74,16 @@ public class PCTScanner extends AbstractAgent {
                     } catch (StringIndexOutOfBoundsException e) {
                         //no data    e.printStackTrace();  //To change body of catch statement use Options | File Templates.
                     }
-                    new PCTMessage((command) command.getCodes().get(new Character(type)), arg, flags, serialNo, data);
+                    new PCTMessage(command.getCodes().get(new Character(type)), arg, flags, serialNo, data);
                     Notification notification = new Notification();
                     Object value = get(MSG_DEST);
                     if (null != value)
                         notification.put(MSG_DEST, value);
-                    Map cmd_type = command.getCodes();
-                    command cmd = (command) cmd_type.get(new Character(type));
-                 //   if ("PCT_KEEP_ALIVE".equals(cmd.getName())) {
-                        socket.getOutputStream().write(packet.getBytes()); //echo KEEPALIVES
-                   //     continue;
+                    Map<Character, command> cmd_type = command.getCodes();
+                    command cmd = cmd_type.get(new Character(type));
+                    //   if ("PCT_KEEP_ALIVE".equals(cmd.getName())) {
+                    socket.getOutputStream().write(packet.getBytes()); //echo KEEPALIVES
+                    //     continue;
                     //}
                     notification.put("JMSType", cmd.getName());
                     notification.put("PCTMessage.arg", new Character(arg));
@@ -90,7 +91,7 @@ public class PCTScanner extends AbstractAgent {
                     notification.put("PCTMessage.serial", serialNo);
                     notification.put("PCTMessage.data", data);
                     send(notification);
-                    if (Env.logDebug) notification.save(System.out);
+                    if (Env.getInstance().logDebug) notification.save(System.out);
                 }
             }
         } catch (IOException e) {
@@ -100,17 +101,17 @@ public class PCTScanner extends AbstractAgent {
     }
 
     public static void main(String[] args) throws Exception {
-        Map m = Env.parseCommandLineArgs(args);
+        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
         final String[] ka;
         ka = new String[]{"JMSReplyTo", "JMSDestination", "AgentPort", "AgentHost"};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
-            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" +
+            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
                     "PCTScanner Agent usage:\n\n" +
                     "-name     (String)name\n" +
                     "-AgentPort   (int)port\n" +
                     "-JMSDestination  (String) The destination agent name\n" +
-                    "$Id: PCTScanner.java,v 1.1 2002/12/08 16:05:49 grrrrr Exp $\n");
+                    "$Id: PCTScanner.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
 
         }
         PCTScanner d;

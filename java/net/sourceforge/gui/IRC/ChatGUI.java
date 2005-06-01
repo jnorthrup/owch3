@@ -1,14 +1,15 @@
 package net.sourceforge.gui.IRC;
 
+import net.sourceforge.gui.AgentVisitor;
+import net.sourceforge.gui.ScrollingListModel;
 import net.sourceforge.owch2.kernel.*;
-import net.sourceforge.gui.*;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 
 public class ChatGUI extends JInternalFrame implements AgentVisitor {
-
     private JList UsersList = new JList(new ScrollingListModel());
     private JToolBar EntryDoc = new JToolBar();
     private JList msgList = new JList(new ScrollingListModel());
@@ -25,7 +26,9 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
     }
 
 
-    /** This method is called from within the constructor to initialize the form. */
+    /**
+     * This method is called from within the constructor to initialize the form.
+     */
     public void initGUI() {
         JLabel Value = new JLabel();
         JScrollPane msgScroll = new JScrollPane();
@@ -72,7 +75,7 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
         renderPane.setLineWrap(true);
     }
 
-    public Object get(Object key) {
+    public Object get(String key) {
         return null;
     }
 
@@ -84,16 +87,17 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
         notification.put("JMSType", "Dissolve");
         notification.put("JMSReplyTo", node.get("IRCManager"));
         notification.put("JMSDestination", node.getJMSReplyTo());
-        Env.send(notification);
+        Env.getInstance().send(notification);
     }
 
     public void startAgent() {
         node = new ChatAgent(this, agentLocation);
-         setTitle(agentLocation.get("Value") .toString());
+        setTitle(agentLocation.get("Value") .toString());
     }
 
     /**
      * gets keys
+     *
      * @return keys
      */
     public String[] getApp_keys() {

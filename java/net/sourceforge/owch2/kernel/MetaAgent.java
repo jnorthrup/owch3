@@ -2,8 +2,9 @@ package net.sourceforge.owch2.kernel;
 
 /**
  * MetaAgent contains one or both of Name (JMSReplyTo) and URL.
- * @version $Id: MetaAgent.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $
+ *
  * @author James Northrup
+ * @version $Id: MetaAgent.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public interface MetaAgent {
     public String getJMSReplyTo();

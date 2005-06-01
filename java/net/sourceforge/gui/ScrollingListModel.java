@@ -1,10 +1,11 @@
 package net.sourceforge.gui;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ScrollingListModel extends AbstractListModel {
-    List list = new LinkedList();
+    List<Object> list = new LinkedList<Object>();
 
     public void addElement(Object o) {
         list.add(o);
@@ -29,13 +30,17 @@ public class ScrollingListModel extends AbstractListModel {
     public void remove(int i) {
         list.remove(i);
         super.fireIntervalRemoved(this, i, i);
-    };
+    }
+
+    ;
 
     public boolean remove(Object o) {
 
         super.fireIntervalRemoved(this, 0, 0);
         return list.remove(o);
-    };
+    }
+
+    ;
 }
 
 

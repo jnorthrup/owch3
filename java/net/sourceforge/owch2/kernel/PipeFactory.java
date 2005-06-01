@@ -2,17 +2,21 @@ package net.sourceforge.owch2.kernel;
 
 
 /**
- * @version $Id: PipeFactory.java,v 1.1 2002/12/08 16:05:51 grrrrr Exp $
  * @author James Northrup
+ * @version $Id: PipeFactory.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public class PipeFactory extends ListenerFactory {
-    /** ctor */
+    /**
+     * ctor
+     */
     public PipeFactory() {
     }
 
     public final MetaProperties getLocation() {
-        return Env.getProtocolCache().getLocation("pipe");
-    };
+        return Env.getInstance().getProtocolCache().getLocation("pipe");
+    }
+
+    ;
 
     public ListenerReference create(java.net.InetAddress hostAddr, int port, int threads) {
         Thread t = null;
@@ -21,7 +25,7 @@ public class PipeFactory extends ListenerFactory {
             Pipes = new PipeConnector(hostAddr, (int) port, threads);
         }
         catch (Exception e) {
-            if (Env.logDebug) Env.log(2, "PipeConnector init failure port " + port);
+            if (Env.getInstance().logDebug) Env.getInstance().log(2, "PipeConnector init failure port " + port);
             return null;
         }
         for (int i = 0; i < Pipes.getThreads(); i++) {
@@ -30,5 +34,7 @@ public class PipeFactory extends ListenerFactory {
             t.start();
         }
         return Pipes;
-    };
+    }
+
+    ;
 }

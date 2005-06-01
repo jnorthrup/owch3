@@ -1,13 +1,17 @@
 package net.sourceforge.owch2.kernel;
 
 import java.io.*;
-import java.net.*;
-import java.util.zip.*;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 /**
  * GateKeeper opens a PipeSocket to send data ussually in one direction.
- * @version $Id: PipeSocket.java,v 1.1 2002/12/08 16:05:51 grrrrr Exp $
+ *
  * @author James Northrup
+ * @version $Id: PipeSocket.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public class PipeSocket {
     //for GET method the inner socket OutputStream will close
@@ -18,8 +22,12 @@ public class PipeSocket {
     boolean isPut = false;
     Socket uc;
     Socket oc;
-    InputStream oi,ci;
-    OutputStream co,oo;
+    InputStream oi
+    ,
+    ci;
+    OutputStream co
+    ,
+    oo;
     ThreadGroup tg;
     static int sc = 0;
     String label = "Generic Pipe" + sc++;
@@ -38,7 +46,9 @@ public class PipeSocket {
     StreamDesc cEnc = new StreamDesc();
     StreamDesc oEnc = new StreamDesc();
 
-    /** pass in the requesting web socket, and two encoding classes */
+    /**
+     * pass in the requesting web socket, and two encoding classes
+     */
     public PipeSocket(Socket o, StreamDesc in, StreamDesc out) {
         oc = o;
         cEnc = in;
@@ -54,9 +64,9 @@ public class PipeSocket {
         final int Zsize;
         Zsize = Math.max(128, streamDesc.getZbuf());
 
-        reader = (streamDesc.usingInflate) ? new InflaterInputStream(istream  ) : istream;
+        reader = (streamDesc.usingInflate) ? new InflaterInputStream(istream) : istream;
         writer = (streamDesc.usingDeflate) ? new DeflaterOutputStream(ostream, new Deflater(java.util.zip.Deflater.FILTERED))
-                :ostream;
+                : ostream;
 
         if (streamDesc.buffered) {
             int bb = (streamDesc.bufbuf > 0) ? streamDesc.bufbuf : 32 * 1024;
@@ -67,13 +77,17 @@ public class PipeSocket {
         }
         final Object ret[] = {reader, writer};
         return ret;
-    };
+    }
+
+    ;
 
     public void spin() {
         tg = new ThreadGroup("TG:" + label);
         new PipeThread(uc, oi, co, false, "PTInput:" + label, this.cEnc); //
         new PipeThread(oc, ci, oo, false, "PTOutput:" + label, this.oEnc); //
-    };
+    }
+
+    ;
 
     /**
      * worker thread for the PipeSocket.  symetrical.java has a bug which restricts socket closes to be all or
@@ -101,12 +115,16 @@ public class PipeSocket {
             this.name = name;
             new Thread(tg, this, name).start();
             sdesc = streamdesc;
-        };
+        }
 
-        /** worker thread */
+        ;
+
+        /**
+         * worker thread
+         */
         public void run() {
-            if(is instanceof InflaterInputStream)//((InflaterInputStream)is).
-                buf=new byte[40];
+            if (is instanceof InflaterInputStream)//((InflaterInputStream)is).
+                buf = new byte[40];
             while (!term) {
                 try {
                     for (avail = is.available(); avail > 0;) {
@@ -114,21 +132,23 @@ public class PipeSocket {
                         //data exists
                         //to be
                         //claimed
-                        if (Env.logDebug) Env.log(500, label + " read has available bytes: " + avail);
+                        if (Env.getInstance().logDebug)
+                            Env.getInstance().log(500, label + " read has available bytes: " + avail);
                         actual = is.read(buf);
-                        if (Env.logDebug) Env.log(500, label + " actual read: " + actual);
+                        if (Env.getInstance().logDebug) Env.getInstance().log(500, label + " actual read: " + actual);
                         if (actual == -1) {
                             os.flush();
                             term = true;
-                            if (Env.logDebug) Env.log(15, label + " input stream closed " + actual);
+                            if (Env.getInstance().logDebug)
+                                Env.getInstance().log(15, label + " input stream closed " + actual);
                             if (term) {
                                 os.close();
                                 //close something...
                                 pipe.getClass().getMethod("close",
                                         new Class[]{
                                         }).invoke(pipe,
-                                                new Object[]{
-                                                });
+                                        new Object[]{
+                                        });
                                 //interrupt our sister thread... which
                                 //should be asleep
                                 tg.interrupt();
@@ -136,18 +156,20 @@ public class PipeSocket {
 
                             return;
                         }
-                        if (Env.logDebug) Env.log(500, label + " output: " + actual);
+                        if (Env.getInstance().logDebug) Env.getInstance().log(500, label + " output: " + actual);
                         os.write(buf, 0, actual);
                     }
                     //we avoid blocking in case we need to be
                     //interrupted by our sister thread.
 
                     Thread.currentThread().sleep(100);
-                    if (os instanceof DeflaterOutputStream ) {
-                       // ((DeflaterOutputStream) os).finish();
-			//((DeflaterOutputStream) os).
+                    if (os instanceof DeflaterOutputStream) {
+                        // ((DeflaterOutputStream) os).finish();
+                        //((DeflaterOutputStream) os).
                         //flush for compression
-                        os.flush();};
+                        os.flush();
+                    }
+                    ;
                 }
                 catch (InterruptedIOException e) {
                     try {
@@ -157,15 +179,18 @@ public class PipeSocket {
                     }
                 }
                 catch (InterruptedException e) {
-                    if (Env.logDebug) Env.log(500, name + " closing: " + e.getMessage());
+                    if (Env.getInstance().logDebug) Env.getInstance().log(500, name + " closing: " + e.getMessage());
                     return;
                 }
                 catch (Exception e) {
-                    if (Env.logDebug) Env.log(500, name + " Error - - closing: " + e.getMessage());
+                    if (Env.getInstance().logDebug)
+                        Env.getInstance().log(500, name + " Error - - closing: " + e.getMessage());
                     return;
                 }
             }
-        };
+        }
+
+        ;
     }
 
 

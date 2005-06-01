@@ -1,6 +1,6 @@
 package net.sourceforge.nlp;
 
-import java.io.*;
+import java.io.Serializable;
 
 public class Occurence implements Serializable {
     private int count = 1;

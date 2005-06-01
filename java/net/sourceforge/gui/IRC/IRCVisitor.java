@@ -1,22 +1,34 @@
 package net.sourceforge.gui.IRC;
 
-import net.sourceforge.gui.*;
-import net.sourceforge.owch2.kernel.*;
+import net.sourceforge.gui.AgentVisitor;
+import net.sourceforge.gui.TextPanel;
+import net.sourceforge.owch2.kernel.AbstractAgent;
+import net.sourceforge.owch2.kernel.Env;
+import net.sourceforge.owch2.kernel.Location;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.lang.reflect.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class IRCVisitor extends JFrame implements AgentVisitor {
-    public TextPanel IRCHostText = new TextPanel("IRCHostname"),
-    IRCPortText = new TextPanel("IRCPort"),
-    IRCJoinText = new TextPanel("Channels"),
-    JMSReplyToText = new TextPanel("JMSReplyTo"),
-    IRCNicknameText = new TextPanel("IRCNickname"),
+    public TextPanel IRCHostText = new TextPanel("IRCHostname")
+    ,
+    IRCPortText = new TextPanel("IRCPort")
+    ,
+    IRCJoinText = new TextPanel("Channels")
+    ,
+    JMSReplyToText = new TextPanel("JMSReplyTo")
+    ,
+    IRCNicknameText = new TextPanel("IRCNickname")
+    ,
     ParentURLText = new TextPanel("ParentURL");
 
-    private JToolBar agentToolbar = new JToolBar(),
+    private JToolBar agentToolbar = new JToolBar()
+    ,
     channelBar = new JToolBar();
     private JCheckBox connectCheck = new JCheckBox();
 
@@ -24,13 +36,18 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
 
     private JInternalFrame AgentDescriptor = new JInternalFrame();
     private JTabbedPane agentTabs = new JTabbedPane();
-    private JPanel IRCPanel = new JPanel(),owchPanel = new JPanel();
+    private JPanel IRCPanel = new JPanel()
+    ,
+    owchPanel = new JPanel();
 
     private AbstractAgent node;
 
     public IRCVisitor() {
         initGUI();
-    };
+    }
+
+    ;
+
     public void initGUI() {
         ParentURLText.setColumns(24);
         ParentURLText.setText("owch://localhost:2112");
@@ -88,14 +105,16 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
         agentTabs.add(IRCPanel, "IRC");
         agentTabs.add(owchPanel, "owch2 Agent");
         setVisible(true);
-    };
+    }
+
+    ;
 
     public String[] getApp_keys() {
         return app_keys;
     }
 
     public String getApp_keys(int index) {
-        return app_keys[ index ];
+        return app_keys[index];
     }
 
     static final private String[] app_keys = {
@@ -111,8 +130,7 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
         final boolean flag = ((JCheckBox) e.getSource()).isSelected();
         if (flag) {
             startAgent();
-        }
-        else {
+        } else {
             stopAgent();
         }
     }
@@ -140,21 +158,23 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
         }
         ;
         AgentDescriptor.setEnabled(false);
-        if (Env.logDebug) Env.log(509, l.toString());
+        if (Env.getInstance().logDebug) Env.getInstance().log(509, l.toString());
         setNode(new IRCManager(this, l));
-    };
+    }
 
-    public Object get(Object key) {
+    ;
+
+    public Object get(String key) {
 
         try {
             String key1 = key.toString();
-            Class c = getClass();
-            if (Env.logDebug) Env.log(5, "get::" + key1 + "Text");
+            Class<? extends Object> c = getClass();
+            if (Env.getInstance().logDebug) Env.getInstance().log(5, "get::" + key1 + "Text");
             Field f = c.getField(key1 + "Text");
-            if (Env.logDebug) Env.log(5, "getf::" + f.toString());
+            if (Env.getInstance().logDebug) Env.getInstance().log(5, "getf::" + f.toString());
             Object o = f.get(this);
             Method m = o.getClass().getMethod("getText", AgentVisitor.no_class);
-            if (Env.logDebug) Env.log(5, "getm::" + m.toString());
+            if (Env.getInstance().logDebug) Env.getInstance().log(5, "getm::" + m.toString());
             return m.invoke(o, AgentVisitor.no_Parm).toString();
 
         }
@@ -182,22 +202,24 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
     }
 
     public void stopAgent() {
-    };
+    }
+
+    ;
 
     public void put(Object key, Object val) {
 
 
         try {
             String key1 = key.toString();
-            Class c = getClass();
-            if (Env.logDebug) Env.log(5, "get::" + key1 + "Text");
+            Class<? extends Object> c = getClass();
+            if (Env.getInstance().logDebug) Env.getInstance().log(5, "get::" + key1 + "Text");
             Field f = c.getField(key1 + "Text");
-            if (Env.logDebug) Env.log(5, "get::" + f.toString());
+            if (Env.getInstance().logDebug) Env.getInstance().log(5, "get::" + f.toString());
             Object o = f.get(this);
             Method m = o.getClass().getMethod("setText",
-                                              new Class[]{String.class});
+                    new Class[]{String.class});
             m.invoke(o,
-                     new Object[]{val});
+                    new Object[]{val});
         }
         catch (NoSuchFieldException e) {
         }

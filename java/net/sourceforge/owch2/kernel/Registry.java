@@ -1,20 +1,26 @@
 package net.sourceforge.owch2.kernel;
 
-import java.lang.ref.*;
-import java.util.*;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.SortedSet;
 
 /**
  * gatekeeper registers a prefix of an Item such as "/cgi-bin/foo.cgi" The algorithm to locate the Item works in 2 phases;<OL>
  * <LI> The weakHashMap is checked for an exact match. <LI> The arraycache is then checked from top to bottom to see if
  * Item startswith (element <n>) </OL> The when an Item is located -- registering the Item "/" is a sure
  * bet, the owch agent registered in the WeakHashMap is notified of a waiting pipeline
- * @version $Id: Registry.java,v 1.1 2002/12/08 16:05:51 grrrrr Exp $
+ *
  * @author James Northrup
+ * @version $Id: Registry.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public abstract class Registry {
     protected Reference refGet(Object key) {
         return (Reference) getWeakMap().get(key);
-    };
+    }
+
+    ;
 
     protected Object weakGet(Object key) {
         if (key == null) {
@@ -26,7 +32,9 @@ public abstract class Registry {
         }
         Object o = r.get();
         return o;
-    };
+    }
+
+    ;
 
     abstract public String displayKey(Comparable key);
 
@@ -34,16 +42,22 @@ public abstract class Registry {
 
     abstract public Reference referenceValue(Object o);
 
-    /** URLSet is exported frequently after a change. */
+    /**
+     * URLSet is exported frequently after a change.
+     */
     private Object[] cache;
     private ReferenceQueue refQ = new ReferenceQueue();
     private Comparator comparator;
 
-    /** when URLSet next used will rewrite cacheArray */
+    /**
+     * when URLSet next used will rewrite cacheArray
+     */
     private boolean cacheInvalid = true;
     private Map weakMap;
 
-    /** this is used to store the URLS in order of length */
+    /**
+     * this is used to store the URLS in order of length
+     */
     private SortedSet set;
 
     public void registerItem(Comparable key, Object val) {
@@ -57,32 +71,42 @@ public abstract class Registry {
         }
         ;
         getWeakMap().put(key, val);
-        if (Env.logDebug)
-            Env.log(15, getClass().getName() + ":::Item Registration:" + "@" + displayKey(key) +
-                    " -- " + displayValue(val));
-    };
+//        if (Env.logDebug)
+//            Env.log(15, getClass().getName() + ":::Item Registration:" + "@" + displayKey(key) +
+//                    " -- " + displayValue(val));
+    }
 
-    /** unregister the tree item */
+    ;
+
+    /**
+     * unregister the tree item
+     */
     public void unregisterItem(Comparable key) {
         synchronized (getSet()) {
             getSet().remove(key);
             setCacheInvalid(true);
         }
         ;
-        if (Env.logDebug) Env.log(15, getClass().getName() + ":::Item DeRegistration:" + displayKey(key));
-    };
+//        if (Env.logDebug) Env.log(15, getClass().getName() + ":::Item DeRegistration:" + displayKey(key));
+    }
 
-    /** this renews our cache for specific custom ordered results. */
+    ;
+
+    /**
+     * this renews our cache for specific custom ordered results.
+     */
     protected void reCache() {
-        if (Env.logDebug) Env.log(150, getClass().getName() + " recache starting..");
+//        if (Env.logDebug) Env.log(150, getClass().getName() + " recache starting..");
         synchronized (getSet()) {
             setCache(getSet().toArray());
             setCacheInvalid(false);
-            if (Env.logDebug) Env.log(150, getClass().getName() + " recache done..");
+//            if (Env.logDebug) Env.log(150, getClass().getName() + " recache done..");
         }
-        ;
-        if (Env.logDebug) Env.log(150, getClass().getName() + " - recache fin..");
-    };
+//        ;
+//        if (Env.logDebug) Env.log(150, getClass().getName() + " - recache fin..");
+    }
+
+    ;
 
     public Object[] getCache() {
         return cache;
@@ -139,8 +163,5 @@ public abstract class Registry {
     public void setSet(SortedSet set) {
         this.set = set;
     }
-}
-
-;
-
+} 
 

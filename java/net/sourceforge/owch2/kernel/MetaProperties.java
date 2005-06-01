@@ -1,13 +1,15 @@
 package net.sourceforge.owch2.kernel;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
 
 /**
- *     Acts like a Properties Class, with plug-in serilization;
+ * Acts like a Properties Class, with plug-in serilization;
  *
- * @version $Id: MetaProperties.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $
  * @author James Northrup
+ * @version $Id: MetaProperties.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 
 public interface MetaProperties extends MetaAgent, Map {
@@ -23,14 +25,17 @@ public interface MetaProperties extends MetaAgent, Map {
 
     /**
      * RNODI specific Properties Serialization input.
-     * @param istream Source of input.
-     * @exception java.io.IOException thrown if istream throws an Exception.
+     *
+     * @param reader Source of input.
+     * @throws java.io.IOException thrown if istream throws an Exception.
      */
     public void load(InputStream reader) throws IOException ;
 
     public String getURL();
 
-    /** Save properties to an OutputStream. */
+    /**
+     * Save properties to an OutputStream.
+     */
     public void save(OutputStream writer) throws IOException;
 
     public String getFormat();

@@ -1,11 +1,14 @@
 package net.sourceforge.owch2.kernel;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * ListenerCache
- * @version $Id: ListenerCache.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $
+ *
  * @author James Northrup
+ * @version $Id: ListenerCache.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public class ListenerCache implements Runnable {
     Map cache = new TreeMap();
@@ -18,11 +21,13 @@ public class ListenerCache implements Runnable {
         ListenerReference lr = getNextInLine();
         //do the work of taking ls and making a Location for it
         return Location.create(lr);
-    };
+    }
+
+    ;
 
     //for UDP ListenerCaches this can be used to stripe the output ports of a protocol
-    //such as owch
-    public ListenerReference getNextInLine() {
+            //such as owch
+            public ListenerReference getNextInLine() {
         if (enumFlag == false) {
             enumCycle = cache.keySet().iterator();
             enumFlag = true;
@@ -30,8 +35,7 @@ public class ListenerCache implements Runnable {
         ;
         if (enumCycle.hasNext()) {
             return (ListenerReference) cache.get(enumCycle.next());
-        }
-        else {
+        } else {
             //empty hashTable cannot give us good info
             if (cache.size() == 0) {
                 return null;
@@ -39,9 +43,12 @@ public class ListenerCache implements Runnable {
             //if not empty, but we're at the bottom,
             //start over...
             enumFlag = false;
-        }        ;
+        }
+        ;
         return getNextInLine();
-    };
+    }
+
+    ;
 
     public void put(ListenerReference l) {
         cache.put(new Integer(l.getServer().getLocalPort()), l);
@@ -58,13 +65,17 @@ public class ListenerCache implements Runnable {
         }
         enumFlag = false;
         return l;
-    };
+    }
+
+    ;
 
     public ListenerCache() {
         Thread t = new Thread(this, "ListenerCache");
         t.setDaemon(true);
         t.start();
-    };
+    }
+
+    ;
 
     long lowscore = 0;
     ListenerReference nextInLine = null;
@@ -95,15 +106,16 @@ public class ListenerCache implements Runnable {
         //the soonest available expire time,
         //and resets the sleeping value
         notify();
-    };
+    }
+
+    ;
 
     public synchronized void run() {
-        while (!Env.shutdown) {
+        while (!Env.getInstance().shutdown) {
             try {
                 if (lowscore == 0) {
                     wait(5000);
-                }
-                else {
+                } else {
                     //emulate unix select() timeout
                     wait(lowscore - System.currentTimeMillis());
                 }
@@ -118,7 +130,9 @@ public class ListenerCache implements Runnable {
             //or threadgroup
         }
         ;
-    };
+    }
+
+    ;
 }
 
 ;

@@ -1,17 +1,23 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.router.*;
+import net.sourceforge.owch2.router.Router;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
-/**   AbstractAgent provides the base class which communicates with the Env
+/**
+ * AbstractAgent provides the base class which communicates with the Env
  * agent host platform and the protocols it operates. communication is
  * handled by constructing a MetaProperties Object and calling the
  * send() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
  * other nodes in the namespace.
- * @version $Id: AbstractAgent.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $
+ *
  * @author James Northrup
+ * @version $Id: AbstractAgent.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 abstract public class AbstractAgent extends TreeMap implements Agent {
     protected boolean killFlag = false;
@@ -26,12 +32,13 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     /**
      * Gets one of this object's properties using the associated key.
+     *
      * @see #putValue
      */
     public Object getValue(String key) {
-        if (Env.logDebug) Env.log(499, getClass().getName() + ":" + key);
+//        if (Env.logDebug) Env.log(499, getClass().getName() + ":" + key);
         Object value = null; //= default_val;
-        Class c = this.getClass();
+        Class<? extends Object> c = this.getClass();
         try {
             value = c.getField(key).get(this);
         }
@@ -50,15 +57,15 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
     /**
      * Sets one of this object's properties using the associated key. If the value has
      * changed, a <code>PropertyChangeEvent</code> is sent to listeners.
-     * @param key    a <code>String</code> containing the key
-     * @param value  an <code>Object</code> value
+     *
+     * @param key   a <code>String</code> containing the key
+     * @param value an <code>Object</code> value
      */
     public void putValue(String key, Object value) {
         String attempt = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-        if (Env.logDebug)
-            Env.log(499,
-                    getClass().getName() + ":" + key + "=" + value + "::" + value.getClass().getName());
-        Class c = this.getClass();
+//        if (Env.logDebug)
+//            Env.log(499,                     getClass().getName() + ":" + key + "=" + value + "::" + value.getClass().getName());
+        Class<? extends Object> c = this.getClass();
         Class[] vclass = new Class[]{value.getClass()};
         try {
             Method m = c.getMethod(attempt, vclass);
@@ -66,8 +73,8 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
                     new Object[]{value});
         }
         catch (NoSuchMethodException nsm) {
-            if (Env.logDebug) Env.log(499, attempt);
-            ;
+//            if (Env.logDebug) Env.log(499, attempt);
+//            ;
             nsm.printStackTrace();
             try {
                 Field f = c.getField(key);
@@ -87,16 +94,19 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     public boolean isParent() {
         return false; //
-    };
+    }
+
+    ;
 
     /**
      * Sends a Link notification other node(s) intended to establish direct socket communication.
+     *
      * @param lk node(s) to link to
      */
     public void linkTo(String lk) {
         if (lk == null) {
-            if (Env.logDebug) Env.log(5, getClass().getName() + "::" + this.getJMSReplyTo() + ".link invoked. routing to default");
-            lk = Env.getParentNode().getJMSReplyTo();
+//            if (Env.logDebug) Env.log(5, getClass().getName() + "::" + this.getJMSReplyTo() + ".link invoked. routing to default");
+            lk = Env.getInstance().getParentNode().getJMSReplyTo();
         }
         ;
         MetaProperties n = new Notification();
@@ -107,7 +117,8 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     /**
      * AbstractAgent level Notification insignia creation and inter-process notification routing.
-     * @param n  Notification destined for somewhere else
+     *
+     * @param n Notification destined for somewhere else
      */
     public void send(MetaProperties n) {
         String d = null,w = null;
@@ -119,12 +130,14 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         ;
         d = (String) n.get("JMSDestination");
         if (d == null) {
-            if (Env.logDebug) Env.log(8, "debug: AbstractAgent.Send(Notification) dropping unsendd Notification from " + getJMSReplyTo());
+//            if (Env.logDebug) Env.log(8, "debug: AbstractAgent.Send(Notification) dropping unsendd Notification from " + getJMSReplyTo());
             return;
         }
         ;
-        Env.send(n);
-    };
+        Env.getInstance() .send(n);
+    }
+
+    ;
 
     public final void recv(MetaProperties notificationIn) {
         String JMSType = (String) notificationIn.get("JMSType");
@@ -133,13 +146,13 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
                     new Object[]{notificationIn});
         }
         catch (InvocationTargetException e) {
-            if (Env.logDebug)
-                Env.log(2, "" + e.getTargetException() + " thrown within " + this.getJMSReplyTo() + "::" +
-                        getClass().getName() + "->" + JMSType);
+//            if (Env.logDebug)
+//                Env.log(2, "" + e.getTargetException() + " thrown within " + this.getJMSReplyTo() + "::" +
+//                        getClass().getName() + "->" + JMSType);
             e.getTargetException().printStackTrace();
         }
         catch (Exception e) {
-            if (Env.logDebug) Env.log(2, "" + e + " thrown for " + this.getJMSReplyTo() + "::" + getClass().getName() + "->" + JMSType);
+//            if (Env.logDebug) Env.log(2, "" + e + " thrown for " + this.getJMSReplyTo() + "::" + getClass().getName() + "->" + JMSType);
         }
         ;
     }
@@ -149,28 +162,30 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     public AbstractAgent(Map proto) {
         super(proto);
-        Env.getRouter("IPC").addElement(this);
+        Env.getInstance().getRouter("IPC").addElement(this);
         if (!isParent()) {
             linkTo("default");
         }
     }
 
-    public void init(Map proto) {
+    public void init(Map  proto) {
         putAll(proto);
-        Env.getRouter("IPC").addElement(this);
+        Env.getInstance().getRouter("IPC").addElement(this);
         if (!isParent()) {
             linkTo("default");
         }
     }
 
-    /** this tells our (potentially clone) agent to stop re-registering.  it will cease to spin. */
+    /**
+     * this tells our (potentially clone) agent to stop re-registering.  it will cease to spin.
+     */
     public void handle_Dissolve(MetaProperties n) {
         killFlag = true;
         //UnLink("default");
         Router r[] = {
-            Env.getRouter("IPC"),
-            Env.getRouter("owch"),
-            Env.getRouter("http"),
+            Env.getInstance().getRouter("IPC"),
+            Env.getInstance().getRouter("owch"),
+            Env.getInstance().getRouter("http"),
         };
         for (int i = 0; i < r.length; i++) {
             try {
@@ -189,13 +204,16 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         n.put("JMSType", "Update");
         n.put("JMSDestination", dest);
         send(n);
-        if (Env.logDebug) Env.log(15, getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
-    };
+//        if (Env.getInstance().logDebug) Env.getInstance().log(15, getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
+    }
+
+    ;
 
 
     /**
      * Sends an update to another AbstractAgent
-     *  @param dest JMSReplyTo
+     *
+     * @param p JMSReplyTo
      */
     public void handle_Update(MetaProperties p) {
         String dest = p.getJMSReplyTo();
@@ -203,18 +221,19 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         n.put("JMSType", "Updated");
         n.put("JMSDestination", dest);
         send(n);
-        if (Env.logDebug) Env.log(15, getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
+//        if (Env.getInstance().logDebug) Env.getInstance().log(15, getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
     }
 
     /**
      * Sends a Link notification other node(s) intended to establish direct socket communication.
-     * @param lk node(s) to link to
+     *
+     * @param m node(s) to link to
      */
     public void handle_Unlink(MetaProperties m) {
         String lk = m.getJMSReplyTo();
         if (lk == null) {
-            if (Env.logDebug) Env.log(5, getClass().getName() + "::" + this.getJMSReplyTo() + ".unlink invoked. routing to default");
-            lk = Env.getParentNode().getJMSReplyTo();
+//            if (Env.getInstance().logDebug) Env.getInstance().log(5, getClass().getName() + "::" + this.getJMSReplyTo() + ".unlink invoked. routing to default");
+            lk = Env.getInstance().getParentNode().getJMSReplyTo();
         }
         ;
         MetaProperties n = new Notification();
@@ -230,13 +249,18 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     public final String getJMSReplyTo() {
         return (String) get("JMSReplyTo");
-    };
-    /**  move - clone self.<OL><LI> node arrives at new host,
-     *    registers in Nodecache on opaque name. <LI>sends
-     *    "Dissolve" message and registers original
-     *    name.  <LI>Dissolver registers new opaque name,
-     *    informs new clone to register.<LI> awaits
-     *    dissolve.
+    }
+
+    ;
+
+    /**
+     * move - clone self.<OL><LI> node arrives at new host,
+     * registers in Nodecache on opaque name. <LI>sends
+     * "Dissolve" message and registers original
+     * name.  <LI>Dissolver registers new opaque name,
+     * informs new clone to register.<LI> awaits
+     * dissolve.
+     *
      * @param notificationIn the payload describing the move
      */
 
@@ -244,33 +268,36 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
         String host = notificationIn.get("Host").toString(); //name of a Deploy agent
         if (host == null) {
-            host = Env.getHostname();
+            host = Env.getInstance().getHostname();
         }
         // move_state1(host);
     }
 
     public void clone_state1(String host) {
-        MetaProperties n2 = Env.getLocation("http");
+        MetaProperties n2 = Env.getInstance().getLocation("http");
         n2.putAll(this);
         n2.put("JMSType", "DeployNode");
         n2.put("Class", getClass().getName());
         n2.put("JMSReplyTo", getJMSReplyTo());
-        n2.put("Source", Env.getLocation("http").getURL() + get("Resource"));
+        n2.put("Source", Env.getInstance().getLocation("http").getURL() + get("Resource"));
         //resource remains constant in this incarnation
         //n2.put( "Resource",get("Resource"));//produces 3 Strings
         n2.put("JMSDestination", host);
         send(n2);
-    };
+    }
+
+    ;
+
     /**
-     clone <OL><LI>recv order to clone, and host<LI>  deploy
-     new class.  <LI>deliver content.  <LI>close channel.
+     * clone <OL><LI>recv order to clone, and host<LI>  deploy
+     * new class.  <LI>deliver content.  <LI>close channel.
      */
 
     public void handle_Clone(MetaProperties n) {
 
         String host = n.get("Host").toString(); //name of a Deploy agent
         if (host == null) {
-            host = Env.getHostname();
+            host = Env.getInstance().getHostname();
         }
         clone_state1(host);
     }
@@ -283,7 +310,8 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         if (containsKey("Clone")) {
             String clist = (String) get("Clone");
             remove("Clone");
-            if (Env.logDebug) Env.log(500, getClass().getName() + " **Cloning for " + clist);
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(500, getClass().getName() + " **Cloning for " + clist);
             StringTokenizer st = new StringTokenizer(clist);
             while (st.hasMoreTokens()) {
                 clone_state1(st.nextToken());
@@ -294,7 +322,8 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
             try {
                 String clist = (String) get("Deploy");
                 remove("Deploy");
-                if (Env.logDebug) Env.log(500, getClass().getName() + " **Cloning for " + clist);
+                if (Env.getInstance().logDebug)
+                    Env.getInstance().log(500, getClass().getName() + " **Cloning for " + clist);
                 StringTokenizer st = new StringTokenizer(clist);
                 while (st.hasMoreTokens()) {
                     clone_state1(st.nextToken());

@@ -1,19 +1,23 @@
 package net.sourceforge.owch2.kernel;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 
 /**
- * $Id: PipeConnector.java,v 1.1 2002/12/08 16:05:51 grrrrr Exp $
- * @version $Id: PipeConnector.java,v 1.1 2002/12/08 16:05:51 grrrrr Exp $
+ * $Id: PipeConnector.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ *
  * @author James Northrup
+ * @version $Id: PipeConnector.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public class PipeConnector extends TCPServerWrapper implements ListenerReference, Runnable {
     int threads;
 
     public String getProtocol() {
         return "pipe";
-    };
+    }
+
+    ;
 
     public long getExpiration() {
         return (long) 0;
@@ -25,11 +29,15 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
 
     public ServerWrapper getServer() {
         return this;
-    };
+    }
+
+    ;
 
     public void expire() {
         getServer().close();
-    };
+    }
+
+    ;
 
     PipeConnector(InetAddress hostAddr, int port, int threads) throws IOException {
         super(port, hostAddr);
@@ -40,27 +48,33 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
             }
         }
         catch (Exception e) {
-            if (Env.logDebug) Env.log(2, "ServerSocket creation Failure:" + e.getMessage());
+            if (Env.getInstance().logDebug) Env.getInstance().log(2, "ServerSocket creation Failure:" + e.getMessage());
         }
-    };
+    }
+
+    ;
 
     public void run() {
-        while (!Env.shutdown) {
+        while (!Env.getInstance().shutdown) {
             try {
                 Socket s = accept();
-                if (Env.logDebug) Env.log(20, "debug: " + Thread.currentThread().getName() + " init");
+                if (Env.getInstance().logDebug)
+                    Env.getInstance().log(20, "debug: " + Thread.currentThread().getName() + " init");
             }
             catch (Exception e) {
-                if (Env.logDebug) Env.log(2, "PipeServer thread going down in flames");
+                if (Env.getInstance().logDebug) Env.getInstance().log(2, "PipeServer thread going down in flames");
             }
         }
-    };
-}
+    }
 
-;
+    ;
+}
 //$Log: PipeConnector.java,v $
-//Revision 1.1  2002/12/08 16:05:51  grrrrr
-//Initial revision
+//Revision 1.2  2005/06/01 06:43:11  grrrrr
+//no message
+//
+//Revision 1.1.1.1  2002/12/08 16:05:51  grrrrr
+//
 //
 //Revision 1.1.1.1  2002/12/08 16:41:53  jim
 //
@@ -78,12 +92,6 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
 //idyuts has been incorporated and folded in
 //some SWing gui work on the IRC agent, proof its possible
 //new package names
-//
-//
-//
-//
-//
-//
 //
 //Revision 1.3  2001/09/23 10:20:10  grrrrr
 //lessee

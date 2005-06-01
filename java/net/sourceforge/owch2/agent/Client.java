@@ -18,8 +18,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 /**
- * @version $Id: Client.java,v 1.1 2002/12/08 16:05:48 grrrrr Exp $
  * @author James Northrup
+ * @version $Id: Client.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public class Client extends AbstractAgent implements Runnable {
     static String host = "localhost";
@@ -38,7 +38,9 @@ public class Client extends AbstractAgent implements Runnable {
             JMSReplyTo = args[0];
         }
         new Client();
-    };
+    }
+
+    ;
 
     /*
     *  Client Constructor
@@ -61,15 +63,20 @@ public class Client extends AbstractAgent implements Runnable {
             }
             ;
         }
-    }; //end construct
+    }
 
-    /** test clients don't need threads */
+    ; //end construct
+
+    /**
+     * test clients don't need threads
+     */
     public void run() {
     }
 
     /**
      * sends a textual message to a node
-     * @param to recipient owch node name
+     *
+     * @param to  recipient owch node name
      * @param arg the text of the message
      */
     public void handle_Test(MetaProperties notificationIn) {

@@ -10,7 +10,7 @@ import java.util.*;
 public class IRCBridge extends AbstractAgent {
     String[] agents = {"", ""};
 
-    public IRCBridge(Map m) {
+    public IRCBridge(Map<? extends Object, ? extends Object> m) {
         super(m);
         super.relocate();
         final String aaaa = get("IRCAgents").toString();
@@ -21,7 +21,7 @@ public class IRCBridge extends AbstractAgent {
     public void setAgents(final String agentsIn) {
         StringTokenizer st = new StringTokenizer(agentsIn);
 
-        List l = new LinkedList();
+        List<String> l = new LinkedList<String>();
         while (st.hasMoreElements()) {
             String s = (String) st.nextElement();
             l.add(s);
@@ -39,29 +39,33 @@ public class IRCBridge extends AbstractAgent {
         Notification repeatedMessage;
 
         for (int i = 0; i < agents.length; i++) {
-            agent = agents[ i ];
+            agent = agents[i];
             if (ircAgent.equals(agent))
                 continue;
             repeatedMessage = new Notification(m);
-            repeatedMessage.put("JMSType", "MSG");repeatedMessage.put("IRCChannel", getJMSReplyTo());
+            repeatedMessage.put("JMSType", "MSG");
+            repeatedMessage.put("IRCChannel", getJMSReplyTo());
             repeatedMessage.put("JMSDestination", agent);
-            repeatedMessage.put("Value", finalValue)   ;
-            if (Env.logDebug) Env.log(448, getJMSReplyTo()+">>"+repeatedMessage.toString());
+            repeatedMessage.put("Value", finalValue);
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(448, getJMSReplyTo() + ">>" + repeatedMessage.toString());
             send(repeatedMessage);
         }
-    };
+    }
+
+    ;
 
     public static void main(String[] args) {
-        Map m = Env.parseCommandLineArgs(args);
-        final String[] ka = {"JMSReplyTo", "IRCAgents", };
+        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
+        final String[] ka = {"JMSReplyTo", "IRCAgents",};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
-            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" +
-                            "IRCBridge usage:\n\n" +
-                            "-name (String)name --(channel name e.g. #python)\n" +
-                            "-IRCAgents (String)'agent1[ agent..n]'\n" +
-                            "[-Deploy 'host1[ ..hostn]']\n" +
-                            "$Id: IRCBridge.java,v 1.1 2002/12/08 16:05:49 grrrrr Exp $\n");
+            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
+                    "IRCBridge usage:\n\n" +
+                    "-name (String)name --(channel name e.g. #python)\n" +
+                    "-IRCAgents (String)'agent1[ agent..n]'\n" +
+                    "[-Deploy 'host1[ ..hostn]']\n" +
+                    "$Id: IRCBridge.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
         }
         IRCBridge d = new IRCBridge(m);
     }

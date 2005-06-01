@@ -13,7 +13,9 @@ public class Report {
 
     public String toString() {
         return text + "=" + occ.getCount();
-    };
+    }
+
+    ;
 }
 
 

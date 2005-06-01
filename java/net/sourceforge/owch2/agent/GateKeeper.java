@@ -14,10 +14,10 @@ import java.util.Map;
  */
 public class GateKeeper extends AbstractAgent {
     public static void main(String[] args) {
-        Map m = Env.parseCommandLineArgs(args);
+        Map<? extends Object, ? extends Object> m = Env.getInstance(). parseCommandLineArgs(args);
         if (!(m.containsKey("JMSReplyTo") && m.containsKey("HostPort"))) {
-            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
-                    "-name name\n" + "-HostPort port\n" + "$Id: GateKeeper.java,v 1.1 2002/12/08 16:05:48 grrrrr Exp $\n");
+            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
+                    "-name name\n" + "-HostPort port\n" + "$Id: GateKeeper.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
         }
         ;
         GateKeeper d = new GateKeeper(m);
@@ -31,30 +31,31 @@ public class GateKeeper extends AbstractAgent {
         catch (Exception e) {
         }
         ;
-    };
+    }
 
-    /**
-     * @param to recipient owch node name
-     * @param arg the text of the message
-     */
+    ;
+
+
     public void handle_Register(MetaProperties notificationIn) {
         try {
             String Item = notificationIn.get("URLSpec").toString();
             notificationIn.put("URL", notificationIn.get("URLFwd"));
-            Env.gethttpRegistry().registerItem(Item, notificationIn);
+            Env.getInstance().gethttpRegistry().registerItem(Item, notificationIn);
             return;
         }
         catch (Exception e) {
         }
         ;
         return;
-    };
+    }
+
+    ;
 
     public void handle_UnRegister(MetaProperties notificationIn) {
         try {
             String Item = notificationIn.get("URLSpec").toString();
             notificationIn.put("URL", notificationIn.get("URLFwd"));
-            Env.gethttpRegistry().unregisterItem(Item);
+            Env.getInstance().gethttpRegistry().unregisterItem(Item);
             return;
         }
         catch (Exception e) {
@@ -67,9 +68,9 @@ public class GateKeeper extends AbstractAgent {
      * this has the effect of taking over the command of the http
      * service on the agent host and handling messages to marshal http registrations
      */
-    public GateKeeper(Map m) {
+    public GateKeeper(Map<? extends Object, ? extends Object> m) {
         super(m);
-        Env.getLocation("http");
+        Env.getInstance().getLocation("http");
     }
 }
 

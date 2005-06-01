@@ -1,17 +1,15 @@
 package net.sourceforge.owch2.kernel;
 
 /**
-*
-* ListenerReference
-*
-*
- * @version $Id: ListenerReference.java,v 1.1 2002/12/08 16:05:50 grrrrr Exp $
+ * ListenerReference
+ *
  * @author James Northrup
+ * @version $Id: ListenerReference.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
  */
 public interface ListenerReference {
     public void expire();
 
-    public  ServerWrapper getServer();
+    public ServerWrapper getServer();
 
     public String getProtocol(); //used in the process of creating the URL
 

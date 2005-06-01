@@ -21,7 +21,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     private Thread
             thread;
 
-    public MobilePayload(Map m) {
+    public MobilePayload(Map<? extends Object, ? extends Object> m) {
         super(m);
         if (containsKey("Source")) {
             init((String) get("JMSReplyTo"), (String) get("Source"), (String) get("Resource"));
@@ -43,21 +43,27 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public static void main(String[] args) {
-        Map m = Env.parseCommandLineArgs(args);
+        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
         if (!(m.containsKey("JMSReplyTo") && m.containsKey("Resource"))) {
-            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "MobilePayload Agent usage:\n\n" + "-name name\n" +
+            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "MobilePayload Agent usage:\n\n" + "-name name\n" +
                     "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n" +
                     "-Source 'file' -- the file \n" + "[-Content-Type 'application/msword']\n" + "[-Clone 'host1[ ..hostn]']\n" +
-                    "[-Deploy 'host1[ ..hostn]']\n" + "$Id: MobilePayload.java,v 1.1 2002/12/08 16:05:49 grrrrr Exp $\n");
+                    "[-Deploy 'host1[ ..hostn]']\n" + "$Id: MobilePayload.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
         }
         ;
         new MobilePayload(m);
-    };
+    }
 
-    /** this is a set of headers that is simply nice to have... */
+    ;
+
+    /**
+     * this is a set of headers that is simply nice to have...
+     */
     protected Notification nice = new Notification();
 
-    /** this is a set of header fields that is simply nice to have... */
+    /**
+     * this is a set of header fields that is simply nice to have...
+     */
     protected final String[] nice_headers =
             {
                 "Last-Modified",
@@ -65,7 +71,9 @@ public class MobilePayload extends AbstractAgent implements Runnable {
                 "Content-Encoding"
             };
 
-    /** interval defines our random interval of re-registration starting with 1/2n..n milliseconds */
+    /**
+     * interval defines our random interval of re-registration starting with 1/2n..n milliseconds
+     */
     private long interval = 60 * 1000 * 2;
     protected byte[] payload; //for now we'll just assume payload is a static buffer
     //todo: servelet api
@@ -81,7 +89,8 @@ public class MobilePayload extends AbstractAgent implements Runnable {
             relocate();
 
             long tim = (long) (Math.random() * (interval / 2.0) + (interval / 2.0));
-            if (Env.logDebug) Env.log(12, getClass().getName() + " waiting for " + tim + " ms.");
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(12, getClass().getName() + " waiting for " + tim + " ms.");
             try {
                 Thread.currentThread().sleep(tim);
             } catch (InterruptedException e) {
@@ -92,7 +101,9 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         }
     }
 
-    /** this tells our (potentially clone) web page to stop re-registering.  it will cease to spin. */
+    /**
+     * this tells our (potentially clone) web page to stop re-registering.  it will cease to spin.
+     */
     public void handle_Dissolve(MetaProperties n) {
         thread.interrupt();
         Notification n2 = new Notification();
@@ -101,7 +112,9 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         n2.put("URLSpec", get("Resource").toString());
         send(n2);
         super.handle_Dissolve(n);
-    };
+    }
+
+    ;
 
 /*
 *  MobilePayload Constructor
@@ -156,7 +169,9 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    };
+    }
+
+    ;
 
     public void inductFile(String file) {
         try {
@@ -176,7 +191,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public void inductStream(InputStream is) {
-        Env.getRouter("IPC").addElement(this);
+        Env.getInstance().getRouter("IPC").addElement(this);
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] buf = new byte[16384];
@@ -187,8 +202,8 @@ public class MobilePayload extends AbstractAgent implements Runnable {
                 actual = is.read(buf);
                 if (actual >= 0) {
                     os.write(buf, 0, actual);
-                    if (Env.logDebug)
-                        Env.log(50, getClass().getName() + ":" + get("Resource").toString() +
+                    if (Env.getInstance().logDebug)
+                        Env.getInstance().log(50, getClass().getName() + ":" + get("Resource").toString() +
                                 " slurped up " + actual + " bytes");
                 }
             }
@@ -197,15 +212,19 @@ public class MobilePayload extends AbstractAgent implements Runnable {
             os.close();
             thread = new Thread(this, getClass().getName() + ":" + get("JMSReplyTo()") + ":" + get("Resource"));
             thread.start();
-            if (Env.logDebug) Env.log(50, "-=-=-=-=-" + getClass().getName() + ":" + get("Resource").toString() + " ThreadStart ");
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(50, "-=-=-=-=-" + getClass().getName() + ":" + get("Resource").toString() + " ThreadStart ");
         } catch (Exception e) {
-            if (Env.logDebug) Env.log(50, getClass().getName() + ":" + get("Resource").toString() + " failure " + e.getMessage());
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(50, getClass().getName() + ":" + get("Resource").toString() + " failure " + e.getMessage());
             e.printStackTrace();
             return;
         }
     }
 
-    /** sets the IM HERE interval for our periodic re-registration tasks. */
+    /**
+     * sets the IM HERE interval for our periodic re-registration tasks.
+     */
     public void setInterval(long ival) {
         Thread.currentThread().yield();
         interval = ival;
@@ -214,9 +233,9 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     public void sendRegistrations() {
         linkTo(null);
         String resource = get("Resource").toString();
-        Location l = new Location(Env.getLocation("http"));
+        Location l = new Location(Env.getInstance().getLocation("http"));
         l.put("JMSReplyTo", getJMSReplyTo());
-        Env.gethttpRegistry().registerItem(resource, l);
+        Env.getInstance().gethttpRegistry().registerItem(resource, l);
         Notification n2 = new Notification();
         n2.put("JMSDestination", "GateKeeper");
         n2.put("JMSType", "Register");
@@ -225,7 +244,9 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         send(n2);
     }
 
-    /** sendPayload(socket) dumps our byte[] to the socket client.. */
+    /**
+     * sendPayload(socket) dumps our byte[] to the socket client..
+     */
     public void sendPayload(Socket s) {
         /**
          * Thanks given where due... HEAD /pub/GNU/guile/guile-1.4.tar.gz HTTP/1.0
@@ -261,7 +282,8 @@ public class MobilePayload extends AbstractAgent implements Runnable {
                 while (is.available() > 0) {
                     actual = is.read(buf);
                     if (actual > 0) {
-                        if (Env.logDebug) Env.log(50, getClass().getName() + ":" + getJMSReplyTo() + " sent " + actual + " bytes");
+                        if (Env.getInstance().logDebug)
+                            Env.getInstance().log(50, getClass().getName() + ":" + getJMSReplyTo() + " sent " + actual + " bytes");
                         os.write(buf, 0, actual);
                     }
                 }
@@ -270,10 +292,13 @@ public class MobilePayload extends AbstractAgent implements Runnable {
             os.close();
             s.close();
         } catch (Exception e) {
-            if (Env.logDebug) Env.log(15, getClass().getName() + ":" + getJMSReplyTo() + " failure " + e.getMessage());
+            if (Env.getInstance().logDebug)
+                Env.getInstance().log(15, getClass().getName() + ":" + getJMSReplyTo() + " failure " + e.getMessage());
             e.printStackTrace();
         }
-    };
+    }
+
+    ;
 
     public void handle_httpd(MetaProperties n) {
         Socket s = (Socket) n.get("_Socket");
@@ -294,7 +319,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         if (overwrite = "true".intern().equals(n.get("OverWrite"))
                 &&
                 file.exists()) {
-            Env.log(33, "cannot overwrite file " + file.toString());
+            Env.getInstance().log(33, "cannot overwrite file " + file.toString());
             return;
         }
         File tmpfile;

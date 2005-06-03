@@ -1,18 +1,15 @@
 package net.sourceforge.owch2.kernel;
 
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 /**
  * owchListener.java
  *
  * @author James Northrup
- * @version $Id: owchListener.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: owchListener.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class owchListener extends UDPServerWrapper implements Runnable, ListenerReference,
         DatagramPacketSource {
@@ -22,11 +19,10 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
         super(hostAddr, port);
         this.threads = threads;
 //        Auto.attach(this, Env.getInstance() .getNotificationFactory());
-        attach(
-                Env.getInstance() .getNotificationFactory());
-    }
 
-    ;
+        attach(
+                NotificationFactory.getInstance());
+    }
 
     public owchListener(InetAddress hostAddr, int port) throws SocketException {
         super(hostAddr, port);
@@ -53,13 +49,10 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
 //        if (Env.logDebug) Env.log(5, "debug: OWCH THREAD STOP");
     }
 
-    ;
-
-    public String getProtocol() {
-        return "owch";
+    public ProtocolType getProtocol() {
+        return ProtocolType.owch;
     }
 
-    ;
 
     public long getExpiration() {
         return (long) 0;
@@ -73,13 +66,9 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
         return this;
     }
 
-    ;
-
     public void expire() {
         getServer().close();
     }
-
-    ;
 
     private java.util.List _DatagramPacket_clients = new ArrayList();
 

@@ -1,6 +1,6 @@
 package net.sourceforge.owch2.kernel;
 
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Class is used to track the connections a proxy is entertaining.
@@ -9,7 +9,7 @@ import java.util.TreeMap;
  * This is implicitly a proxy aggregate.
  *
  * @author James Northrup
- * @version $Id: LinkRegistry.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: LinkRegistry.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 //TODO:remove LinkRegistry from owch
 
@@ -52,9 +52,9 @@ public class LinkRegistry extends TreeMap {
      * notifications
      */
     static String[] reserved =
-            {"ACK".intern(), "Created".intern(), "JMSDestination".intern(), "MessageText".intern(),
-                "JMSReplyTo".intern(), "ResentFrom".intern(), "JMSMessageID".intern(), "JMSType".intern(),
-                "URL".intern(), "retry".intern()};
+    {"ACK".intern(), "Created".intern(), "JMSDestination".intern(), "MessageText".intern(),
+        "JMSReplyTo".intern(), "ResentFrom".intern(), "JMSMessageID".intern(), "JMSType".intern(),
+        "URL".intern(), "retry".intern()};
 }
 
 

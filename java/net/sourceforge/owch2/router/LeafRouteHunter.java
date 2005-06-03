@@ -1,13 +1,12 @@
 package net.sourceforge.owch2.router;
 
-import net.sourceforge.owch2.kernel.Env;
+import static net.sourceforge.owch2.kernel.ProtocolType.*;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: LeafRouteHunter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
+ * @version $Id: LeafRouteHunter.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class LeafRouteHunter extends RouteHunterImpl {
     public Collection getOutbound() {
@@ -15,7 +14,7 @@ public class LeafRouteHunter extends RouteHunterImpl {
     }
 
     public void setOutbound(Collection<Router> outbound) {
-        this.outbound = outbound;
+
     }
 
     public Collection getInbound() {
@@ -23,15 +22,30 @@ public class LeafRouteHunter extends RouteHunterImpl {
     }
 
     public void setInbound(Collection<Router> inbound) {
-        this.inbound = inbound;
     }
 
-    private static Collection<Router> outbound = Arrays.asList(
-            new Router[]{Env.getInstance().getRouter("IPC"), Env.getInstance().getRouter("owch"),
-                Env.getInstance().getRouter("http"), Env.getInstance().getRouter("default")});
-    private static Collection<Router> inbound = Arrays.asList(
-            new Router[]{Env.getInstance().getRouter("IPC"), Env.getInstance().getRouter("owch"),
-                Env.getInstance().getRouter("http"),});
+    private static Collection<Router> outbound;
+
+    static {
+        outbound = Arrays.asList(
+                new Router[]{
+                    ipc.routerInstance(),
+                    owch.routerInstance(),
+                    Http.routerInstance(),
+                    Default.routerInstance()});
+    }
+
+
+    private static Collection<Router> inbound;
+
+    static {
+        inbound = Arrays.asList(
+                new Router[]{ipc.routerInstance(),
+                    owch.routerInstance(),
+                    Http.routerInstance(),});
+    }
+
+
 }
 
 ;

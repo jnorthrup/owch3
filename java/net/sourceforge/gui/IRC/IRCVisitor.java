@@ -1,18 +1,13 @@
 package net.sourceforge.gui.IRC;
 
-import net.sourceforge.gui.AgentVisitor;
-import net.sourceforge.gui.TextPanel;
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.Location;
+import net.sourceforge.gui.*;
+import net.sourceforge.owch2.kernel.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.awt.event.*;
+import java.lang.reflect.*;
+import java.util.logging.*;
 
 public class IRCVisitor extends JFrame implements AgentVisitor {
     public TextPanel IRCHostText = new TextPanel("IRCHostname")
@@ -158,7 +153,7 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
         }
         ;
         AgentDescriptor.setEnabled(false);
-        if (Env.getInstance().logDebug) Env.getInstance().log(509, l.toString());
+        if (Env.getInstance().logDebug) Logger.global.info(l.toString());
         setNode(new IRCManager(this, l));
     }
 
@@ -169,12 +164,12 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
         try {
             String key1 = key.toString();
             Class<? extends Object> c = getClass();
-            if (Env.getInstance().logDebug) Env.getInstance().log(5, "get::" + key1 + "Text");
+            if (Env.getInstance().logDebug) Logger.global.info("get::" + key1 + "Text");
             Field f = c.getField(key1 + "Text");
-            if (Env.getInstance().logDebug) Env.getInstance().log(5, "getf::" + f.toString());
+            if (Env.getInstance().logDebug) Logger.global.info("getf::" + f.toString());
             Object o = f.get(this);
             Method m = o.getClass().getMethod("getText", AgentVisitor.no_class);
-            if (Env.getInstance().logDebug) Env.getInstance().log(5, "getm::" + m.toString());
+            if (Env.getInstance().logDebug) Logger.global.info("getm::" + m.toString());
             return m.invoke(o, AgentVisitor.no_Parm).toString();
 
         }
@@ -212,9 +207,9 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
         try {
             String key1 = key.toString();
             Class<? extends Object> c = getClass();
-            if (Env.getInstance().logDebug) Env.getInstance().log(5, "get::" + key1 + "Text");
+            if (Env.getInstance().logDebug) Logger.global.info("get::" + key1 + "Text");
             Field f = c.getField(key1 + "Text");
-            if (Env.getInstance().logDebug) Env.getInstance().log(5, "get::" + f.toString());
+            if (Env.getInstance().logDebug) Logger.global.info("get::" + f.toString());
             Object o = f.get(this);
             Method m = o.getClass().getMethod("setText",
                     new Class[]{String.class});

@@ -11,12 +11,12 @@ package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: Room.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: Room.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class Room extends AbstractAgent implements Runnable {
     //String dir=".";
@@ -26,7 +26,7 @@ public class Room extends AbstractAgent implements Runnable {
         Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
         if (!(m.containsKey("JMSReplyTo"))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "Room Agent usage:\n\n" + "-name name\n" +
-                    "$Id: Room.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
+                    "$Id: Room.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
         }
         Room d = new Room(m);
         Thread t = new Thread();
@@ -58,7 +58,7 @@ public class Room extends AbstractAgent implements Runnable {
         //TODO: make MetaPropertiesects
         String userNode = clientIn.getJMSReplyTo();
         String userKey = (String) usersList.get(userNode);
-        if (Env.getInstance().logDebug) Env.getInstance().log(8, "Room - addUser = " + userNode + "key = " + userKey);
+        if (Env.getInstance().logDebug) Logger.global.info("Room - addUser = " + userNode + "key = " + userKey);
         if (userKey == null) {
             usersList.put(userNode, clientIn);
         }
@@ -72,7 +72,10 @@ public class Room extends AbstractAgent implements Runnable {
      * @param nIn a MetaProperties
      */
     public void handle_Test(MetaProperties nIn) {
-        MetaProperties n = new Notification(Env.getInstance().getLocation("http"));
+        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Protocol);
+
+        MetaProperties l = ProtocolType.Http.getLocation();
+        MetaProperties n = new Notification(l);
         n.put("JMSDestination", nIn.get("JMSReplyTo"));
         n.put("JMSType", "Test");
         String url = n.get("URL") + "/test.jar";
@@ -98,7 +101,7 @@ public class Room extends AbstractAgent implements Runnable {
             tmpJMSReplyTo = (String) e.next();
             nIn.put("JMSDestination", tmpJMSReplyTo);
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(8, "Room.Publish (" + roomServerName + ")(" + nIn.getJMSReplyTo() + ") user is " +
+                Logger.global.info("Room.Publish (" + roomServerName + ")(" + nIn.getJMSReplyTo() + ") user is " +
                         nIn.get("JMSDestination"));
             send(new Notification(nIn));
         }
@@ -120,7 +123,7 @@ public class Room extends AbstractAgent implements Runnable {
     synchronized public void syncUsers(String nodeNameIn) {
         String tmpJMSReplyTo = null;
         MetaProperties notificationOut = new Notification();
-        if (Env.getInstance().logDebug) Env.getInstance().log(8, "Room - syncUsers  ");
+        if (Env.getInstance().logDebug) Logger.global.info("Room - syncUsers  ");
         notificationOut.put("JMSType", "UserUpdate");
         notificationOut.put("SubJMSType", "Add");
         notificationOut.put("JMSDestination", nodeNameIn);
@@ -131,7 +134,7 @@ public class Room extends AbstractAgent implements Runnable {
             tmpJMSReplyTo = (String) e.next();
             notificationOut.put("JMSReplyTo", tmpJMSReplyTo);
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(8, "Room.Publish (" + roomServerName + ")(" + notificationOut.getJMSReplyTo() + ") user is" +
+                Logger.global.info("Room.Publish (" + roomServerName + ")(" + notificationOut.getJMSReplyTo() + ") user is" +
                         notificationOut.get("JMSDestination"));
             send(new Notification(notificationOut));
         }
@@ -160,12 +163,12 @@ public class Room extends AbstractAgent implements Runnable {
         //Random
         try {
             long tim = (long) (Math.random() * 180.0 * 1000.0) + 60000;
-            if (Env.getInstance().logDebug) Env.getInstance().log(12, "debug: wait120 Waiting for " + tim + " ms.");
+            if (Env.getInstance().logDebug) Logger.global.info("debug: wait120 Waiting for " + tim + " ms.");
             Thread.currentThread().sleep(tim, 0);
         }
         catch (Exception e) {
         }
-        if (Env.getInstance().logDebug) Env.getInstance().log(13, "debug: wait120 end");
+        if (Env.getInstance().logDebug) Logger.global.info("debug: wait120 end");
     }
 }
 

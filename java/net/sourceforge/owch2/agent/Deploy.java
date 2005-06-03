@@ -5,18 +5,12 @@
 
 package net.sourceforge.owch2.agent;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.MetaAgent;
-import net.sourceforge.owch2.kernel.MetaProperties;
-import net.sourceforge.owch2.router.Router;
+import net.sourceforge.owch2.kernel.*;
+import static net.sourceforge.owch2.kernel.ProtocolType.*;
 
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.net.*;
+import java.util.*;
+import java.util.logging.*;
 
 public class Deploy extends AbstractAgent {
     static int uniq = 0;
@@ -30,7 +24,7 @@ public class Deploy extends AbstractAgent {
                 Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
                         "Deploy Agent usage:\n\n" +
                         "-name name\n" +
-                        "$Id: Deploy.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
+                        "$Id: Deploy.java,v 1.3 2005/06/03 18:27:46 grrrrr Exp $\n");
             }
         }
         Deploy d = new Deploy(m);
@@ -59,13 +53,13 @@ public class Deploy extends AbstractAgent {
      */
     public void handle_Deploy(MetaProperties n) {
         String _class = (String) n.get("Class");
-        if (Env.getInstance().logDebug) Env.getInstance().log(45, "Deplying::Class " + _class);
+        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Class " + _class);
         String path = (String) n.get("Path");
-        if (Env.getInstance().logDebug) Env.getInstance().log(45, "Deplying::Path " + path);
+        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Path " + path);
         String parm = (String) n.get("Parameters");
-        if (Env.getInstance().logDebug) Env.getInstance().log(45, "Deplying::Parameters " + parm);
+        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Parameters " + parm);
         String signature = (String) n.get("Signature");
-        if (Env.getInstance().logDebug) Env.getInstance().log(45, "Deplying::Signature " + signature);
+        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Signature " + signature);
         int i;
         java.util.List tokens;
         //we use a classloader based on our reletive origin..
@@ -77,7 +71,7 @@ public class Deploy extends AbstractAgent {
             String temp_str = tok_arr[i];
             tokens = new ArrayList();
             if (temp_str == null) {
-                if (Env.getInstance().logDebug) Env.getInstance().log(500, "Deploy tokenizing nullinating  " + i);
+                if (Env.getInstance().logDebug) Logger.global.info("Deploy tokenizing nullinating  " + i);
                 temp_str = "";
             }
             st = new StringTokenizer(temp_str);
@@ -86,7 +80,7 @@ public class Deploy extends AbstractAgent {
             }
             res_arr[i] = tokens.toArray();
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(500, "Deploy arr" + i + " found " + res_arr[i].length + " tokens");
+                Logger.global.info("Deploy arr" + i + " found " + res_arr[i].length + " tokens");
         }
         URL[] path_arr = new URL[ res_arr[0].length ];
         Object[] parm_arr = new Object[ res_arr[1].length ];
@@ -121,9 +115,9 @@ public class Deploy extends AbstractAgent {
 
     public void handle_DeployNode(MetaProperties n) {
         String _class = (String) n.get("Class");
-        if (Env.getInstance().logDebug) Env.getInstance().log(45, "Deplying::Class " + _class);
+        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Class " + _class);
         String path = (String) n.get("Path");
-        if (Env.getInstance().logDebug) Env.getInstance().log(45, "Deplying::Path " + path);
+        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Path " + path);
         int i;
         java.util.List tokens;
         //we use a classloader based on our reletive origin..
@@ -136,7 +130,7 @@ public class Deploy extends AbstractAgent {
             String temp_str = tok_arr[i];
             tokens = new ArrayList();
             if (temp_str == null) {
-                if (Env.getInstance().logDebug) Env.getInstance().log(500, "Deploy tokenizing nullinating  " + i);
+                if (Env.getInstance().logDebug) Logger.global.info("Deploy tokenizing nullinating  " + i);
                 temp_str = "";
             }
             st = new StringTokenizer(temp_str);
@@ -145,7 +139,7 @@ public class Deploy extends AbstractAgent {
             }
             res_arr[i] = tokens.toArray();
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(500, "Deploy arr" + i + " found " + res_arr[i].length + " tokens");
+                Logger.global.info("Deploy arr" + i + " found " + res_arr[i].length + " tokens");
         }
         try {
             if (!n.containsKey("Singleton")) {
@@ -160,15 +154,11 @@ public class Deploy extends AbstractAgent {
             }
 
             /* this creates a new Object */
-            Object o =
-                    loader.loadClass(_class).getConstructor(
-                            new Class[]{Map.class}).newInstance(
-                            new Object[]{n});
+            Object metaAgent = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
             //use our Notification as a bootstrap of parms
-            if (o instanceof MetaAgent) {
-                Env.getInstance().getRouter("owch").remove(((MetaAgent) o).getJMSReplyTo());
-                Router r = Env.getInstance().getRouter("IPC");
-                r.addElement((Map) o);
+            if (metaAgent instanceof MetaAgent) {
+                owch.routerInstance().remove(((MetaAgent) metaAgent).getJMSReplyTo());
+                ipc.routerInstance().proxyAccepted((Map) metaAgent);
             }
             return;
         }

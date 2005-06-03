@@ -1,24 +1,25 @@
 package net.sourceforge.owch2.kernel;
 
+import static net.sourceforge.owch2.kernel.ProtocolType.*;
+
 import java.io.*;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URL;
-import java.text.SimpleDateFormat;
+import java.net.*;
+import java.text.*;
 import java.util.*;
+import java.util.logging.*;
 
 /**
  * Http server daemon used for sending files and routing agent notifications.
  *
  * @author James Northrup
- * @version $Id: httpServer.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: httpServer.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class httpServer extends TCPServerWrapper implements ListenerReference, Runnable {
     int threads;
     private final static Map mimetypes = new HashMap();
 
-    public String getProtocol() {
-        return "http";
+    public ProtocolType getProtocol() {
+        return Http;
     }
 
     ;
@@ -35,13 +36,9 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
         return this;
     }
 
-    ;
-
     public void expire() {
         getServer().close();
     }
-
-    ;
 
     public httpServer(InetAddress hostAddr, int port, int threads) throws IOException {
         super(port, hostAddr);
@@ -52,22 +49,20 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
             }
         }
         catch (Exception e) {
-            if (Env.getInstance().logDebug) Env.getInstance().log(2, "httpServer creation Failure");
+            if (Env.getInstance().logDebug) Logger.global.info("httpServer creation Failure");
         }
-        ;
     }
 
-    ;
 
     /**
      * called only on a new socket
      */
     public MetaProperties getRequest(Socket s) {
         String line = "";
-        if (Env.getInstance().logDebug) Env.getInstance().log(100, "httpServer.getRequest");
+        if (Env.getInstance().logDebug) Logger.global.info("httpServer.getRequest");
         Notification n = new Notification();
         try {
-            n.setFormat("RFC822");
+//            n.setFormat("RFC822");
             DataInputStream ins = new DataInputStream(s.getInputStream());
 
             line = ins.readLine();
@@ -75,9 +70,9 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
             n.put("Request", line);
         }
         catch (Exception e) {
-            if (Env.getInstance().logDebug) Env.getInstance().log(5, "had a DynServer Snag, retry");
+            if (Env.getInstance().logDebug) Logger.global.info("had a DynServer Snag, retry");
         }
-        if (Env.getInstance().logDebug) Env.getInstance().log(50, "returning " + n.toString());
+        if (Env.getInstance().logDebug) Logger.global.info("returning " + n.toString());
         return n;
     }
 
@@ -108,7 +103,6 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
                         e.getMessage() + "</H1>The requested URL " + file +
                         " was not found on this server.<P></BODY></HTML>").getBytes();
             }
-            ;
             if (pref == null) {
                 FileInputStream i = (FileInputStream) is;
                 String p = "HTTP/1.1 200 OK\n" + "Content-Type: " + getContentType(file) + "\n" + "Last-Modified: " +
@@ -116,7 +110,6 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
                         fd.length() + "\n\n";
                 pref = p.getBytes();
             }
-            ;
             OutputStream os = new BufferedOutputStream(s.getOutputStream());
             os.write(pref, 0, pref.length);
             os.flush();
@@ -134,25 +127,23 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
                     }
                     os.write(buf, 0, actual);
                     if (Env.getInstance().logDebug)
-                        Env.getInstance().log(50, "httpd " + file + " sent " + actual + " bytes");
+                        Logger.global.info("httpd " + file + " sent " + actual + " bytes");
                 }
             }
         }
         catch (Exception e) {
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(20, "httpd " + file + " connection exception " + e.getMessage());
+                Logger.global.info("httpd " + file + " connection exception " + e.getMessage());
         }
         finally {
             try {
-                if (Env.getInstance().logDebug) Env.getInstance().log(50, "httpd " + file + " connection closing");
+                if (Env.getInstance().logDebug) Logger.global.info("httpd " + file + " connection closing");
                 s.close();
             }
             catch (Exception e) {
             }
         }
     }
-
-    ;
 
     /**
      * this cuts the first line of the request into parts of the Request Notification so its easier to use
@@ -175,7 +166,11 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
      * it just sends a file it can find
      */
     public void dispatchRequest(Socket s, MetaProperties n) {
-        if (Env.getInstance().gethttpRegistry().dispatchRequest(s, n) == false) {
+//        if (webRegistry == null) {
+//            webRegistry = new httpRegistry();
+//        }
+//        return webRegistry;
+        if (httpRegistry.getInstance().dispatchRequest(s, n) == false) {
             sendFile(s, n.get("Resource").toString());
         }
     }
@@ -189,7 +184,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
             ArrayList list = new ArrayList();
             try {
                 if (Env.getInstance().logDebug)
-                    Env.getInstance().log(20, "debug: " + Thread.currentThread().getName() + " init");
+                    Logger.global.info("debug: " + Thread.currentThread().getName() + " init");
                 Socket s = accept();
                 MetaProperties n = getRequest(s);
                 parseRequest(n);
@@ -197,7 +192,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
             }
             catch (Exception e) {
                 if (Env.getInstance().logDebug)
-                    Env.getInstance().log(2, "httpServer thread going down in flames on : " + e.getMessage());
+                    Logger.global.info("httpServer thread going down in flames on : " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -221,7 +216,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
     }
 
     static {
-        if (Env.getInstance().logDebug) Env.getInstance().log(50, "... loading up the mime types.");
+        if (Env.getInstance().logDebug) Logger.global.info("... loading up the mime types.");
         httpServer.mimetypes.put("cpio", "application/x-cpio");
         httpServer.mimetypes.put("ai", "application/postscript");
         httpServer.mimetypes.put("eps", "application/postscript");

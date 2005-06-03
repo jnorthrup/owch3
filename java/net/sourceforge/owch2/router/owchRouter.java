@@ -1,107 +1,96 @@
 package net.sourceforge.owch2.router;
 
-import static net.sourceforge.owch2.kernel.Env.getInstance;
-import net.sourceforge.owch2.kernel.Location;
-import net.sourceforge.owch2.kernel.MetaProperties;
-import net.sourceforge.owch2.kernel.Notification;
-import net.sourceforge.owch2.kernel.URLString;
+import net.sourceforge.owch2.kernel.*;
+import static net.sourceforge.owch2.kernel.Location.URI_KEY;
+import static net.sourceforge.owch2.kernel.Notification.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: owchRouter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
+ * @version $Id: owchRouter.java,v 1.2 2005/06/03 18:27:48 grrrrr Exp $
  */
 public class owchRouter implements Router {
     static long ser = 0;
-    private Map elements = new TreeMap();
+    private Map<String, MetaAgent> proxies = new TreeMap<String, MetaAgent>();
 
     public void remove(Object key) {
-        elements.remove(key);
+        proxies.remove(key);
     }
 
-    ;
 
     public Object getDestination(Map item) {
-        return item.get("JMSDestination");
+        return item.get(DESTINATION_KEY);
     }
-
-    ;
 
     public Set getPool() {
-        return elements.keySet();
+        return proxies.keySet();
     }
 
-    ;
 
     public boolean hasElement(Object key) {
-        return elements.containsKey(key);
+        return proxies.containsKey(key);
     }
 
-    ;
 
-    public boolean addElement(Map item) {
-
+    public boolean proxyAccepted(Map item) {
         Location location = new Location();
         decorateProxy(location, item);
         return true;
     }
 
     private void decorateProxy(Location location, Map item) {
-        location.put("JMSReplyTo", item.get("JMSReplyTo").toString());
+        location.put(REPLYTO_KEY, item.get(REPLYTO_KEY).toString());
         try {
-            location.put("URL", item.get("URL").toString());
+            location.put(URI_KEY, item.get(URI_KEY).toString());
         }
         catch (Exception e) {
         }
-        elements.put(item.get("JMSReplyTo"), location);
+        proxies.put(item.get(REPLYTO_KEY).toString(), location);
     }
 
     public void send(Map item) {
-        Notification n = new Notification(item);
-        if (n.getJMSReplyTo() == null) {
-            return;
-        }
-        final String serial = serr(n);
-        MetaProperties outProx = PrepareDelivery(n, serial);
-        String u;
+        Notification notification = new Notification(item);
+        if (notification.getJMSReplyTo() == null) return;
 
-        if (!outProx.containsKey("URL")) {
-            if (getInstance().isParentHost()) {
-                if (getInstance().logDebug)
-                    getInstance().log(2, "******Domain:  DROPPING PACKET FOR " + outProx.get("JMSReplyTo"));
-                return;
-            } else {
-                u = getInstance().getParentNode().getURL();
-            }
+        final String serial = createSerialNumber(notification);
+        MetaProperties outProx = PrepareDelivery(notification, serial);
+        URI destinationURI = null;
+        if (outProx.containsKey(URI_KEY)) {
+            destinationURI = URI.create(String.valueOf(outProx.get(URI_KEY)));
         } else {
-            u = outProx.get("URL").toString();
+            if (!Env.getInstance().isParentHost()) {
+                destinationURI = Env.getInstance().getParentNode().getURI();
+            } else {
+                Logger.global.info("******Domain:  DROPPING PACKET FOR " + outProx.get(REPLYTO_KEY));
+                return;
+            }
         }
 
 
-        URLString url = new URLString(u);
         try {
-            byte[] buf = createByteBuffer(n);
-            DatagramPacket p = new DatagramPacket(buf, buf.length, dest(h(url)), url.getPort());
-            getInstance().getowchDispatch().handleDatagram(serial, p, n.get("Priority") != null);
+            byte[] buf;
+            buf = createByteBuffer(notification);
+            DatagramPacket p =
+                    new DatagramPacket(buf, buf.length, InetAddress.getByName(
+                            destinationURI.getHost()),
+                            destinationURI.getPort());
+            owchDispatch.getInstance().handleDatagram(serial, p, notification.get(PRIORITY_KEY) != null);
+        }
+        catch (UnknownHostException e) {
         }
         catch (IOException e) {
         }
-
-
     }
 
     private MetaProperties PrepareDelivery(Notification n, final String serial) {
-        n.put("JMSMessageID", serial);
-        n.put("URL", getInstance().getLocation("owch").getURL());
+        n.put(SERIALNUMBER_KEY, serial);
+
+        MetaProperties l = ProtocolType.owch.getLocation();
+        n.put(URI_KEY, l.getURI());
         MetaProperties outProx = getProxy(n);
         return outProx;
     }
@@ -114,27 +103,15 @@ public class owchRouter implements Router {
     }
 
     private MetaProperties getProxy(Notification n) {
-        MetaProperties prox = (MetaProperties) elements.get(n.get("JMSDestination"));
-        if (prox == null) {
-            prox = (MetaProperties) getInstance().getParentNode();
+        MetaProperties prox = (MetaProperties) proxies.get(n.get(DESTINATION_KEY));
+        if (prox != null) {
+            return prox;
         }
+        prox = (MetaProperties) Env.getInstance().getParentNode();
         return prox;
     }
 
-    private String serr(Notification n) {
-        return n.get("JMSReplyTo") + ":" + n.get("JMSDestination").toString() + ":" + n.get("JMSType").toString() +
-                "[" + d().toString() + "] " + ser++;
-    }
-
-    private Date d() {
-        return new Date();
-    }
-
-    private String h(URLString url) {
-        return url.getHost();
-    }
-
-    private InetAddress dest(String h) throws UnknownHostException {
-        return InetAddress.getByName(h);
+    private String createSerialNumber(Notification n) {
+        return n.get(REPLYTO_KEY) + ":" + n.get(DESTINATION_KEY).toString() + ":" + n.get(TYPE_KEY).toString() + "[" + new Date() + "] " + ser++;
     }
 }

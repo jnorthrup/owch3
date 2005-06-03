@@ -1,30 +1,30 @@
 package net.sourceforge.owch2.router;
 
-import static net.sourceforge.owch2.kernel.Env.getInstance;
+import net.sourceforge.owch2.kernel.*;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: DefaultRouteHunter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
+ * @version $Id: DefaultRouteHunter.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class DefaultRouteHunter extends RouteHunterImpl {
     private static Collection<Router> inbound;
     private static Collection<Router> outbound;
 
+
     static {
         outbound = Arrays.asList(new Router[]{
-            getInstance().getRouter("IPC"),
-            getInstance().getRouter("owch"),
-            getInstance().getRouter("http"),
-            getInstance().getRouter("Domain"),
-            getInstance().getRouter("null")});
+            ProtocolType.ipc.routerInstance(),
+            ProtocolType.owch.routerInstance(),
+            ProtocolType.Http.routerInstance(),
+            ProtocolType.Domain.routerInstance(),
+            ProtocolType.Null.routerInstance()});
 
         inbound = Arrays.asList(new Router[]{
-            getInstance().getRouter("IPC"),
-            getInstance().getRouter("owch"),
-            getInstance().getRouter("http")});
+            ProtocolType.ipc.routerInstance(),
+            ProtocolType.owch.routerInstance(),
+            ProtocolType.Http.routerInstance()});
 
     }
 

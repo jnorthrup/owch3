@@ -15,6 +15,7 @@
     <option name="CHANGE_AFTER" value="" />
   </component>
   <component name="CheckinPanelState" />
+  <component name="CloverPlugin" />
   <component name="Commander">
     <leftPanel />
     <rightPanel />
@@ -71,15 +72,15 @@
     <option name="SHOW_OUTPUT" value="false" />
     <option name="ADD_WATCH_INDEX" value="0" />
     <option name="REMOVE_WATCH_INDEX" value="0" />
-    <option name="UPDATE_KEYWORD_SUBSTITUTION" />
+    <option name="UPDATE_KEYWORD_SUBSTITUTION" value="NONE" />
     <option name="MAKE_NEW_FILES_READONLY" value="false" />
     <option name="SHOW_CORRUPTED_PROJECT_FILES" value="0" />
     <option name="TAG_AFTER_FILE_COMMIT" value="false" />
     <option name="OVERRIDE_EXISTING_TAG_FOR_FILE" value="true" />
     <option name="TAG_AFTER_FILE_COMMIT_NAME" value="" />
-    <option name="TAG_AFTER_PROJECT_COMMIT" value="false" />
+    <option name="TAG_AFTER_PROJECT_COMMIT" value="true" />
     <option name="OVERRIDE_EXISTING_TAG_FOR_PROJECT" value="true" />
-    <option name="TAG_AFTER_PROJECT_COMMIT_NAME" value="" />
+    <option name="TAG_AFTER_PROJECT_COMMIT_NAME" value="post_refactor" />
     <option name="CLEAN_COPY" value="false" />
   </component>
   <component name="DaemonCodeAnalyzer">
@@ -104,6 +105,7 @@
       </breakpoint>
     </breakpoint_any>
     <breakpoint_rules />
+    <ui_properties />
   </component>
   <component name="ErrorTreeViewConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
@@ -124,10 +126,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="NotificationFactory.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/NotificationFactory.java">
+      <file leaf-file-name="Env.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/Env.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="13" selection-start="621" selection-end="621" vertical-scroll-proportion="0.20050125">
+            <state line="296" column="40" selection-start="10525" selection-end="10525" vertical-scroll-proportion="-3.2617283">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ProtocolType.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/ProtocolType.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="25" column="16" selection-start="759" selection-end="759" vertical-scroll-proportion="-3.871605">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -135,19 +146,73 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MetaPropertiesFilter.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/MetaPropertiesFilter.java">
+      <file leaf-file-name="ListenerFactory.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/ListenerFactory.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="19" selection-start="19" selection-end="19" vertical-scroll-proportion="0.0">
+            <state line="19" column="13" selection-start="343" selection-end="343" vertical-scroll-proportion="0.26666668">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PCTScanner.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/agent/PCTScanner.java">
+      <file leaf-file-name="PipeFactory.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/PipeFactory.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="67" column="58" selection-start="2402" selection-end="2402" vertical-scroll-proportion="0.8546366">
+            <state line="31" column="15" selection-start="673" selection-end="673" vertical-scroll-proportion="0.9259259">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="httpFactory.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/httpFactory.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="26" column="46" selection-start="577" selection-end="577" vertical-scroll-proportion="0.5703704">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="owchFactory.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/owchFactory.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="53" column="35" selection-start="1295" selection-end="1295" vertical-scroll-proportion="1.4790124">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ListenerCache.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/ListenerCache.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="114" column="0" selection-start="3213" selection-end="3213" vertical-scroll-proportion="4.266667">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="RouteHunterImpl.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/RouteHunterImpl.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="36" column="27" selection-start="1145" selection-end="1145" vertical-scroll-proportion="1.0261905">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Router.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/Router.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="14" column="15" selection-start="344" selection-end="344" vertical-scroll-proportion="0.4952381">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="httpRouter.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/httpRouter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="11" column="59" selection-start="231" selection-end="231" vertical-scroll-proportion="0.039506175">
               <folding />
             </state>
           </provider>
@@ -170,7 +235,7 @@
     <option name="SPLITTER_PROPORTION" value="0.5" />
     <option name="GROUP_BY_SEVERITY" value="false" />
     <option name="ANALYZE_TEST_SOURCES" value="true" />
-    <profile name="Default" />
+    <profile name="Unnamed" />
   </component>
   <component name="J2EEProjectPane">
     <PATH>
@@ -183,10 +248,72 @@
   </component>
   <component name="ModuleEditorState">
     <option name="LAST_EDITED_MODULE_NAME" value="owch2" />
-    <option name="LAST_EDITED_TAB_NAME" value="Order/Export" />
+    <option name="LAST_EDITED_TAB_NAME" value="Libraries (Classpath)" />
   </component>
   <component name="NamedScopeManager" />
   <component name="PackagesPane">
+    <PATH>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2.ipr" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="net.sourceforge" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="router" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+      </PATH_ELEMENT>
+    </PATH>
+    <PATH>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2.ipr" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="net.sourceforge" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="kernel" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+      </PATH_ELEMENT>
+    </PATH>
+    <PATH>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2.ipr" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="net.sourceforge" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="owch2" />
+        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+      </PATH_ELEMENT>
+    </PATH>
     <PATH>
       <PATH_ELEMENT>
         <option name="myItemId" value="owch2.ipr" />
@@ -268,25 +395,7 @@
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
       <PATH_ELEMENT>
-        <option name="myItemId" value="test" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-    </PATH>
-    <PATH>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="owch2.ipr" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="owch2" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="owch2" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="lib" />
+        <option name="myItemId" value="java" />
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
     </PATH>
@@ -308,7 +417,7 @@
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
       <PATH_ELEMENT>
-        <option name="myItemId" value="net.sourceforge" />
+        <option name="myItemId" value="n.s.o.kernel" />
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
     </PATH>
@@ -330,37 +439,7 @@
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
       <PATH_ELEMENT>
-        <option name="myItemId" value="net.sourceforge" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="nlp" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-    </PATH>
-    <PATH>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="owch2.ipr" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="owch2" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="owch2" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="java" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="net.sourceforge" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="gui" />
+        <option name="myItemId" value="n.s.o.agent" />
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
     </PATH>
@@ -370,12 +449,12 @@
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" splitterProportion="0.5">
-      <flattenPackages />
+      <flattenPackages ProjectPane="true" />
       <showMembers ProjectPane="true" />
       <showModules />
       <showLibraryContents />
       <hideEmptyPackages />
-      <abbreviatePackageNames />
+      <abbreviatePackageNames ProjectPane="true" />
       <showStructure PackagesPane="false" ProjectPane="false" />
       <autoscrollToSource />
       <autoscrollFromSource />
@@ -387,17 +466,41 @@
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="MemberChooser.sorted" value="false" />
+    <property name="RunManagerConfig.compileBeforeRunning" value="true" />
     <property name="GoToFile.includeJavaFiles" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
+    <property name="RunManagerConfig.showSettingsBeforeRunnig" value="true" />
   </component>
   <component name="ReadonlyStatusHandler">
     <option name="SHOW_DIALOG" value="false" />
   </component>
+  <component name="RecentsManager">
+    <key name="MoveMembersDialog.RECENTS_KEY">
+      <recent name="net.sourceforge.owch2.kernel.Location" />
+      <recent name="net.sourceforge.owch2.kernel.Notification" />
+    </key>
+    <key name="IntroduceConstantDialog.RECENTS_KEY">
+      <recent name="" />
+      <recent name="net.sourceforge.owch2.kernel.Notification" />
+      <recent name="net.sourceforge.owch2.kernel.Agent" />
+      <recent name="net.sourceforge.owch2.kernel.AbstractAgent" />
+    </key>
+  </component>
+  <component name="Regex">
+    <option name="pos1" value="218" />
+    <option name="pos2" value="218" />
+    <option name="pos3" value="136" />
+    <option name="pos4" value="444" />
+    <option name="pos5" value="136" />
+    <option name="autoUpdate" value="true" />
+    <option name="referenceOn" value="false" />
+    <option name="referencePos" value="0" />
+  </component>
   <component name="RestoreUpdateTree" />
   <component name="RunManager">
     <activeType name="Application" />
-    <tempConfiguration selected="true" default="false" name="AgentGUI" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" value="net.sourceforge.gui.AgentGUI" />
+    <tempConfiguration selected="true" default="false" name="Domain" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="net.sourceforge.owch2.agent.Domain" />
       <option name="VM_PARAMETERS" />
       <option name="PROGRAM_PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -405,13 +508,6 @@
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
     </tempConfiguration>
-    <configuration selected="false" default="true" type="Remote" factoryName="Remote">
-      <option name="USE_SOCKET_TRANSPORT" value="true" />
-      <option name="SERVER_MODE" value="false" />
-      <option name="SHMEM_ADDRESS" value="javadebug" />
-      <option name="HOST" value="localhost" />
-      <option name="PORT" value="5005" />
-    </configuration>
     <configuration selected="false" default="true" type="JUnit" factoryName="JUnit">
       <module name="" />
       <option name="PACKAGE_NAME" />
@@ -433,6 +529,13 @@
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <module name="" />
     </configuration>
+    <configuration selected="false" default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
+    </configuration>
     <configuration selected="false" default="true" type="Applet" factoryName="Applet">
       <module name="" />
       <option name="MAIN_CLASS_NAME" />
@@ -443,6 +546,24 @@
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <option name="VM_PARAMETERS" />
     </configuration>
+    <configuration selected="false" default="false" name="IRC" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="net.sourceforge.owch2.agent.IRC" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <module name="owch2" />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+    </configuration>
+  </component>
+  <component name="SQL">
+    <general />
+    <databases savePasswords="false" encodePasswords="true" />
+    <queries projectClassLoader="false" save="false" />
+    <results primaryKeyCols="true" loadLOBs="true" saveTableConfig="false">
+      <rowLimit enabled="true" value="1000" />
+      <resizeColumns toHeader="true" toContent="true" />
+    </results>
   </component>
   <component name="SelectInManager" />
   <component name="StarteamConfiguration">
@@ -464,6 +585,9 @@
     <option name="USE_AUTHOR_FIELD" value="true" />
     <option name="AUTHOR" value="" />
     <option name="LOCATION" value="" />
+    <option name="USER_NAME" value="" />
+    <option name="USE_PROJECT_SETTINGS" value="true" />
+    <option name="USE_ALTERNATE_LOCATION" value="false" />
   </component>
   <component name="SvnConfiguration">
     <option name="USER" value="" />
@@ -474,43 +598,52 @@
   <component name="TodoView" selected-index="0">
     <todo-panel id="selected-file">
       <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
       <flatten-packages value="false" />
       <is-autoscroll-to-source value="true" />
     </todo-panel>
     <todo-panel id="all">
       <are-packages-shown value="true" />
+      <are-modules-shown value="false" />
       <flatten-packages value="false" />
       <is-autoscroll-to-source value="true" />
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1440" height="874" extended-state="6" />
+    <frame x="-6" y="22" width="1440" height="874" extended-state="0" />
     <editor active="false" />
     <layout>
-      <window_info id="Goals" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
-      <window_info id="IG Telemetry" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32947233" order="8" />
+      <window_info id="Goals" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32997844" order="3" />
+      <window_info id="SQL" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32860824" order="8" />
+      <window_info id="IG Telemetry" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.21262887" order="8" />
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32947233" order="8" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32947233" order="7" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.3450755" order="0" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32947233" order="1" />
+      <window_info id="Regex" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32860824" order="8" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32860824" order="7" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.25161755" order="0" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.3938224" order="8" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="6" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.41623712" order="1" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.39175257" order="8" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.39819586" order="6" />
+      <window_info id="Dependency Cycles" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.3298969" order="8" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32947233" order="8" />
+      <window_info id="Metrics" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.3775773" order="8" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="WebServices" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.27541828" order="8" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="2" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32997844" order="1" />
+      <window_info id="WebServices" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.27448454" order="8" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.38530928" order="2" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.24946082" order="2" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="4" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4" order="0" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
-      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.36293435" order="4" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32947233" order="8" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="0" />
+      <window_info id="Log4jMonitor" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.3298969" order="8" />
+      <window_info id="XPTask View" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
+      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="3" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="5" />
+      <window_info id="APIdoc" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.32860824" order="8" />
     </layout>
   </component>
   <component name="VCS.FileViewConfiguration">
@@ -581,118 +714,127 @@
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
     <option name="FILTER_TARGETS" value="false" />
+    <buildFile url="file://$PROJECT_DIR$/build.xml">
+      <antCommandLine value="" />
+      <runInBackground value="false" />
+      <targetFilters>
+        <filter targetName="clean" isVisible="false" />
+        <filter targetName="compile" isVisible="false" />
+        <filter targetName="DomainStart" isVisible="false" />
+        <filter targetName="GateKeeperStart" isVisible="false" />
+        <filter targetName="init" isVisible="false" />
+        <filter targetName="jar" isVisible="false" />
+      </targetFilters>
+      <treeView value="false" />
+      <verbose value="false" />
+      <viewClosedWhenNoErrors value="false" />
+    </buildFile>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/MetaProperties.java">
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/agent/Deploy.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="20" selection-start="609" selection-end="609" vertical-scroll-proportion="0.0">
+        <state line="14" column="13" selection-start="266" selection-end="266" vertical-scroll-proportion="0.21380846">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/nlp/Report.java">
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/ipcRouter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="13" selection-start="72" selection-end="72" vertical-scroll-proportion="0.0">
+        <state line="13" column="15" selection-start="322" selection-end="322" vertical-scroll-proportion="0.035634745">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/DatagramPacketFilter.java">
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/owchRouter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="35" selection-start="265" selection-end="265" vertical-scroll-proportion="0.5410628">
+        <state line="15" column="13" selection-start="398" selection-end="398" vertical-scroll-proportion="0.04">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/StreamFilter.java">
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/NullRouter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="17" selection-start="174" selection-end="174" vertical-scroll-proportion="0.42512077">
+        <state line="12" column="13" selection-start="352" selection-end="352" vertical-scroll-proportion="0.38554215">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/DatagramPacketSource.java">
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/Router.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="17" selection-start="174" selection-end="174" vertical-scroll-proportion="0.42512077">
+        <state line="14" column="15" selection-start="344" selection-end="344" vertical-scroll-proportion="0.4952381">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/MetaPropertiesSource.java">
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/RouteHunterImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="1" selection-start="39" selection-end="39" vertical-scroll-proportion="0.038647342">
+        <state line="36" column="27" selection-start="1145" selection-end="1145" vertical-scroll-proportion="1.0261905">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/nlp/WordStore.java">
+    <entry file="jar:///System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Classes/classes.jar!/java/lang/Class.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="32" selection-start="441" selection-end="441" vertical-scroll-proportion="0.5797101">
+        <state line="48" column="13" selection-start="2845" selection-end="2845" vertical-scroll-proportion="0.33333334">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/owchDispatch.java">
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/router/httpRouter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="4" selection-start="696" selection-end="696" vertical-scroll-proportion="0.04010025">
+        <state line="11" column="59" selection-start="231" selection-end="231" vertical-scroll-proportion="0.039506175">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/ListenerCache.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="114" column="0" selection-start="3213" selection-end="3213" vertical-scroll-proportion="4.266667">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/owchFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="53" column="35" selection-start="1295" selection-end="1295" vertical-scroll-proportion="1.4790124">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/httpFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="26" column="46" selection-start="577" selection-end="577" vertical-scroll-proportion="0.5703704">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/PipeFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="31" column="15" selection-start="673" selection-end="673" vertical-scroll-proportion="0.9259259">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/ListenerFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="13" selection-start="343" selection-end="343" vertical-scroll-proportion="0.26666668">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/ProtocolType.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="25" column="16" selection-start="759" selection-end="759" vertical-scroll-proportion="-3.871605">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/AbstractAgent.java">
+    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/Env.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="170" column="25" selection-start="5677" selection-end="5677" vertical-scroll-proportion="0.04010025">
+        <state line="296" column="40" selection-start="10525" selection-end="10525" vertical-scroll-proportion="-3.2617283">
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/dpwrap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="27" selection-start="632" selection-end="632" vertical-scroll-proportion="0.7218045">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/nlp/SentenceParser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="20" selection-start="50" selection-end="50" vertical-scroll-proportion="0.077294685">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/owchListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="1" selection-start="39" selection-end="39" vertical-scroll-proportion="0.038647342">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/agent/PCTScanner.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="67" column="58" selection-start="2402" selection-end="2402" vertical-scroll-proportion="0.8546366">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/MetaPropertiesFilter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="19" selection-start="19" selection-end="19" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/java/net/sourceforge/owch2/kernel/NotificationFactory.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="13" selection-start="621" selection-end="621" vertical-scroll-proportion="0.20050125">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>

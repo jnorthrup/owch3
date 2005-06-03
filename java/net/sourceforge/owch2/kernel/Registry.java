@@ -1,10 +1,7 @@
 package net.sourceforge.owch2.kernel;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.SortedSet;
+import java.lang.ref.*;
+import java.util.*;
 
 /**
  * gatekeeper registers a prefix of an Item such as "/cgi-bin/foo.cgi" The algorithm to locate the Item works in 2 phases;<OL>
@@ -13,7 +10,7 @@ import java.util.SortedSet;
  * bet, the owch agent registered in the WeakHashMap is notified of a waiting pipeline
  *
  * @author James Northrup
- * @version $Id: Registry.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: Registry.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public abstract class Registry {
     protected Reference refGet(Object key) {
@@ -163,5 +160,5 @@ public abstract class Registry {
     public void setSet(SortedSet set) {
         this.set = set;
     }
-} 
+}
 

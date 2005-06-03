@@ -1,10 +1,8 @@
 package net.sourceforge.owch2.agent;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.MetaProperties;
+import net.sourceforge.owch2.kernel.*;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * gatekeeper registers a prefix of an URL such as "/cgi-bin/foo.cgi" The algorithm to locate the URL works in 2 phases;<OL>
@@ -17,7 +15,7 @@ public class GateKeeper extends AbstractAgent {
         Map<? extends Object, ? extends Object> m = Env.getInstance(). parseCommandLineArgs(args);
         if (!(m.containsKey("JMSReplyTo") && m.containsKey("HostPort"))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
-                    "-name name\n" + "-HostPort port\n" + "$Id: GateKeeper.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
+                    "-name name\n" + "-HostPort port\n" + "$Id: GateKeeper.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
         }
         ;
         GateKeeper d = new GateKeeper(m);
@@ -40,7 +38,11 @@ public class GateKeeper extends AbstractAgent {
         try {
             String Item = notificationIn.get("URLSpec").toString();
             notificationIn.put("URL", notificationIn.get("URLFwd"));
-            Env.getInstance().gethttpRegistry().registerItem(Item, notificationIn);
+//        if (webRegistry == null) {
+//            webRegistry = new httpRegistry();
+//        }
+//        return webRegistry;
+            httpRegistry.getInstance().registerItem(Item, notificationIn);
             return;
         }
         catch (Exception e) {
@@ -55,7 +57,11 @@ public class GateKeeper extends AbstractAgent {
         try {
             String Item = notificationIn.get("URLSpec").toString();
             notificationIn.put("URL", notificationIn.get("URLFwd"));
-            Env.getInstance().gethttpRegistry().unregisterItem(Item);
+//        if (webRegistry == null) {
+//            webRegistry = new httpRegistry();
+//        }
+//        return webRegistry;
+            httpRegistry.getInstance().unregisterItem(Item);
             return;
         }
         catch (Exception e) {
@@ -65,12 +71,15 @@ public class GateKeeper extends AbstractAgent {
     }
 
     /**
-     * this has the effect of taking over the command of the http
-     * service on the agent host and handling messages to marshal http registrations
+     * this has the effect of taking over the command of the Http
+     * service on the agent host and handling messages to marshal Http registrations
      */
     public GateKeeper(Map<? extends Object, ? extends Object> m) {
         super(m);
-        Env.getInstance().getLocation("http");
+        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Protocol);
+
+        MetaProperties l = ProtocolType.Http.getLocation();
+
     }
 }
 

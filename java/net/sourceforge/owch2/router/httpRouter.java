@@ -1,108 +1,95 @@
 package net.sourceforge.owch2.router;
 
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.Location;
-import net.sourceforge.owch2.kernel.MetaProperties;
-import net.sourceforge.owch2.kernel.Notification;
+import net.sourceforge.owch2.kernel.*;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.URL;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.logging.*;
 
 /**
+ * this is an alternate to an owch router.   needs testing.
+ *
  * @author James Northrup
- * @version $Id: httpRouter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
+ * @version $Id: httpRouter.java,v 1.2 2005/06/03 18:27:48 grrrrr Exp $
  */
 public class httpRouter implements Router {
     static long ser = 0;
-    private Map elements = new TreeMap();
+    private Map<String, MetaAgent> elements = new TreeMap<String, MetaAgent>();
     Socket p;
 
     public void remove(Object key) {
         elements.remove(key);
     }
 
-    ;
 
     public Object getDestination(Map item) {
-        return item.get("JMSDestination");
+        return item.get(Notification.DESTINATION_KEY);
     }
 
-    ;
 
     public Set getPool() {
         return elements.keySet();
     }
 
-    ;
 
     public boolean hasElement(Object key) {
         return elements.containsKey(key);
     }
 
-    ;
 
-    public boolean addElement(Map item) {
+    public boolean proxyAccepted(Map item) {
         Location met = new Location();
-        met.put("JMSReplyTo", item.get("JMSReplyTo").toString());
-        met.put("URL", item.get("URL").toString());
-        elements.put(item.get("JMSReplyTo"), met);
+
+        met.put(Notification.REPLYTO_KEY, item.get(Notification.REPLYTO_KEY).toString());
+        met.put(Notification.URI_KEY, item.get(Notification.URI_KEY).toString());
+        elements.put(item.get(Notification.REPLYTO_KEY).toString(), met);
+
         return true;
     }
 
-    ;
 
     public void send(Map item) {
         Notification n = new Notification(item);
         if (n.getJMSReplyTo() == null) {
             return;
         }
-        Date d = new Date();
-        String serr = n.get("JMSReplyTo") + ":" + n.get("JMSDestination").toString() + ":" + n.get("JMSType").toString() +
-                "[" + d.toString() + "] " + ser++;
-        n.put("URL", Env.getInstance().getLocation("http").getURL());
-        MetaProperties prox = (MetaProperties) elements.get(n.get("JMSDestination"));
+//        String serr = n.get(Notification.REPLYTO_KEY) + ":" + n.get("JMSDestination").toString() + ":" + n.get("JMSType").toString() +                "[" + d.toString() + "] " + ser++;
+
+        MetaProperties location = ProtocolType.Http.getLocation();
+        n.put(Notification.URI_KEY, location.getURI());
+        MetaProperties prox = (MetaProperties) elements.get(n.get(Notification.DESTINATION_KEY));
         if (prox == null) {
             prox = (MetaProperties) Env.getInstance().getParentNode();
         }
-        String u = prox.get("URL").toString();
-        //try {
+        URI uri = null;
         try {
-            if (u == null) {
+            uri = URI.create(prox.get(Notification.URI_KEY).toString());
+        } catch (Exception e) { //URL parse issues.
+        }
+
+        try {
+            if (uri == null) {
                 if (Env.getInstance().isParentHost()) {
                     if (Env.getInstance().logDebug)
-                        Env.getInstance().log(2, "******Domain:  DROPPING PACKET FOR " + prox.get("JMSReplyTo"));
+                        Logger.global.info("******Domain:  DROPPING PACKET FOR " + prox.get(Notification.REPLYTO_KEY));
                     return;
                 } else {
-                    u = Env.getInstance().getParentNode().getURL();
+                    uri = Env.getInstance().getParentNode().getURI();
                 }
             }
-            URL url = new URL(u);
-            Socket s = new Socket(url.getHost(), url.getPort());
-            OutputStream os = s.getOutputStream();
-            os.write("POST /owch\n".getBytes());
-            n.save(os);
-            s.close();
+
+            Socket socket = new Socket(uri.getHost(), uri.getPort());
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write("POST /owch\n".getBytes());
+            n.save(outputStream);
+            socket.close();
         }
         catch (IOException e) {
-            n.remove(u);
+            n.remove(uri);
             Env.getInstance().send(n);
         }
-        /*}
-        catch (Exception e) {
-
-        }
-        ; */
     }
-
-    ;
 }
-
-;
 
 

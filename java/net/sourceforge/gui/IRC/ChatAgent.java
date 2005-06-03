@@ -1,17 +1,11 @@
 package net.sourceforge.gui.IRC;
 
-import net.sourceforge.gui.ScrollingListModel;
-import net.sourceforge.nlp.Report;
-import net.sourceforge.nlp.SentenceParser;
-import net.sourceforge.nlp.Serializer;
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.Location;
-import net.sourceforge.owch2.kernel.MetaProperties;
+import net.sourceforge.gui.*;
+import net.sourceforge.nlp.*;
+import net.sourceforge.owch2.kernel.*;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.logging.*;
 
 public class ChatAgent extends AbstractAgent {
     ChatGUI gui;
@@ -88,7 +82,7 @@ public class ChatAgent extends AbstractAgent {
             lm.addElement(tk.nextToken()); //
         }
         ;
-        if (Env.getInstance().logDebug) Env.getInstance().log(50, "recvd names");
+        if (Env.getInstance().logDebug) Logger.global.info("recvd names");
     }
 
     ;

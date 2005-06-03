@@ -1,5 +1,4 @@
 <project name="owch2" basedir="." default="jar">
-
     <property name="dist" location="${basedir}/dist"/>
     <property name="build" location="${basedir}/build"/>
     <property name="src" location="${basedir}/java"/>
@@ -8,21 +7,18 @@
         <mkdir dir="${build}/classes"/>
         <mkdir dir="${dist}/lib/"/>
     </target>
+
     <target name="compile" depends="init">
-        <javac debug="true"  fork="true"
-            srcdir="${src}"
-            optimize="true"
-            destdir="${build}/classes">
+        <javac debug="true" fork="true" srcdir="${src}" optimize="true" destdir="${build}/classes">
             <classpath>
                 <path path="${build}:${src}"/>
             </classpath>
         </javac>
     </target>
-    <target name="jar" depends="compile">
 
+    <target name="jar" depends="compile">
         <jar destfile="${distjar}">
-            <fileset dir="${build}/classes"
-                includes="**/*.class"/>
+            <fileset dir="${build}/classes" includes="**/*.class"/>
         </jar>
     </target>
     <target name="clean">
@@ -30,24 +26,21 @@
         <delete dir="${dist}"/>
     </target>
 
-    <target name="DomainStart" depends="jar">
-        <java fork="true"  classname="net.sourceforge.owch2.agent.Domain"
-            classpath="${distjar}">
-            <arg line="-JMSReplyTo default" />
-            <arg line="-HostPort 2112" />
-            <arg line="-HostAddress mtn" />
 
-<!--            <arg line="-JMSReplyTo testing  -AgentPort 4050  -JMSDestination store"/>-->
+    <target name="DomainStart" depends="jar">
+        <java fork="true" classname="net.sourceforge.owch2.agent.Domain" classpath="${distjar}">
+            <arg line="-JMSReplyTo default"/>
+            <arg line="-owch:Port 2112"/>
+            <!--<arg line="-HostAddress mtn" />-->
+            <!--<arg line="-JMSReplyTo testing  -AgentPort 4050  -JMSDestination store"/>-->
         </java>
     </target>
     <target name="GateKeeperStart" depends="jar">
-
-        <java fork="true"  classname="net.sourceforge.owch2.agent.GateKeeper"
-            classpath="${distjar}">
-            <arg line="-JMSReplyTo GateKeeper" />
-            <arg line="-HostPort 7070" />
-            <arg line="-HostAddress mtn" />
-
-<!--            <arg line="-JMSReplyTo testing  -AgentPort 4050  -JMSDestination store"/>-->
+        <java fork="true" classname="net.sourceforge.owch2.agent.GateKeeper" classpath="${distjar}">
+            <arg line="-JMSReplyTo GateKeeper"/>
+            <arg line="-http:Port 7070"/>
+            <!--<arg line="-HostAddress mtn" />-->
+            <!--<arg line="-JMSReplyTo testing  -AgentPort 4050  -JMSDestination store"/>-->
         </java>
-    </target></project>
+    </target>
+</project>

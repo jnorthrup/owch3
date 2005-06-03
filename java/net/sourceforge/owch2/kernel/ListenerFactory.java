@@ -1,5 +1,7 @@
 package net.sourceforge.owch2.kernel;
 
+import java.net.*;
+
 
 /*
 *
@@ -9,12 +11,17 @@ package net.sourceforge.owch2.kernel;
 
 /**
  * @author James Northrup
- * @version $Id: ListenerFactory.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: ListenerFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 abstract public class ListenerFactory {
+    protected InetAddress hostAddress;
+    protected int port;
+    protected int threads;
+    protected int socketCount;
+
     //  private boolean ready = false;
-            //  private boolean alive = true;
-            abstract ListenerReference create(java.net.InetAddress hostAddr, int port, int threads /*0==Parent Server Default*/);
+    //  private boolean alive = true;
+    abstract ListenerReference create();
 
     public abstract net.sourceforge.owch2.kernel.MetaProperties getLocation();
     //    public boolean isReady() { return ready; }
@@ -27,8 +34,33 @@ abstract public class ListenerFactory {
     //params
     //port - requested port number 0=random
     //threads - the number of threads to monitor the listener.  0=default
+
+    public int getThreads() {
+        return threads;
+    }
+
+    public InetAddress getHostAddress() {
+        return hostAddress;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setHostAddress(InetAddress hostAddress) {
+        this.hostAddress = hostAddress;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void setThreads(Integer threads) {
+        this.threads = threads;
+    }
+
+    public void setSocketCount(int socketCount) {
+        //To change body of created methods use File | Settings | File Templates.
+        this.socketCount = socketCount;
+    }
 }
-
-;
-
-

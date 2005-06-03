@@ -1,21 +1,16 @@
 package net.sourceforge.owch2.kernel;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
+import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: RFC822Format.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: RFC822Format.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class RFC822Format implements Format {
     public RFC822Format() {
     }
-
-    ;
 
     public void read(InputStream inputStream, Map map) throws IOException {
         String line, key, val;
@@ -43,7 +38,7 @@ public class RFC822Format implements Format {
             key = (String) iterator.next();
             line = key.toString() + ": " + map.get(key) + "\n";
             writer.write(line.getBytes());
-            if (Env.getInstance().logDebug) Env.getInstance().log(200, "RFC822Format line saved:" + line);
+            if (Env.getInstance().logDebug) Logger.global.info("RFC822Format line saved:" + line);
         }
         writer.write('\n');
         writer.flush();

@@ -1,9 +1,11 @@
 package net.sourceforge.owch2.kernel;
 
+import java.util.logging.*;
+
 
 /**
  * @author James Northrup
- * @version $Id: httpFactory.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: httpFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class httpFactory extends ListenerFactory {
     /**
@@ -13,17 +15,19 @@ public class httpFactory extends ListenerFactory {
     }
 
     public MetaProperties getLocation() {
-        return Env.getInstance().getProtocolCache().getLocation("http");
+
+        Location location = ProtocolType.Http.getLocation();
+        return location;
     }
 
-    public ListenerReference create(java.net.InetAddress hostAddr, int port, int threads) {
+    public ListenerReference create() {
         Thread t = null;
         httpServer https;
         try {
-            https = new httpServer(hostAddr, (int) port, threads);
+            https = new httpServer(hostAddress, (int) port, threads);
         }
         catch (Exception e) {
-            if (Env.getInstance().logDebug) Env.getInstance().log(2, "httpServer init failure port " + port);
+            if (Env.getInstance().logDebug) Logger.global.info("httpServer init failure port " + port);
             return null;
         }
         for (int i = 0; i < https.getThreads(); i++) {
@@ -34,9 +38,13 @@ public class httpFactory extends ListenerFactory {
         return https;
     }
 
-    ;
+    private static httpFactory instance;
+
+    public static httpFactory getInstance() {
+        if (instance == null) instance = new httpFactory();
+        return instance;
+    }
 }
 
-;
 
 

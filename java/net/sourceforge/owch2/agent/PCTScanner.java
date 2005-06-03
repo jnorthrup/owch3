@@ -1,17 +1,11 @@
 package net.sourceforge.owch2.agent;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.Notification;
+import net.sourceforge.owch2.kernel.*;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Arrays;
-import java.util.Map;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.logging.*;
 
 public class PCTScanner extends AbstractAgent {
     protected static final int PORT = 4050;
@@ -31,10 +25,10 @@ public class PCTScanner extends AbstractAgent {
             try {
 
                 String host = theAddr.getHostAddress();
-                Env.getInstance().log(33, "attempting to bind addr: " + host);
+                Logger.global.info("attempting to bind addr: " + host);
 
                 theAddr = InetAddress.getByName(host);
-                Env.getInstance().log(33, "post-bind addr: " + theAddr);
+                Logger.global.info("post-bind addr: " + theAddr);
             } catch (Exception e) {
                 // e.printStackTrace();  //To change body of catch statement use Options | File Templates.
             }
@@ -111,7 +105,7 @@ public class PCTScanner extends AbstractAgent {
                     "-name     (String)name\n" +
                     "-AgentPort   (int)port\n" +
                     "-JMSDestination  (String) The destination agent name\n" +
-                    "$Id: PCTScanner.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
+                    "$Id: PCTScanner.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
 
         }
         PCTScanner d;

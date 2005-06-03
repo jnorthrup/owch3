@@ -1,23 +1,22 @@
 package net.sourceforge.owch2.kernel;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
+import java.util.logging.*;
 
 /**
- * $Id: PipeConnector.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * $Id: PipeConnector.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  *
  * @author James Northrup
- * @version $Id: PipeConnector.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: PipeConnector.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class PipeConnector extends TCPServerWrapper implements ListenerReference, Runnable {
     int threads;
 
-    public String getProtocol() {
-        return "pipe";
+    public ProtocolType getProtocol() {
+        return ProtocolType.Pipe;
     }
 
-    ;
 
     public long getExpiration() {
         return (long) 0;
@@ -31,13 +30,10 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
         return this;
     }
 
-    ;
 
     public void expire() {
         getServer().close();
     }
-
-    ;
 
     PipeConnector(InetAddress hostAddr, int port, int threads) throws IOException {
         super(port, hostAddr);
@@ -48,28 +44,29 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
             }
         }
         catch (Exception e) {
-            if (Env.getInstance().logDebug) Env.getInstance().log(2, "ServerSocket creation Failure:" + e.getMessage());
+            if (Env.getInstance().logDebug) Logger.global.info("ServerSocket creation Failure:" + e.getMessage());
         }
     }
 
-    ;
 
     public void run() {
         while (!Env.getInstance().shutdown) {
             try {
                 Socket s = accept();
                 if (Env.getInstance().logDebug)
-                    Env.getInstance().log(20, "debug: " + Thread.currentThread().getName() + " init");
+                    Logger.global.info("debug: " + Thread.currentThread().getName() + " init");
             }
             catch (Exception e) {
-                if (Env.getInstance().logDebug) Env.getInstance().log(2, "PipeServer thread going down in flames");
+                if (Env.getInstance().logDebug) Logger.global.info("PipeServer thread going down in flames");
             }
         }
     }
 
-    ;
 }
 //$Log: PipeConnector.java,v $
+//Revision 1.3  2005/06/03 18:27:47  grrrrr
+//no message
+//
 //Revision 1.2  2005/06/01 06:43:11  grrrrr
 //no message
 //

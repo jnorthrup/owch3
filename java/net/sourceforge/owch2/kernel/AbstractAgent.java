@@ -1,13 +1,14 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.router.Router;
+import static net.sourceforge.owch2.kernel.AgentLifecycle.*;
+import static net.sourceforge.owch2.kernel.Notification.*;
+import net.sourceforge.owch2.router.*;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
+import static java.lang.Thread.*;
+import java.lang.reflect.*;
+import java.net.*;
+import java.util.*;
+import java.util.logging.*;
 
 /**
  * AbstractAgent provides the base class which communicates with the Env
@@ -17,9 +18,19 @@ import java.util.TreeMap;
  * other nodes in the namespace.
  *
  * @author James Northrup
- * @version $Id: AbstractAgent.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: AbstractAgent.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 abstract public class AbstractAgent extends TreeMap implements Agent {
+    protected static final String MOBILEHOST_KEY = "Host";
+    protected static final String DEFAULT_LINK_NAME = "default";
+
+    protected static final String DEPLOYNODE_TYPE = DeployNode.toString();
+    protected static final String UNLINK_TYPE = UnLink.toString();
+    protected static final String CLONE_KEY = Clone.toString();
+    protected static final String UPDATED_TYPE = Updated.toString();
+    protected static final String UPDATE_TYPE = Update.toString();
+    protected static final String LINK_TYPE = Link.toString();
+
     protected boolean killFlag = false;
     boolean virgin;
     LinkRegistry acl = null;
@@ -28,7 +39,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     private static final Class[] no_class = new Class[0];
     private static final Object[] no_Parm = new Object[0];
-    private static final String default_val = "default".intern();
+    protected static final String CLASSTYPE_KEY = "Class";
 
     /**
      * Gets one of this object's properties using the associated key.
@@ -83,11 +94,10 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
             catch (Exception e) {
                 this.put(key, value);
             }
-        }
-        catch (Exception e) {
-            this.put(key, value);
-        }
-        finally {
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();  //!TODO: review for fit
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();  //!TODO: review for fit
         }
     }
 
@@ -96,22 +106,19 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         return false; //
     }
 
-    ;
-
     /**
      * Sends a Link notification other node(s) intended to establish direct socket communication.
      *
-     * @param lk node(s) to link to
+     * @param linkDestination node(s) to link to
      */
-    public void linkTo(String lk) {
-        if (lk == null) {
-//            if (Env.logDebug) Env.log(5, getClass().getName() + "::" + this.getJMSReplyTo() + ".link invoked. routing to default");
-            lk = Env.getInstance().getParentNode().getJMSReplyTo();
+    public void linkTo(String linkDestination) {
+        if (linkDestination == null) {
+            Logger.global .info(".link invoked. routing to default");
+            linkDestination = Env.getInstance().getParentNode().getJMSReplyTo();
         }
-        ;
         MetaProperties n = new Notification();
-        n.put("JMSDestination", lk);
-        n.put("JMSType", "Link");
+        n.put(DESTINATION_KEY, linkDestination);
+        n.put(TYPE_KEY, LINK_TYPE);
         send(n);
     }
 
@@ -121,40 +128,35 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
      * @param n Notification destined for somewhere else
      */
     public void send(MetaProperties n) {
-        String d = null,w = null;
-        Agent node = null;
-        //see if this works out
+
+
         if (n.getJMSReplyTo() == null) {
-            n.put("JMSReplyTo", this.getJMSReplyTo());
+            n.put(REPLYTO_KEY, this.getJMSReplyTo());
         }
-        ;
-        d = (String) n.get("JMSDestination");
-        if (d == null) {
-//            if (Env.logDebug) Env.log(8, "debug: AbstractAgent.Send(Notification) dropping unsendd Notification from " + getJMSReplyTo());
-            return;
+        if (n.get(DESTINATION_KEY) != null) {
+            Env.getInstance() .send(n);
         }
-        ;
-        Env.getInstance() .send(n);
     }
 
-    ;
 
     public final void recv(MetaProperties notificationIn) {
-        String JMSType = (String) notificationIn.get("JMSType");
         try {
-            getClass().getMethod("handle_" + JMSType, cls_m).invoke(this,
+
+            String msgType = (String) notificationIn.get(TYPE_KEY);
+            //for later optimizations.... switch(  valueOf(msgType)) ... is enabled.
+
+            getClass().getMethod("handle_" + msgType, cls_m).invoke(this,
                     new Object[]{notificationIn});
+
         }
         catch (InvocationTargetException e) {
-//            if (Env.logDebug)
-//                Env.log(2, "" + e.getTargetException() + " thrown within " + this.getJMSReplyTo() + "::" +
-//                        getClass().getName() + "->" + JMSType);
             e.getTargetException().printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
-        catch (Exception e) {
-//            if (Env.logDebug) Env.log(2, "" + e + " thrown for " + this.getJMSReplyTo() + "::" + getClass().getName() + "->" + JMSType);
-        }
-        ;
+
     }
 
     public AbstractAgent() {
@@ -162,17 +164,17 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     public AbstractAgent(Map proto) {
         super(proto);
-        Env.getInstance().getRouter("IPC").addElement(this);
+        ProtocolType.ipc.routerInstance().proxyAccepted(this);
         if (!isParent()) {
-            linkTo("default");
+            linkTo(DEFAULT_LINK_NAME);
         }
     }
 
-    public void init(Map  proto) {
+    public void init(Map proto) {
         putAll(proto);
-        Env.getInstance().getRouter("IPC").addElement(this);
+        ProtocolType.ipc.routerInstance().proxyAccepted(this);
         if (!isParent()) {
-            linkTo("default");
+            linkTo(DEFAULT_LINK_NAME);
         }
     }
 
@@ -183,9 +185,9 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         killFlag = true;
         //UnLink("default");
         Router r[] = {
-            Env.getInstance().getRouter("IPC"),
-            Env.getInstance().getRouter("owch"),
-            Env.getInstance().getRouter("http"),
+            ProtocolType.ipc.routerInstance(),
+            ProtocolType.owch.routerInstance(),
+            ProtocolType.Http.routerInstance(),
         };
         for (int i = 0; i < r.length; i++) {
             try {
@@ -193,21 +195,17 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
             }
             catch (Exception e) {
             }
-            ;
         }
-        ;
     }
 
     public void handle_Link(MetaProperties p) {
         String dest = p.getJMSReplyTo();
         MetaProperties n = new Notification();
-        n.put("JMSType", "Update");
-        n.put("JMSDestination", dest);
+        n.put(TYPE_KEY, UPDATE_TYPE);
+        n.put(DESTINATION_KEY, dest);
         send(n);
-//        if (Env.getInstance().logDebug) Env.getInstance().log(15, getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
+        Logger.global .info(getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
     }
-
-    ;
 
 
     /**
@@ -218,10 +216,10 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
     public void handle_Update(MetaProperties p) {
         String dest = p.getJMSReplyTo();
         MetaProperties n = new Notification();
-        n.put("JMSType", "Updated");
-        n.put("JMSDestination", dest);
+        n.put(TYPE_KEY, UPDATED_TYPE);
+        n.put(DESTINATION_KEY, dest);
         send(n);
-//        if (Env.getInstance().logDebug) Env.getInstance().log(15, getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
+        Logger.global.info(getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
     }
 
     /**
@@ -232,26 +230,24 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
     public void handle_Unlink(MetaProperties m) {
         String lk = m.getJMSReplyTo();
         if (lk == null) {
-//            if (Env.getInstance().logDebug) Env.getInstance().log(5, getClass().getName() + "::" + this.getJMSReplyTo() + ".unlink invoked. routing to default");
+
             lk = Env.getInstance().getParentNode().getJMSReplyTo();
         }
         ;
         MetaProperties n = new Notification();
-        n.put("JMSDestination", lk);
-        n.put("JMSType", "UnLink");
+        n.put(DESTINATION_KEY, lk);
+        n.put(TYPE_KEY, UNLINK_TYPE);
         send(n);
     }
 
-    public final String getURL() {
-        String s = (String) get("URL");
-        return s;
+    public final URI getURI() {
+        return URI.create(get(URI_KEY).toString());
+
     }
 
     public final String getJMSReplyTo() {
-        return (String) get("JMSReplyTo");
+        return (String) get(REPLYTO_KEY);
     }
-
-    ;
 
     /**
      * move - clone self.<OL><LI> node arrives at new host,
@@ -263,39 +259,52 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
      *
      * @param notificationIn the payload describing the move
      */
-
     public void handle_Move(MetaProperties notificationIn) {
 
-        String host = notificationIn.get("Host").toString(); //name of a Deploy agent
+        String host = notificationIn.get(MOBILEHOST_KEY).toString(); //name of a Deploy agent
         if (host == null) {
             host = Env.getInstance().getHostname();
         }
-        // move_state1(host);
+        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + ProtocolType);
+
+        MetaProperties response = (MetaProperties) ProtocolType.Http.getLocation().clone();
+        response.putAll(this);
+        response.put(TYPE_KEY, DEPLOYNODE_TYPE);
+        response.put(CLASSTYPE_KEY, getClass().getName());
+        response.put(REPLYTO_KEY, getJMSReplyTo());
+
+        response.put(SOURCE_KEY, ProtocolType.Http.getLocation().getURI().toASCIIString() + get(RESOURCE_KEY));
+
+        response.put(DESTINATION_KEY, host);
+        send(response);
+        killFlag = true;
+
     }
 
     public void clone_state1(String host) {
-        MetaProperties n2 = Env.getInstance().getLocation("http");
-        n2.putAll(this);
-        n2.put("JMSType", "DeployNode");
-        n2.put("Class", getClass().getName());
-        n2.put("JMSReplyTo", getJMSReplyTo());
-        n2.put("Source", Env.getInstance().getLocation("http").getURL() + get("Resource"));
+
+        MetaProperties response = (MetaProperties) ProtocolType.Http.getLocation().clone();
+        response.putAll(this);
+        response.put(TYPE_KEY, DEPLOYNODE_TYPE);
+        response.put(CLASSTYPE_KEY, getClass().getName());
+        response.put(REPLYTO_KEY, getJMSReplyTo());
+        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + ProtocolType);
+
+        response.put(SOURCE_KEY, ProtocolType.Http.getLocation().getURI().toASCIIString() + get(RESOURCE_KEY));
         //resource remains constant in this incarnation
         //n2.put( "Resource",get("Resource"));//produces 3 Strings
-        n2.put("JMSDestination", host);
-        send(n2);
+        response.put(DESTINATION_KEY, host);
+        send(response);
     }
 
-    ;
 
     /**
      * clone <OL><LI>recv order to clone, and host<LI>  deploy
      * new class.  <LI>deliver content.  <LI>close channel.
      */
-
     public void handle_Clone(MetaProperties n) {
 
-        String host = n.get("Host").toString(); //name of a Deploy agent
+        String host = n.get(MOBILEHOST_KEY).toString(); //name of a Deploy agent
         if (host == null) {
             host = Env.getInstance().getHostname();
         }
@@ -307,34 +316,29 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
      * tasks.. period replication, metrics evalutation, etc.  lots o TBD in this method
      */
     public void relocate() {
-        if (containsKey("Clone")) {
-            String clist = (String) get("Clone");
-            remove("Clone");
-            if (Env.getInstance().logDebug)
-                Env.getInstance().log(500, getClass().getName() + " **Cloning for " + clist);
+        if (containsKey(CLONE_KEY)) {
+            String clist = (String) get(CLONE_KEY);
+            remove(CLONE_KEY);
+            Logger.global.info(getClass().getName() + " **Cloning for " + clist);
             StringTokenizer st = new StringTokenizer(clist);
             while (st.hasMoreTokens()) {
                 clone_state1(st.nextToken());
             }
         }
-        ;
-        if (containsKey("Deploy")) {
+        if (containsKey(DEPLOY_KEY)) {
             try {
-                String clist = (String) get("Deploy");
-                remove("Deploy");
+                String clist = (String) get(DEPLOY_KEY);
+                remove(DEPLOY_KEY);
                 if (Env.getInstance().logDebug)
-                    Env.getInstance().log(500, getClass().getName() + " **Cloning for " + clist);
+                    Logger.global.info(getClass().getName() + " **Cloning for " + clist);
                 StringTokenizer st = new StringTokenizer(clist);
                 while (st.hasMoreTokens()) {
                     clone_state1(st.nextToken());
                 }
-                Thread.currentThread().sleep(15 * 1000); //kludge,
-                // allow udp messages to arrive...
-                System.exit(0); //TODO: allow our host
-                // to stay alive...
-            }
-            catch (Exception e) {
-                e.printStackTrace();
+                sleep(15 * 1000); //kludge,
+                System.exit(0); //TODO: allow our host to persist
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //!TODO: review for fit
             }
         }
     }

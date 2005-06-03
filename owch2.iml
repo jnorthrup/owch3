@@ -27,6 +27,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="junit-3.8.1" level="application" />
     <orderEntryProperties />
   </component>
   <component name="VcsManagerConfiguration">

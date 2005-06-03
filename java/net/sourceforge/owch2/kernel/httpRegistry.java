@@ -1,12 +1,10 @@
 package net.sourceforge.owch2.kernel;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.net.Socket;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.WeakHashMap;
+import static net.sourceforge.owch2.kernel.ProtocolType.*;
+
+import java.lang.ref.*;
+import java.net.*;
+import java.util.*;
 
 /**
  * gatekeeper registers a prefix of an URL such as "/cgi-bin/foo.cgi" The algorithm to locate the URL works in 2 phases;<OL>
@@ -15,9 +13,11 @@ import java.util.WeakHashMap;
  * bet, the owch agent registered in the WeakHashMap is notified of a waiting pipeline
  *
  * @author James Northrup
- * @version $Id: httpRegistry.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: httpRegistry.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class httpRegistry extends Registry {
+    private static httpRegistry instance;
+
     public httpRegistry() {
         int a = 4;
 
@@ -31,7 +31,6 @@ public class httpRegistry extends Registry {
         return key.toString();
     }
 
-    ;
 
     public String displayValue(Reference reference) {
         Map map = (Map) reference.get();
@@ -42,7 +41,6 @@ public class httpRegistry extends Registry {
         return map.get("JMSReplyTo").toString();
     }
 
-    ;
 
     /**
      * references key ->content
@@ -51,7 +49,12 @@ public class httpRegistry extends Registry {
         return new SoftReference(o, getRefQ());
     }
 
-    ;
+    public static httpRegistry getInstance() {
+        if (instance == null) instance = new httpRegistry();
+
+        return instance;
+    }
+
 
     class URLComparator implements Comparator {
         /**
@@ -65,19 +68,15 @@ public class httpRegistry extends Registry {
             return res;
         }
 
-        ;
-
         /**
          * Indicates whether some other object is "equal to" this Comparator.
          */
         public boolean equals(Object obj) {
-            return true;
+            return obj.hashCode() == hashCode();
         }
 
-        ;
     }
 
-    ;
     //holds the reference
     // to url strings
 
@@ -117,7 +116,7 @@ public class httpRegistry extends Registry {
             String lname = l.getJMSReplyTo();
             //check to see if the AbstractAgent that registered this
             // resource is actually present
-            if (Env.getInstance().getRouter("IPC").hasElement(lname)) {
+            if (ipc.routerInstance().hasElement(lname)) {
                 //yes?  experimental...  just dump the
                 //inbound Socket right into a
                 //Notification... since we're certain

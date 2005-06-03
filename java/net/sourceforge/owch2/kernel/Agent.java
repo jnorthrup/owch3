@@ -5,12 +5,14 @@ package net.sourceforge.owch2.kernel;
  * agent host platform and the protocols it operates. communication is
  * handled by constructing a MetaProperties Object and calling the
  * send() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
- * other nodes in the namespace.
+ * other agents in the namespace.
  *
  * @author James Northrup
- * @version $Id: Agent.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: Agent.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public interface Agent extends MetaAgent, MetaPropertiesFilter {
+    String RESOURCE_KEY = "Resource";
+
     /**
      * Gets one of this object's properties using the associated key.
      *

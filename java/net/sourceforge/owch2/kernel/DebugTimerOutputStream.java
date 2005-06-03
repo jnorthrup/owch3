@@ -1,10 +1,10 @@
 package net.sourceforge.owch2.kernel;
 
-import java.io.PrintStream;
+import java.io.*;
 
 /**
  * @author James Northrup
- * @version $Id: DebugTimerOutputStream.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: DebugTimerOutputStream.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class DebugTimerOutputStream extends PrintStream {
     private static long benchmark = System.currentTimeMillis();

@@ -1,17 +1,16 @@
 package net.sourceforge.owch2.kernel;
 
 import java.io.*;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
+import static java.lang.Thread.*;
+import java.net.*;
+import java.util.logging.*;
+import java.util.zip.*;
 
 /**
  * GateKeeper opens a PipeSocket to send data ussually in one direction.
  *
  * @author James Northrup
- * @version $Id: PipeSocket.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: PipeSocket.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class PipeSocket {
     //for GET method the inner socket OutputStream will close
@@ -22,12 +21,10 @@ public class PipeSocket {
     boolean isPut = false;
     Socket uc;
     Socket oc;
-    InputStream oi
-    ,
-    ci;
-    OutputStream co
-    ,
-    oo;
+    InputStream oi;
+    InputStream ci;
+    OutputStream co;
+    OutputStream oo;
     ThreadGroup tg;
     static int sc = 0;
     String label = "Generic Pipe" + sc++;
@@ -61,8 +58,6 @@ public class PipeSocket {
         sock.setSoTimeout(200);
         final InputStream istream = sock.getInputStream();
         final OutputStream ostream = sock.getOutputStream();
-        final int Zsize;
-        Zsize = Math.max(128, streamDesc.getZbuf());
 
         reader = (streamDesc.usingInflate) ? new InflaterInputStream(istream) : istream;
         writer = (streamDesc.usingDeflate) ? new DeflaterOutputStream(ostream, new Deflater(java.util.zip.Deflater.FILTERED))
@@ -91,8 +86,8 @@ public class PipeSocket {
 
     /**
      * worker thread for the PipeSocket.  symetrical.java has a bug which restricts socket closes to be all or
-     * nothing. therefore we cannot close "half" of our pipe without killing the other half.  This means that "terminate"
-     * booleans are to indicate whether the stream wille cose the pipe when it hits EOF or will wait for the other side
+     * nothing. therefore we cannot close "half" of our Pipe without killing the other half.  This means that "terminate"
+     * booleans are to indicate whether the stream wille cose the Pipe when it hits EOF or will wait for the other side
      * indefinitely. Sun says "NOT A BUG".  its a good idea therefore to use a C web server or proxy.  :-(
      */
     public class PipeThread implements Runnable {
@@ -107,7 +102,8 @@ public class PipeSocket {
         String name;
         StreamDesc sdesc;
 
-        public PipeThread(Object closeable, InputStream istream, OutputStream ostream, boolean terminate, String name, StreamDesc streamdesc) {
+        public PipeThread(Object closeable, InputStream istream, OutputStream ostream, boolean terminate, String name, StreamDesc streamdesc)
+        {
             pipe = closeable;
             is = istream;
             os = ostream;
@@ -117,7 +113,6 @@ public class PipeSocket {
             sdesc = streamdesc;
         }
 
-        ;
 
         /**
          * worker thread
@@ -133,14 +128,14 @@ public class PipeSocket {
                         //to be
                         //claimed
                         if (Env.getInstance().logDebug)
-                            Env.getInstance().log(500, label + " read has available bytes: " + avail);
+                            Logger.global.info(label + " read has available bytes: " + avail);
                         actual = is.read(buf);
-                        if (Env.getInstance().logDebug) Env.getInstance().log(500, label + " actual read: " + actual);
+                        if (Env.getInstance().logDebug) Logger.global.info(label + " actual read: " + actual);
                         if (actual == -1) {
                             os.flush();
                             term = true;
                             if (Env.getInstance().logDebug)
-                                Env.getInstance().log(15, label + " input stream closed " + actual);
+                                Logger.global.info(label + " input stream closed " + actual);
                             if (term) {
                                 os.close();
                                 //close something...
@@ -156,20 +151,17 @@ public class PipeSocket {
 
                             return;
                         }
-                        if (Env.getInstance().logDebug) Env.getInstance().log(500, label + " output: " + actual);
+                        if (Env.getInstance().logDebug) Logger.global.info(label + " output: " + actual);
                         os.write(buf, 0, actual);
                     }
                     //we avoid blocking in case we need to be
                     //interrupted by our sister thread.
 
-                    Thread.currentThread().sleep(100);
+                    sleep(100);
                     if (os instanceof DeflaterOutputStream) {
-                        // ((DeflaterOutputStream) os).finish();
-                        //((DeflaterOutputStream) os).
-                        //flush for compression
+
                         os.flush();
                     }
-                    ;
                 }
                 catch (InterruptedIOException e) {
                     try {
@@ -179,18 +171,16 @@ public class PipeSocket {
                     }
                 }
                 catch (InterruptedException e) {
-                    if (Env.getInstance().logDebug) Env.getInstance().log(500, name + " closing: " + e.getMessage());
+                    if (Env.getInstance().logDebug) Logger.global.info(name + " closing: " + e.getMessage());
                     return;
                 }
                 catch (Exception e) {
                     if (Env.getInstance().logDebug)
-                        Env.getInstance().log(500, name + " Error - - closing: " + e.getMessage());
+                        Logger.global.info(name + " Error - - closing: " + e.getMessage());
                     return;
                 }
             }
         }
-
-        ;
     }
 
 
@@ -202,9 +192,7 @@ public class PipeSocket {
         i = prepareStream(uc = s, this.cEnc);
         this.ci = (InputStream) i[0];
         this.co = (OutputStream) i[1];
-
     }
-
 }
 
 

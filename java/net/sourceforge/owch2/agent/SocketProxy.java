@@ -2,10 +2,10 @@ package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
 
-import java.io.InterruptedIOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.util.*;
+import java.util.logging.*;
 
 /**
  * SocketProxy
@@ -17,7 +17,7 @@ import java.util.*;
  * <p/>
  * lists of ports and hosts are tried in order specified.
  *
- * @version $Id: SocketProxy.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: SocketProxy.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class SocketProxy extends AbstractAgent implements Runnable {
     private Collection<Integer> srcPort = new ArrayList<Integer>();
@@ -44,7 +44,7 @@ public class SocketProxy extends AbstractAgent implements Runnable {
                     "[-ZipBuf (int)<128+]]\n" +
                     "[-Clone 'host1[ ..hostn]']\n" +
                     "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: SocketProxy.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
+                    "$Id: SocketProxy.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
         }
         SocketProxy d = new SocketProxy(m);
     }
@@ -68,8 +68,8 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     }
 
     /**
-     * this has the effect of taking over the command of the http
-     * service on the agent host and handling messages to marshal http registrations
+     * this has the effect of taking over the command of the Http
+     * service on the agent host and handling messages to marshal Http registrations
      */
     public SocketProxy(Map m) {
         super(m);
@@ -129,11 +129,11 @@ public class SocketProxy extends AbstractAgent implements Runnable {
             }
             catch (InterruptedIOException e) {
                 if (Env.getInstance().logDebug)
-                    Env.getInstance().log(500, getClass().getName() + "::interrupt " + e.getMessage());
+                    Logger.global.info(getClass().getName() + "::interrupt " + e.getMessage());
             }
             catch (Exception e) {
                 if (Env.getInstance().logDebug)
-                    Env.getInstance().log(10, getClass().getName() + "::run " + e.getMessage());
+                    Logger.global.info(getClass().getName() + "::run " + e.getMessage());
                 e.printStackTrace();
             }
         }

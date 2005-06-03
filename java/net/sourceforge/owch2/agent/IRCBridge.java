@@ -1,11 +1,9 @@
 package net.sourceforge.owch2.agent;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.MetaProperties;
-import net.sourceforge.owch2.kernel.Notification;
+import net.sourceforge.owch2.kernel.*;
 
 import java.util.*;
+import java.util.logging.*;
 
 public class IRCBridge extends AbstractAgent {
     String[] agents = {"", ""};
@@ -48,7 +46,7 @@ public class IRCBridge extends AbstractAgent {
             repeatedMessage.put("JMSDestination", agent);
             repeatedMessage.put("Value", finalValue);
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(448, getJMSReplyTo() + ">>" + repeatedMessage.toString());
+                Logger.global.info(getJMSReplyTo() + ">>" + repeatedMessage.toString());
             send(repeatedMessage);
         }
     }
@@ -65,7 +63,7 @@ public class IRCBridge extends AbstractAgent {
                     "-name (String)name --(channel name e.g. #python)\n" +
                     "-IRCAgents (String)'agent1[ agent..n]'\n" +
                     "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: IRCBridge.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
+                    "$Id: IRCBridge.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
         }
         IRCBridge d = new IRCBridge(m);
     }

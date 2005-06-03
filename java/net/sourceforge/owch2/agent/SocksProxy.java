@@ -1,24 +1,27 @@
 package net.sourceforge.owch2.agent;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.PipeFactory;
-import net.sourceforge.owch2.kernel.PipeSocket;
+import net.sourceforge.owch2.kernel.*;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InterruptedIOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Map;
+import java.io.*;
+import static java.lang.Thread.*;
+import java.net.*;
+import java.util.*;
+import java.util.logging.*;
 
 public class SocksProxy extends AbstractAgent implements Runnable {
     private ServerSocket ss;
 
     final static String[] errs = new String[]{
-        "succeeded", "general SOCKS server failure", "connection not allowed by ruleset", "Network unreachable",
-        "Host unreachable", "Connection refused", "TTL expired", "Command not supported",
-        "Address type not supported", "to X'FF' unassigned",
+        "succeeded",
+        "general SOCKS server failure",
+        "connection not allowed by ruleset",
+        "Network unreachable",
+        "Host unreachable",
+        "Connection refused",
+        "TTL expired",
+        "Command not supported",
+        "Address type not supported",
+        "to X'FF' unassigned",
     };
 
     public static void main(String[] args) {
@@ -28,17 +31,15 @@ public class SocksProxy extends AbstractAgent implements Runnable {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "SocketProxy Agent usage:\n\n" +
                     "-name       (String)name\n" + "-SourceHost (String)hostname/IP\n" + "-SocksHost (String)hostname/IP\n" +
                     "-SourcePort (int)port\n" + "-AgentPort  (int)port\n" +
-                    //            "[-SocksAuth (String)User/Password]\n" +
                     "[-SocksPort (int)port]\n" + "[-Clone 'host1[ ..hostn]']\n" + "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: SocksProxy.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $\n");
+                    "$Id: SocksProxy.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
         }
-        ;
         SocketProxy d = new SocketProxy(m);
         Thread t = new Thread();
         try {
             t.start();
             while (!Env.getInstance().shutdown) {
-                t.sleep(6000);
+                sleep(6000);
             } //todo: something
         }
         catch (Exception e) {
@@ -46,7 +47,6 @@ public class SocksProxy extends AbstractAgent implements Runnable {
         }
     }
 
-    ;
 
     public int getSourcePort() {
         return Integer.decode((String) get("SourcePort")).intValue();
@@ -115,7 +115,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                 socks.getInputStream().read();
                 if (!(resp[0] == 5 && resp[1] == 0)) {
                     if (Env.getInstance().logDebug)
-                        Env.getInstance().log(2, this.getClass().getName() +
+                        Logger.global.info(this.getClass().getName() +
                                 " Socks proxy failures returned other than socks5 Auth0; aborting  ");
                     inbound.close();
                     return;
@@ -129,19 +129,15 @@ public class SocksProxy extends AbstractAgent implements Runnable {
             }
             catch (InterruptedIOException e) {
                 if (Env.getInstance().logDebug)
-                    Env.getInstance().log(500, getClass().getName() + "::interrupt " + e.getMessage());
+                    Logger.global.info(getClass().getName() + "::interrupt " + e.getMessage());
             }
             catch (Exception e) {
                 if (Env.getInstance().logDebug)
-                    Env.getInstance().log(10, getClass().getName() + "::run " + e.getMessage());
+                    Logger.global.info(getClass().getName() + "::run " + e.getMessage());
                 e.printStackTrace();
             }
-            ;
         }
-        ;
     }
-
-    ;
 
     /**
      * <p> Requests Once the method-dependent subnegotiation has completed, the client sends the request details.  If the
@@ -190,7 +186,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
         }
         catch (Exception e) {
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(2, this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
+                Logger.global.info(this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
                         "/" + e.getMessage());
         }
     }
@@ -246,13 +242,13 @@ public class SocksProxy extends AbstractAgent implements Runnable {
             is.read(BND_ADDR);
             short BND_PORT = is.readShort();
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(15, this.getClass().getName() + "::Connect request returned " + " VER:" + (int) VER + " REP:" +
+                Logger.global.info(this.getClass().getName() + "::Connect request returned " + " VER:" + (int) VER + " REP:" +
                         errs[REP] + " ATYP:" + (int) ATYP + " " + new String(BND_ADDR) + " BND_PORT:" + BND_PORT);
             return (REP == 0);
         }
         catch (Exception e) {
             if (Env.getInstance().logDebug)
-                Env.getInstance().log(2, this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
+                Logger.global.info(this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
                         "/" + e.getMessage());
             return false;
         }
@@ -268,6 +264,9 @@ public class SocksProxy extends AbstractAgent implements Runnable {
 }
 
 //$Log: SocksProxy.java,v $
+//Revision 1.3  2005/06/03 18:27:47  grrrrr
+//no message
+//
 //Revision 1.2  2005/06/01 06:43:11  grrrrr
 //no message
 //

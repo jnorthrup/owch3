@@ -10,16 +10,13 @@ communication with Room, and Domain servers.
 
 package net.sourceforge.owch2.agent;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.MetaProperties;
-import net.sourceforge.owch2.kernel.Notification;
+import net.sourceforge.owch2.kernel.*;
 
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.*;
 
 /**
  * @author James Northrup
- * @version $Id: Client.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: Client.java,v 1.3 2005/06/03 18:27:46 grrrrr Exp $
  */
 public class Client extends AbstractAgent implements Runnable {
     static String host = "localhost";

@@ -1,18 +1,15 @@
 package net.sourceforge.owch2.kernel;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * ListenerCache
  *
  * @author James Northrup
- * @version $Id: ListenerCache.java,v 1.2 2005/06/01 06:43:11 grrrrr Exp $
+ * @version $Id: ListenerCache.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class ListenerCache implements Runnable {
     Map cache = new TreeMap();
-    //stores PortNumber->ListenerReference
     Iterator enumCycle = null;
     boolean enumFlag;
 
@@ -23,16 +20,13 @@ public class ListenerCache implements Runnable {
         return Location.create(lr);
     }
 
-    ;
-
     //for UDP ListenerCaches this can be used to stripe the output ports of a protocol
-            //such as owch
-            public ListenerReference getNextInLine() {
+    //such as owch
+    public ListenerReference getNextInLine() {
         if (enumFlag == false) {
             enumCycle = cache.keySet().iterator();
             enumFlag = true;
         }
-        ;
         if (enumCycle.hasNext()) {
             return (ListenerReference) cache.get(enumCycle.next());
         } else {
@@ -44,11 +38,9 @@ public class ListenerCache implements Runnable {
             //start over...
             enumFlag = false;
         }
-        ;
         return getNextInLine();
     }
 
-    ;
 
     public void put(ListenerReference l) {
         cache.put(new Integer(l.getServer().getLocalPort()), l);
@@ -67,15 +59,12 @@ public class ListenerCache implements Runnable {
         return l;
     }
 
-    ;
 
     public ListenerCache() {
         Thread t = new Thread(this, "ListenerCache");
         t.setDaemon(true);
         t.start();
     }
-
-    ;
 
     long lowscore = 0;
     ListenerReference nextInLine = null;
@@ -93,14 +82,11 @@ public class ListenerCache implements Runnable {
                 lowscore = l.getExpiration() + 100 * 60 * 10;
                 //silly way of insuring a non zero value;
             }
-            ;
             if (l.getExpiration() < lowscore) {
                 nextInLine = l;
                 lowscore = l.getExpiration();
             }
-            ;
         }
-        ;
         //on put, or remove ops
         //this routine interupts our sleeping thread with
         //the soonest available expire time,
@@ -108,7 +94,6 @@ public class ListenerCache implements Runnable {
         notify();
     }
 
-    ;
 
     public synchronized void run() {
         while (!Env.getInstance().shutdown) {
@@ -119,22 +104,11 @@ public class ListenerCache implements Runnable {
                     //emulate unix select() timeout
                     wait(lowscore - System.currentTimeMillis());
                 }
-                ;
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //!TODO: review for fit
             }
-            catch (InterruptedException e) {
-                continue;
-            }
-            ;
-            //TODO:
-            //kill the nextinline's socket
-            //or threadgroup
         }
-        ;
     }
-
-    ;
 }
-
-;
 
 

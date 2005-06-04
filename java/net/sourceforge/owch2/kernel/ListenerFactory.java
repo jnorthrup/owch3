@@ -1,6 +1,7 @@
 package net.sourceforge.owch2.kernel;
 
 import java.net.*;
+import java.util.concurrent.*;
 
 
 /*
@@ -11,13 +12,14 @@ import java.net.*;
 
 /**
  * @author James Northrup
- * @version $Id: ListenerFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id: ListenerFactory.java,v 1.4 2005/06/04 02:26:24 grrrrr Exp $
  */
 abstract public class ListenerFactory {
     protected InetAddress hostAddress;
     protected int port;
     protected int threads;
     protected int socketCount;
+    protected ExecutorService executorService;
 
     //  private boolean ready = false;
     //  private boolean alive = true;

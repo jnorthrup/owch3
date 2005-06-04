@@ -9,7 +9,7 @@ import java.util.*;
  * owchListener.java
  *
  * @author James Northrup
- * @version $Id: owchListener.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id: owchListener.java,v 1.4 2005/06/04 02:26:24 grrrrr Exp $
  */
 public class owchListener extends UDPServerWrapper implements Runnable, ListenerReference,
         DatagramPacketSource {
@@ -18,7 +18,6 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
     public owchListener(InetAddress hostAddr, int port, int threads) throws SocketException {
         super(hostAddr, port);
         this.threads = threads;
-//        Auto.attach(this, Env.getInstance() .getNotificationFactory());
 
         attach(
                 NotificationFactory.getInstance());
@@ -28,10 +27,7 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
         super(hostAddr, port);
     }
 
-    ;
-
     public final void run() {
-//        if (Env.logDebug) Env.log(20, "debug: " + Thread.currentThread().getName() + " init");
         byte bar [ ] = new byte[32768];
         while (true) {
             try {
@@ -39,14 +35,11 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
                 receive(p);
                 data = p;
                 xmit();
-//                if (Env.logDebug) Env.log(12, "debug: spin, " + Thread.currentThread().getName());
             }
             catch (IOException e) {
-//                if (Env.logDebug) Env.log(5, "debug: OWCH RUN BREAK");
                 break;
             }
         }
-//        if (Env.logDebug) Env.log(5, "debug: OWCH THREAD STOP");
     }
 
     public ProtocolType getProtocol() {
@@ -76,13 +69,9 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
         _DatagramPacket_clients.add(filter);
     }
 
-    ;
-
     public void detach(DatagramPacketFilter filter) {
         _DatagramPacket_clients.remove(filter);
     }
-
-    ;
 
     private DatagramPacket data;
 
@@ -97,8 +86,6 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
             filter.recv(data);
         }
     }
-
-    ;
 }
 
 

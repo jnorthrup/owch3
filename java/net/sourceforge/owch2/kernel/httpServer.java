@@ -12,7 +12,7 @@ import java.util.logging.*;
  * Http server daemon used for sending files and routing agent notifications.
  *
  * @author James Northrup
- * @version $Id: httpServer.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id: httpServer.java,v 1.4 2005/06/04 02:26:24 grrrrr Exp $
  */
 public class httpServer extends TCPServerWrapper implements ListenerReference, Runnable {
     int threads;
@@ -21,8 +21,6 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
     public ProtocolType getProtocol() {
         return Http;
     }
-
-    ;
 
     public long getExpiration() {
         return (long) 0;
@@ -62,7 +60,6 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
         if (Env.getInstance().logDebug) Logger.global.info("httpServer.getRequest");
         Notification n = new Notification();
         try {
-//            n.setFormat("RFC822");
             DataInputStream ins = new DataInputStream(s.getInputStream());
 
             line = ins.readLine();

@@ -11,7 +11,7 @@ import java.util.*;
  * <P>Summary: This holds quite a few package-local and global variables and accessors.
  *
  * @author James Northrup
- * @version $Id: Env.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id: Env.java,v 1.4 2005/06/04 02:26:23 grrrrr Exp $
  */
 public class Env {
     public boolean shutdown = false;
@@ -23,6 +23,7 @@ public class Env {
     private String domainName = null;
     private Map<ProtocolType, Router> routerCache = new HashMap<ProtocolType, Router>(13);
     private Map<String, Format> formatCache;
+
 
     /**
      * returns a MetaProperties suitable for parent routing.
@@ -82,21 +83,6 @@ public class Env {
         HostInterface("Host interface to use"),
         Sockets("Multiple dynamic sockets for high load");
         private String description;
-//                    "-HostAddress - \n" +
-//                "-HostInterface - \n" +
-//                "-SocketCount - ?\n" +
-//                "-debugLevel  - controls how much scroll is displayed\n";
-//        s += "-ParentURL   - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n";
-//        for (ProtocolType ptype : ProtocolType.values()) {
-//            if (ptype.getDefaultPort() == null) {
-//                continue;
-//            }
-////                "-OwchPort    - port number\n" +
-////                "-HttpPort    - port number\n" +
-//            s += "-" + ptype + ":Port - \n ";
-//            s += "-" + ptype + ":Threads - Number of Threads to service protocol \n ";
-//        }
-
 
         ProtocolParam(String description) {
             this.description = description;
@@ -139,13 +125,6 @@ public class Env {
                     setHostInterface(NetworkInterface.getByName(valueString));
 
                 }
-//                if (key.equals("debugLevel")) {
-//
-//                    setDebugLevel(Integer.decode(valueString).intValue());
-//                }
-//                if (key.equals("owch:Port")) {
-//                    setOwchPort(Integer.decode(valueString).intValue());
-//                }
 
                 String[] strings = protoToken.split(":", 2);
                 if (strings.length == 2) {
@@ -230,15 +209,20 @@ public class Env {
                 "-SocketCount - Multiple dynamic sockets for high load?\n" +
                 "-debugLevel  - controls how much scroll is displayed\n";
         s += "-ParentURL   - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n";
+        s += "this edition of the Agent Hosting Platform comes with the folowing configurable protocols: \n";
         for (ProtocolType ptype : ProtocolType.values()) {
             if (ptype.getDefaultPort() == null) {
                 continue;
             }
-            for (ProtocolParam param : ProtocolParam.values()) {
-                s += "[-" + ptype .name() + ":" + param.name() + "]\t-\t" + param.getDescription() + "\n";
-            }
+            s += "\t" + ptype.toString();
         }
-        s = s + " this Edition of the parser: $Id: Env.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n\n\n" +
+        ;
+        s += "\n\n\t -- Each protocol allows the following configurable syntax: \n";
+        for (ProtocolParam param : ProtocolParam.values()) {
+            s += "[-<proto>:" + param.name() + "]\t-\t" + param.getDescription() + "\n";
+        }
+
+        s = s + "\n\n\tthis Edition of the parser: $Id: Env.java,v 1.4 2005/06/04 02:26:23 grrrrr Exp $\n\n\n" +
                 "**********" + "*** Agent Env cmdline specification:" + "***********\n" + t;
         System.out.println(s);
 

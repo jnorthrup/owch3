@@ -1,16 +1,11 @@
 package net.sourceforge.gui.IRC;
 
-import net.sourceforge.gui.AgentVisitor;
-import net.sourceforge.gui.ScrollingListModel;
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import static net.sourceforge.owch2.kernel.Env.getInstance;
-import net.sourceforge.owch2.kernel.Location;
-import net.sourceforge.owch2.kernel.MetaProperties;
-import net.sourceforge.owch2.kernel.Notification;
+import net.sourceforge.gui.*;
+import net.sourceforge.owch2.kernel.*;
+import static net.sourceforge.owch2.kernel.Env.*;
 
 import javax.swing.*;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.*;
 import java.awt.*;
 
 public class IRCChannelGUI extends JInternalFrame implements AgentVisitor {
@@ -83,20 +78,20 @@ public class IRCChannelGUI extends JInternalFrame implements AgentVisitor {
         return null;
     }
 
-    public void put(Object key, Object val) {
+    public void put(String key, Object val) {
     }
 
     public void stopAgent() {
-        Notification notification = new Notification();
-        notification.put("JMSType", "Dissolve");
-        notification.put("JMSReplyTo", node.get("IRCManager"));
-        notification.put("JMSDestination", node.getJMSReplyTo());
-        getInstance().send(notification);
+        Message message = new Message();
+        message.put("JMSType", "Dissolve");
+        message.put("JMSReplyTo", node.get("IRCManager"));
+        message.put("JMSDestination", node.getJMSReplyTo());
+        getInstance().send(message);
     }
 
     public void startAgent() {
         node = new IRCChannelAgent(this, agentLocation);
-        setTitle(agentLocation.get("Value") .toString());
+        setTitle(agentLocation.get("Value").toString());
     }
 
     /**

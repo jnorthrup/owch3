@@ -10,30 +10,23 @@ import java.lang.reflect.*;
 import java.util.logging.*;
 
 public class IRCVisitor extends JFrame implements AgentVisitor {
-    public TextPanel IRCHostText = new TextPanel("IRCHostname")
-    ,
-    IRCPortText = new TextPanel("IRCPort")
-    ,
-    IRCJoinText = new TextPanel("Channels")
-    ,
-    JMSReplyToText = new TextPanel("JMSReplyTo")
-    ,
-    IRCNicknameText = new TextPanel("IRCNickname")
-    ,
-    ParentURLText = new TextPanel("ParentURL");
+    public TextPanel IRCHostText = new TextPanel("IRCHostname"),
+            IRCPortText = new TextPanel("IRCPort"),
+            IRCJoinText = new TextPanel("Channels"),
+            JMSReplyToText = new TextPanel("JMSReplyTo"),
+            IRCNicknameText = new TextPanel("IRCNickname"),
+            ParentURLText = new TextPanel("ParentURL");
 
-    private JToolBar agentToolbar = new JToolBar()
-    ,
-    channelBar = new JToolBar();
+    private JToolBar agentToolbar = new JToolBar(),
+            channelBar = new JToolBar();
     private JCheckBox connectCheck = new JCheckBox();
 
     JDesktopPane desktop = new JDesktopPane();
 
     private JInternalFrame AgentDescriptor = new JInternalFrame();
     private JTabbedPane agentTabs = new JTabbedPane();
-    private JPanel IRCPanel = new JPanel()
-    ,
-    owchPanel = new JPanel();
+    private JPanel IRCPanel = new JPanel(),
+            owchPanel = new JPanel();
 
     private AbstractAgent node;
 
@@ -113,12 +106,12 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
     }
 
     static final private String[] app_keys = {
-        "IRCHost",
-        "IRCPort",
-        "IRCNickname",
-        "IRCJoin",
-        "JMSReplyTo",
-        "ParentURL",
+            "IRCHost",
+            "IRCPort",
+            "IRCNickname",
+            "IRCJoin",
+            "JMSReplyTo",
+            "ParentURL",
     };
 
     public void connectCheckActionPerformed(ActionEvent e) {
@@ -153,7 +146,7 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
         }
         ;
         AgentDescriptor.setEnabled(false);
-        if (Env.getInstance().logDebug) Logger.global.info(l.toString());
+        if (false) Logger.getAnonymousLogger().info(l.toString());
         setNode(new IRCManager(this, l));
     }
 
@@ -162,14 +155,10 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
     public Object get(String key) {
 
         try {
-            String key1 = key.toString();
-            Class<? extends Object> c = getClass();
-            if (Env.getInstance().logDebug) Logger.global.info("get::" + key1 + "Text");
-            Field f = c.getField(key1 + "Text");
-            if (Env.getInstance().logDebug) Logger.global.info("getf::" + f.toString());
+            Class c = getClass();
+            Field f = c.getField(key + "Text");
             Object o = f.get(this);
             Method m = o.getClass().getMethod("getText", AgentVisitor.no_class);
-            if (Env.getInstance().logDebug) Logger.global.info("getm::" + m.toString());
             return m.invoke(o, AgentVisitor.no_Parm).toString();
 
         }
@@ -192,44 +181,28 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
             return getNode().get(key);
         }
 
-        //  return getNode().get(key);
 
     }
 
     public void stopAgent() {
     }
 
-    ;
 
-    public void put(Object key, Object val) {
+    public void put(String key, Object val) {
 
 
         try {
-            String key1 = key.toString();
-            Class<? extends Object> c = getClass();
-            if (Env.getInstance().logDebug) Logger.global.info("get::" + key1 + "Text");
-            Field f = c.getField(key1 + "Text");
-            if (Env.getInstance().logDebug) Logger.global.info("get::" + f.toString());
-            Object o = f.get(this);
-            Method m = o.getClass().getMethod("setText",
-                    new Class[]{String.class});
-            m.invoke(o,
-                    new Object[]{val});
+            Class clazz = getClass();
+            Field field = clazz.getField(key + "Text");
+            Object temp = field.get(this);
+            Method m = temp.getClass().getMethod("setText", new Class[]{String.class});
+            m.invoke(temp, val);
         }
-        catch (NoSuchFieldException e) {
-        }
-        catch (SecurityException e) {
-        }
-        catch (IllegalArgumentException e) {
-        }
-        catch (IllegalAccessException e) {
-        }
-        catch (NoSuchMethodException e) {
-        }
-        catch (InvocationTargetException e) {
+        catch (Exception e) {
+            e.printStackTrace();
         }
         finally {
-            getNode().put(key, val);
+            getNode().put(key, (String) val);
         }
 
     }

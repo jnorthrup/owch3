@@ -27,7 +27,7 @@ public class httpFactory extends ListenerFactory {
             https = new httpServer(hostAddress, (int) port, threads);
         }
         catch (Exception e) {
-            if (Env.getInstance().logDebug) Logger.global.info("httpServer init failure port " + port);
+            if (false) Logger.getAnonymousLogger().info("httpServer init failure port " + port);
             return null;
         }
         for (int i = 0; i < https.getThreads(); i++) {

@@ -1,11 +1,11 @@
 package net.sourceforge.owch2.router;
 
 import net.sourceforge.owch2.kernel.*;
+import static net.sourceforge.owch2.kernel.Message.*;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.logging.*;
 
 /**
  * this is an alternate to an owch router.   needs testing.
@@ -18,13 +18,13 @@ public class httpRouter implements Router {
     private Map<String, MetaAgent> elements = new TreeMap<String, MetaAgent>();
     Socket p;
 
-    public void remove(Object key) {
+    public void remove(String key) {
         elements.remove(key);
     }
 
 
-    public Object getDestination(Map item) {
-        return item.get(Notification.DESTINATION_KEY);
+    public String getDestination(Map<String, ?> item) {
+        return String.valueOf(item.get(DESTINATION_KEY));
     }
 
 
@@ -33,49 +33,47 @@ public class httpRouter implements Router {
     }
 
 
-    public boolean hasElement(Object key) {
+    public boolean hasPath(String key) {
         return elements.containsKey(key);
     }
 
 
-    public boolean proxyAccepted(Map item) {
-        Location met = new Location();
+    public boolean pathExists(Map<String, ?> item) {
+        Location<String> met = new Location<String>();
 
-        met.put(Notification.REPLYTO_KEY, item.get(Notification.REPLYTO_KEY).toString());
-        met.put(Notification.URI_KEY, item.get(Notification.URI_KEY).toString());
-        elements.put(item.get(Notification.REPLYTO_KEY).toString(), met);
+        met.put(REPLYTO_KEY, item.get(REPLYTO_KEY).toString());
+        met.put(URI_KEY, item.get(URI_KEY).toString());
+        elements.put(item.get(REPLYTO_KEY).toString(), met);
 
         return true;
     }
 
 
-    public void send(Map item) {
-        Notification n = new Notification(item);
+    public void send(Map<String, ?> item) {
+        Message n = new Message(item);
         if (n.getJMSReplyTo() == null) {
             return;
         }
-//        String serr = n.get(Notification.REPLYTO_KEY) + ":" + n.get("JMSDestination").toString() + ":" + n.get("JMSType").toString() +                "[" + d.toString() + "] " + ser++;
+//        String serr = n.get(Message.REPLYTO_KEY) + ":" + n.get("JMSDestination").toString() + ":" + n.get("JMSType").toString() +                "[" + d.toString() + "] " + ser++;
 
-        MetaProperties location = ProtocolType.Http.getLocation();
-        n.put(Notification.URI_KEY, location.getURI());
-        MetaProperties prox = (MetaProperties) elements.get(n.get(Notification.DESTINATION_KEY));
+        Location location = ProtocolType.Http.getLocation();
+        n.put(URI_KEY, location.getURI());
+        MetaProperties prox = (MetaProperties) elements.get(n.get(DESTINATION_KEY));
         if (prox == null) {
             prox = (MetaProperties) Env.getInstance().getParentNode();
         }
         URI uri = null;
         try {
-            uri = URI.create(prox.get(Notification.URI_KEY).toString());
+            uri = URI.create(String.valueOf(prox.get(URI_KEY)));
         } catch (Exception e) { //URL parse issues.
         }
 
         try {
             if (uri == null) {
                 if (Env.getInstance().isParentHost()) {
-                    if (Env.getInstance().logDebug)
-                        Logger.global.info("******Domain:  DROPPING PACKET FOR " + prox.get(Notification.REPLYTO_KEY));
                     return;
                 } else {
-                    uri = Env.getInstance().getParentNode().getURI();
+                    uri = URI.create(Env.getInstance().getParentNode().getURI());
                 }
             }
 

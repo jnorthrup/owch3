@@ -128,12 +128,12 @@ public class SocketProxy extends AbstractAgent implements Runnable {
                 ps.spin();
             }
             catch (InterruptedIOException e) {
-                if (Env.getInstance().logDebug)
-                    Logger.global.info(getClass().getName() + "::interrupt " + e.getMessage());
+                if (false)
+                    Logger.getAnonymousLogger().info(getClass().getName() + "::interrupt " + e.getMessage());
             }
             catch (Exception e) {
-                if (Env.getInstance().logDebug)
-                    Logger.global.info(getClass().getName() + "::run " + e.getMessage());
+                if (false)
+                    Logger.getAnonymousLogger().info(getClass().getName() + "::run " + e.getMessage());
                 e.printStackTrace();
             }
         }

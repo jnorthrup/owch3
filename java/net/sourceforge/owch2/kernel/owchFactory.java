@@ -22,7 +22,7 @@ public final class owchFactory extends ListenerFactory {
      * ctor
      */
     public owchFactory() {
-        Logger.global.info("DataGramFactory instantiated");
+        Logger.getAnonymousLogger().info("DataGramFactory instantiated");
     }
 
     public ListenerReference create() {
@@ -34,7 +34,7 @@ public final class owchFactory extends ListenerFactory {
             udps = new owchListener(hostAddress, port, threads);
         }
         catch (IOException e) {
-            Logger.global.info("owchListener failure on port " + port);
+            Logger.getAnonymousLogger().info("owchListener failure on port " + port);
             e.printStackTrace();
         }
 

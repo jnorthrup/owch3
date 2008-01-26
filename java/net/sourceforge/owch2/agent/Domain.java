@@ -13,6 +13,8 @@ import java.util.*;
  * @author Jim Northrup
  */
 public class Domain extends Deploy {
+    public static final String DOMAIN_GATEWAY_KEY = "Domain-Gateway";
+
     /**
      * default ctor
      */
@@ -25,7 +27,7 @@ public class Domain extends Deploy {
         Http.getLocation();
         Env env = Env.getInstance();
         env.setParentHost(true);
-        env.setRouteHunter(new DefaultRouteHunter());
+        env.setRouteHunter(new DefaultRouteResolver());
     }
 
     public final boolean isParent() {

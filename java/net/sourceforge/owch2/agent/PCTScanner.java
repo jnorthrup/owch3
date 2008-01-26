@@ -11,10 +11,8 @@ public class PCTScanner extends AbstractAgent {
     protected static final int PORT = 4050;
 
     protected static final String CHANNEL_NAME = "store";
-    ;
-    protected static final String MSG_DEST = "JMSDestination";
 
-    public PCTScanner(Map<? extends Object, ? extends Object> m) {
+    public PCTScanner(Map<String, Object> m) {
         super(m);
 
 
@@ -25,10 +23,10 @@ public class PCTScanner extends AbstractAgent {
             try {
 
                 String host = theAddr.getHostAddress();
-                Logger.global.info("attempting to bind addr: " + host);
+                Logger.getAnonymousLogger().info("attempting to bind addr: " + host);
 
                 theAddr = InetAddress.getByName(host);
-                Logger.global.info("post-bind addr: " + theAddr);
+                Logger.getAnonymousLogger().info("post-bind addr: " + theAddr);
             } catch (Exception e) {
                 // e.printStackTrace();  //To change body of catch statement use Options | File Templates.
             }
@@ -69,23 +67,23 @@ public class PCTScanner extends AbstractAgent {
                         //no data    e.printStackTrace();  //To change body of catch statement use Options | File Templates.
                     }
                     new PCTMessage(command.getCodes().get(new Character(type)), arg, flags, serialNo, data);
-                    Notification notification = new Notification();
-                    Object value = get(MSG_DEST);
+                    Message message = new Message();
+                    Object value = get(Message.DESTINATION_KEY);
                     if (null != value)
-                        notification.put(MSG_DEST, value);
+                        message.put(Message.DESTINATION_KEY, String.valueOf(value));
                     Map<Character, command> cmd_type = command.getCodes();
                     command cmd = cmd_type.get(new Character(type));
                     //   if ("PCT_KEEP_ALIVE".equals(cmd.getName())) {
                     socket.getOutputStream().write(packet.getBytes()); //echo KEEPALIVES
                     //     continue;
                     //}
-                    notification.put("JMSType", cmd.getName());
-                    notification.put("PCTMessage.arg", new Character(arg));
-                    notification.put("PCTMessage.flags", new Character(flags));
-                    notification.put("PCTMessage.serial", serialNo);
-                    notification.put("PCTMessage.data", data);
-                    send(notification);
-                    if (Env.getInstance().logDebug) notification.save(System.out);
+                    message.put("JMSType", cmd.getName());
+                    message.put("PCTMessage.arg", new Character(arg));
+                    message.put("PCTMessage.flags", new Character(flags));
+                    message.put("PCTMessage.serial", serialNo);
+                    message.put("PCTMessage.data", data);
+                    send(message);
+                    if (false) message.save(System.out);
                 }
             }
         } catch (IOException e) {
@@ -109,7 +107,11 @@ public class PCTScanner extends AbstractAgent {
 
         }
         PCTScanner d;
-        d = new PCTScanner(m);
+        d = new PCTScanner((Map<String, Object>) m);
+    }
+
+    public void putValue(String key, Object value) {
+        put(key, value);
     }
 }
 

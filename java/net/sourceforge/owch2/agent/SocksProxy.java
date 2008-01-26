@@ -12,16 +12,16 @@ public class SocksProxy extends AbstractAgent implements Runnable {
     private ServerSocket ss;
 
     final static String[] errs = new String[]{
-        "succeeded",
-        "general SOCKS server failure",
-        "connection not allowed by ruleset",
-        "Network unreachable",
-        "Host unreachable",
-        "Connection refused",
-        "TTL expired",
-        "Command not supported",
-        "Address type not supported",
-        "to X'FF' unassigned",
+            "succeeded",
+            "general SOCKS server failure",
+            "connection not allowed by ruleset",
+            "Network unreachable",
+            "Host unreachable",
+            "Connection refused",
+            "TTL expired",
+            "Command not supported",
+            "Address type not supported",
+            "to X'FF' unassigned",
     };
 
     public static void main(String[] args) {
@@ -105,7 +105,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                 PipeSocket ps = new PipeSocket(inbound);
                 Socket socks = new Socket((String) get("SocksHost"), getSocksPort());
                 byte[] app = new byte[]{
-                    0 //,2
+                        0 //,2
                 };
                 byte ver = 5, napp = (byte) app.length;
                 socks.getOutputStream().write(
@@ -114,8 +114,8 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                 byte[] resp = new byte[2];
                 socks.getInputStream().read();
                 if (!(resp[0] == 5 && resp[1] == 0)) {
-                    if (Env.getInstance().logDebug)
-                        Logger.global.info(this.getClass().getName() +
+                    if (false)
+                        Logger.getAnonymousLogger().info(this.getClass().getName() +
                                 " Socks proxy failures returned other than socks5 Auth0; aborting  ");
                     inbound.close();
                     return;
@@ -128,12 +128,12 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                 }
             }
             catch (InterruptedIOException e) {
-                if (Env.getInstance().logDebug)
-                    Logger.global.info(getClass().getName() + "::interrupt " + e.getMessage());
+                if (false)
+                    Logger.getAnonymousLogger().info(getClass().getName() + "::interrupt " + e.getMessage());
             }
             catch (Exception e) {
-                if (Env.getInstance().logDebug)
-                    Logger.global.info(getClass().getName() + "::run " + e.getMessage());
+                if (false)
+                    Logger.getAnonymousLogger().info(getClass().getName() + "::run " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -148,7 +148,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
      * <TR> <TD>1   <TD>1   <TD>X'00'<TD>1    <TD>Variable<TD>2 </TABLE>
      * <p/>
      * <p/>
-     *      <P>
+     * <p/>
      *         Where:<UL>
      *                <LI>VER    protocol version: X'05'
      *                <LI>CMD<UL>
@@ -185,8 +185,8 @@ public class SocksProxy extends AbstractAgent implements Runnable {
             os.write(sport);
         }
         catch (Exception e) {
-            if (Env.getInstance().logDebug)
-                Logger.global.info(this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
+            if (false)
+                Logger.getAnonymousLogger().info(this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
                         "/" + e.getMessage());
         }
     }
@@ -198,13 +198,13 @@ public class SocksProxy extends AbstractAgent implements Runnable {
      * established a connection to the SOCKS server, and completed the
      * authentication negotiations.  The server evaluates the request, and
      * returns a reply formed as follows:
-     * <P>
+     * <p/>
      * <TABLE BORDER WIDTH=1>
      * <TR><TH>
      * VER <TH>REP<TH> RSV <TH> ATYP <TH> BND.ADDR <TH> BND.PORT </TR>
      * <TR><TD>1  <TD> 1  <TD> X'00' <TD>  1   <TD> Variable<TD>    2  </TABLE>
      * <p/>
-     * <P>
+     * <p/>
      * Where:<UL>
      * <LI>VER    protocol version: X'05'
      * <LI>REP    Reply field:
@@ -241,14 +241,14 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                     BND_ADDR[] = new byte[BND_ADDR_LEN];
             is.read(BND_ADDR);
             short BND_PORT = is.readShort();
-            if (Env.getInstance().logDebug)
-                Logger.global.info(this.getClass().getName() + "::Connect request returned " + " VER:" + (int) VER + " REP:" +
+            if (false)
+                Logger.getAnonymousLogger().info(this.getClass().getName() + "::Connect request returned " + " VER:" + (int) VER + " REP:" +
                         errs[REP] + " ATYP:" + (int) ATYP + " " + new String(BND_ADDR) + " BND_PORT:" + BND_PORT);
             return (REP == 0);
         }
         catch (Exception e) {
-            if (Env.getInstance().logDebug)
-                Logger.global.info(this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
+            if (false)
+                Logger.getAnonymousLogger().info(this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
                         "/" + e.getMessage());
             return false;
         }

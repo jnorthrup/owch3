@@ -38,7 +38,7 @@ public class RFC822Format implements Format {
             key = (String) iterator.next();
             line = key.toString() + ": " + map.get(key) + "\n";
             writer.write(line.getBytes());
-            if (Env.getInstance().logDebug) Logger.global.info("RFC822Format line saved:" + line);
+            if (false) Logger.getAnonymousLogger().info("RFC822Format line saved:" + line);
         }
         writer.write('\n');
         writer.flush();

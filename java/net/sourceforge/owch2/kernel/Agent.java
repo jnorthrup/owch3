@@ -10,24 +10,9 @@ package net.sourceforge.owch2.kernel;
  * @author James Northrup
  * @version $Id: Agent.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
-public interface Agent extends MetaAgent, MetaPropertiesFilter {
+public interface Agent<V> extends MetaAgent, MetaPropertiesFilter {
     String RESOURCE_KEY = "Resource";
 
-    /**
-     * Gets one of this object's properties using the associated key.
-     *
-     * @see #putValue
-     */
-    Object getValue(String key);
-
-    /**
-     * Sets one of this object's properties using the associated key. If the value has
-     * changed, a <code>PropertyChangeEvent</code> is sent to listeners.
-     *
-     * @param key   a <code>String</code> containing the key
-     * @param value an <code>Object</code> value
-     */
-    void putValue(String key, Object value);
 
     boolean isParent();
 
@@ -39,9 +24,9 @@ public interface Agent extends MetaAgent, MetaPropertiesFilter {
     void linkTo(String lk);
 
     /**
-     * send a Notification
+     * send a Message
      *
-     * @param n Notification destined for somewhere else
+     * @param n Message destined for somewhere else
      */
     void send(MetaProperties n);
 
@@ -49,4 +34,9 @@ public interface Agent extends MetaAgent, MetaPropertiesFilter {
      * handle an incoming message presumably to this instance.
      */
     void recv(MetaProperties notificationIn);
+
+
+    V getValue(String key);
+
+    void putValue(String key, V value);
 }

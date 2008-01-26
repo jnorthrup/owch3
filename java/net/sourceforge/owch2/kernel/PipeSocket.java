@@ -102,8 +102,7 @@ public class PipeSocket {
         String name;
         StreamDesc sdesc;
 
-        public PipeThread(Object closeable, InputStream istream, OutputStream ostream, boolean terminate, String name, StreamDesc streamdesc)
-        {
+        public PipeThread(Object closeable, InputStream istream, OutputStream ostream, boolean terminate, String name, StreamDesc streamdesc) {
             pipe = closeable;
             is = istream;
             os = ostream;
@@ -127,15 +126,15 @@ public class PipeSocket {
                         //data exists
                         //to be
                         //claimed
-                        if (Env.getInstance().logDebug)
-                            Logger.global.info(label + " read has available bytes: " + avail);
+                        if (false)
+                            Logger.getAnonymousLogger().info(label + " read has available bytes: " + avail);
                         actual = is.read(buf);
-                        if (Env.getInstance().logDebug) Logger.global.info(label + " actual read: " + actual);
+                        if (false) Logger.getAnonymousLogger().info(label + " actual read: " + actual);
                         if (actual == -1) {
                             os.flush();
                             term = true;
-                            if (Env.getInstance().logDebug)
-                                Logger.global.info(label + " input stream closed " + actual);
+                            if (false)
+                                Logger.getAnonymousLogger().info(label + " input stream closed " + actual);
                             if (term) {
                                 os.close();
                                 //close something...
@@ -151,7 +150,7 @@ public class PipeSocket {
 
                             return;
                         }
-                        if (Env.getInstance().logDebug) Logger.global.info(label + " output: " + actual);
+                        if (false) Logger.getAnonymousLogger().info(label + " output: " + actual);
                         os.write(buf, 0, actual);
                     }
                     //we avoid blocking in case we need to be
@@ -171,12 +170,12 @@ public class PipeSocket {
                     }
                 }
                 catch (InterruptedException e) {
-                    if (Env.getInstance().logDebug) Logger.global.info(name + " closing: " + e.getMessage());
+                    if (false) Logger.getAnonymousLogger().info(name + " closing: " + e.getMessage());
                     return;
                 }
                 catch (Exception e) {
-                    if (Env.getInstance().logDebug)
-                        Logger.global.info(name + " Error - - closing: " + e.getMessage());
+                    if (false)
+                        Logger.getAnonymousLogger().info(name + " Error - - closing: " + e.getMessage());
                     return;
                 }
             }

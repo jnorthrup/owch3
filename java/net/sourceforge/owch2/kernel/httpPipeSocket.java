@@ -25,12 +25,12 @@ public class httpPipeSocket extends PipeSocket {
     public httpPipeSocket(Socket socket, MetaAgent metaAgent, MetaProperties request) {
         super(socket);
         try {
-            Logger.global.info("using MetaAgent : " + metaAgent.toString());
+            Logger.getAnonymousLogger().info("using MetaAgent : " + metaAgent.toString());
 
-            URI uri = URI.create(metaAgent.getURI().toASCIIString() + request.get(AbstractAgent.RESOURCE_KEY));
-            Logger.global.info("using URL: " + uri);
+            URI uri = URI.create(metaAgent.getURI() + request.get(AbstractAgent.RESOURCE_KEY));
+            Logger.getAnonymousLogger().info("using URL: " + uri);
             request.put(AbstractAgent.MOBILEHOST_KEY, uri.getHost() + ":" + uri.getPort());
-            isGet = request.get(METHOD_KEY).toString().equals(METHOD_TYPE_GET);
+            isGet = request.get(METHOD_KEY).equals(METHOD_TYPE_GET);
             //TODO: support file uploads.
             uc = new Socket(uri.getHost(), uri.getPort());
             connectTarget(uc);

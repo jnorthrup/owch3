@@ -7,17 +7,34 @@ import java.util.*;
  * @version $Id: Router.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
  */
 public interface Router {
-    public void remove(Object key);
+    public void remove(String key);
 
     Set getPool();
 
-    void send(Map item);
+    /**
+     * deliver this message on its way.
+     *
+     * @param item has a JMSDestination
+     */
+    void send(Map<String, ?> item);
 
-    Object getDestination(Map item);
+    /**
+     * asks the router where this message is going.
+     *
+     * @param item a Message
+     * @return a Location which may or may not be a routed answer or a direct delivery.
+     */
+    String getDestination(Map<String, ?> item);
 
-    boolean proxyAccepted(Map item);
+    /**
+     * Router is asked to resolve a path.
+     *
+     * @param item a Location
+     * @return the Router resolves this Location
+     */
+    boolean pathExists(Map<String, ?> item);
 
-    boolean hasElement(Object key);
+    boolean hasPath(String key);
 }
 
 

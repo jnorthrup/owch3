@@ -1,45 +1,42 @@
 package net.sourceforge.owch2.router;
 
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.Location;
-import net.sourceforge.owch2.kernel.MetaProperties;
+import net.sourceforge.owch2.kernel.*;
+import static net.sourceforge.owch2.kernel.Message.*;
+import net.sourceforge.owch2.agent.*;
+import static net.sourceforge.owch2.agent.Domain.*;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: DomainRouter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
+ * @version $Id: domainRouter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
  */
-public class DomainRouter implements Router {
+public class domainRouter implements Router {
     private Map elements = new TreeMap();
 
-    public void remove(Object key) {
+    public void remove(String key) {
         elements.remove(key);
     }
 
-    ;
-
-    public Object getDestination(Map item) {
-        return item.get("Domain-Gateway");
+    public String getDestination(Map<String, ?> item) {
+        return String.valueOf(item.get(DOMAIN_GATEWAY_KEY));
     }
 
-    ;
+    public boolean pathExists(Map<String, ?> item) {
+        return true;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
     public Set getPool() {
         return null;
     }
 
-    ;
-
     public boolean addElement(Map item) {
-        if (item.containsKey("Domain-Gateway")) {
+        if (item.containsKey(DOMAIN_GATEWAY_KEY)) {
             try {
                 MetaProperties mp = new Location();
                 mp.put("JMSReplyTo", item.get("JMSReplyTo").toString()); //looks
                 // like joe@joedomain
-                mp.put("Domain-Gateway", item.get("Domain-Gateway").toString()); //looks
+                mp.put(DOMAIN_GATEWAY_KEY, item.get(DOMAIN_GATEWAY_KEY).toString()); //looks
                 // like "joedomain"
                 elements.put(item.get("JMSReplyTo"), mp);
                 return true;
@@ -52,27 +49,31 @@ public class DomainRouter implements Router {
         return false;
     }
 
-    ;
-
-    public void send(Map item) {
-        Map domain = (Map) elements.get(item.get("JMSDestination")); //looks
+    /**
+     * This adds domain context to the REPLYTO before sending a message to a new domain with an opaque address and a
+     * @param message
+     */
+    public void send(Map message) {
+        Map domain = (Map) elements.get(message.get("JMSDestination")); //looks
         // like joe@joedomain
-        Object dest = domain.get("JMSReplyTo"); //looks like "bob"
-        item.put("JMSReplyTo", item.get("JMSReplyTo") + "@" + Env.getInstance().getDomainName()); //looks
+
+        String dest = (String) domain.get(Message.REPLYTO_KEY); //looks like "bob"
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(message.get(Message.REPLYTO_KEY));
+        builder.append("@");
+        builder.append(Env.getInstance().getDomainName());
+
+        message.put(REPLYTO_KEY, builder.toString()); //looks
         // like bob@bobdomain
-        item.put("JMSDestination", dest); //looks like joe
-        item.put("Domain-Gateway", Env.getInstance().getDomainName()); //looks like bobdomain
+        message.put(DESTINATION_KEY, dest); //looks like joe
+        message.put(DOMAIN_GATEWAY_KEY, Env.getInstance().getDomainName()); //looks like bobdomain
     }
 
-    ;
-
-    public boolean hasElement(Object key) {
+    public boolean hasPath(String key) {
         return elements.containsKey(key);
     }
 
-    ;
 }
-
-;
 
 

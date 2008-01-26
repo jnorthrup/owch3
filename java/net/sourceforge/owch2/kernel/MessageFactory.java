@@ -4,25 +4,26 @@ import java.io.*;
 import java.lang.ref.*;
 import java.net.*;
 import java.util.*;
-import java.util.logging.*;
 
 /**
+ * This converts (injects) network data into a factory that produces Messages.
+ *
  * @author James Northrup
- * @version $Id: NotificationFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id: MessageFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
-final public class NotificationFactory implements Runnable, DatagramPacketFilter, StreamFilter {
-    private Set recv = new HashSet();
+final public class MessageFactory implements Runnable, DatagramPacketFilter, StreamFilter {
+    private final Set<? extends SoftReference<? extends String>> recv = new HashSet<SoftReference<? extends String>>();
     private ReferenceQueue q = new ReferenceQueue();
     private DatagramSocket ds;
-    private static NotificationFactory instance;
+    private static MessageFactory instance;
 
     public final void recv(InputStream reader) {
         try {
-            MetaProperties n = new Notification();
+            MetaProperties n = new Message();
             n.load(reader);
             boolean more = ackPacket(n);
             if (more) {
-                routePacket(n);
+                routePacket((Message) n);
             }
         }
         catch (Exception e) {
@@ -34,26 +35,24 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
         String s = (String) n.get("ACK"); //priority notification
         //check for ACK
         if (s != null) {
-            if (Env.getInstance().logDebug)
-                Logger.global.info("NotificationFactory.handleStream() ACK Notification: " + s);
 
             owchDispatch.getInstance().remove(s);
             return false;
         }
         if (n.getJMSReplyTo() == null) {
-            throw new IOException("NotificationFactory has been sent a deformed Notification.");
+            throw new IOException("MessageFactory has been sent a deformed Message.");
         }
         s = (String) n.get("JMSMessageID");
         if (s != null) {
 //            URLString uri = new URLString(n.getURI());
-            MetaProperties n2 = new Notification();
-            URI uri = n.getURI();
+            Message n2 = new Message();
+            URI uri = URI.create(n.getURI());
             n2.put("ACK", s);
             String h = uri.getHost();
             InetAddress dest = InetAddress.getByName(h);
             OutputStream os = new ByteArrayOutputStream();
             n2.save(os);
-            byte buf[ ] = os.toString().getBytes();
+            byte buf[] = os.toString().getBytes();
             //create the datagram
             DatagramPacket p = new DatagramPacket(buf, buf.length, dest, uri.getPort());
             //grab an owch listener and send with it
@@ -64,21 +63,25 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
         return false;
     }
 
-    public final void routePacket(MetaProperties n) {
-        String s = (String) n.get("JMSMessageID");
-        if (!recognize(n, s)) {
-            Env.getInstance().send(n);
+    /**
+     * check for dupes
+     *
+     * @param message something that should have a Message ID
+     */
+    public final void routePacket(Message message) {
+        if (!recognize(message, (String) message.get(Message.MESSAGE_ID_KEY))) {
+            Env.getInstance().send(message);
         }
     }
 
     public boolean recognize(MetaProperties n, String s) {
         boolean res = false;
-        SoftReference ref;
+        SoftReference<? extends String> ref;
         synchronized (recv) {
-            Iterator i = recv.iterator();
+            Iterator<? extends SoftReference<? extends String>> i = recv.iterator();
             while (i.hasNext()) {
-                ref = (SoftReference) i.next();
-                String prev = (String) ref.get();
+                ref = i.next();
+                String prev = ref.get();
                 if (prev == null) {
                     continue;
                 }
@@ -91,7 +94,7 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
         return res;
     }
 
-    public NotificationFactory() {
+    public MessageFactory() {
         try {
             ds = new DatagramSocket(0);
             Thread t = new Thread();
@@ -121,8 +124,6 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
                 if (ref != null) {
                     synchronized (recv) {
                         recv.remove(ref);
-                        if (Env.getInstance().logDebug)
-                            Logger.global.info(getClass().getName() + "::collecting softref ---- ");
                     }
                 }
             }
@@ -132,9 +133,9 @@ final public class NotificationFactory implements Runnable, DatagramPacketFilter
         }
     }
 
-    public static NotificationFactory getInstance() {
+    public static MessageFactory getInstance() {
         if (null == instance)
-            instance = new NotificationFactory();
+            instance = new MessageFactory();
 
         return instance;
     }

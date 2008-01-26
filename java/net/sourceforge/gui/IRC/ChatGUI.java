@@ -1,12 +1,10 @@
 package net.sourceforge.gui.IRC;
 
-import net.sourceforge.gui.AgentVisitor;
-import net.sourceforge.gui.ScrollingListModel;
+import net.sourceforge.gui.*;
 import net.sourceforge.owch2.kernel.*;
 
 import javax.swing.*;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.*;
 import java.awt.*;
 
 public class ChatGUI extends JInternalFrame implements AgentVisitor {
@@ -79,20 +77,20 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
         return null;
     }
 
-    public void put(Object key, Object val) {
+    public void put(String key, Object val) {
     }
 
     public void stopAgent() {
-        Notification notification = new Notification();
-        notification.put("JMSType", "Dissolve");
-        notification.put("JMSReplyTo", node.get("IRCManager"));
-        notification.put("JMSDestination", node.getJMSReplyTo());
-        Env.getInstance().send(notification);
+        Message message = new Message();
+        message.put("JMSType", "Dissolve");
+        message.put("JMSReplyTo", node.get("IRCManager"));
+        message.put("JMSDestination", node.getJMSReplyTo());
+        Env.getInstance().send(message);
     }
 
     public void startAgent() {
         node = new ChatAgent(this, agentLocation);
-        setTitle(agentLocation.get("Value") .toString());
+        setTitle(agentLocation.get("Value").toString());
     }
 
     /**

@@ -1,6 +1,6 @@
 /**
  * MobilePayload.java
- *@author   Jim Northrup
+ *@author Jim Northrup
  */
 
 package net.sourceforge.owch2.agent;
@@ -58,17 +58,17 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     /**
      * this is a set of headers that is simply nice to have...
      */
-    protected Notification nice = new Notification();
+    protected Message nice = new Message();
 
     /**
      * this is a set of header fields that is simply nice to have...
      */
     protected final String[] nice_headers =
-    {
-        "Last-Modified",
-        "Content-Type",
-        "Content-Encoding"
-    };
+            {
+                    "Last-Modified",
+                    "Content-Type",
+                    "Content-Encoding"
+            };
 
     /**
      * interval defines our random interval of re-registration starting with 1/2n..n milliseconds
@@ -88,8 +88,8 @@ public class MobilePayload extends AbstractAgent implements Runnable {
             relocate();
 
             long tim = (long) (Math.random() * (interval / 2.0) + (interval / 2.0));
-            if (Env.getInstance().logDebug)
-                Logger.global.info(getClass().getName() + " waiting for " + tim + " ms.");
+            if (false)
+                Logger.getAnonymousLogger().info(getClass().getName() + " waiting for " + tim + " ms.");
             try {
                 Thread.currentThread().sleep(tim);
             } catch (InterruptedException e) {
@@ -105,7 +105,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
      */
     public void handle_Dissolve(MetaProperties n) {
         thread.interrupt();
-        Notification n2 = new Notification();
+        Message n2 = new Message();
         n2.put("JMSDestination", "GateKeeper");
         n2.put("JMSType", "UnRegister");
         n2.put("URLSpec", get("Resource").toString());
@@ -190,7 +190,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public void inductStream(InputStream is) {
-        ProtocolType.ipc.routerInstance().proxyAccepted(this);
+        ProtocolType.ipc.routerInstance().pathExists(this);
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] buf = new byte[16384];
@@ -201,8 +201,8 @@ public class MobilePayload extends AbstractAgent implements Runnable {
                 actual = is.read(buf);
                 if (actual >= 0) {
                     os.write(buf, 0, actual);
-                    if (Env.getInstance().logDebug)
-                        Logger.global.info(getClass().getName() + ":" + get("Resource").toString() +
+                    if (false)
+                        Logger.getAnonymousLogger().info(getClass().getName() + ":" + get("Resource").toString() +
                                 " slurped up " + actual + " bytes");
                 }
             }
@@ -211,11 +211,11 @@ public class MobilePayload extends AbstractAgent implements Runnable {
             os.close();
             thread = new Thread(this, getClass().getName() + ":" + get("JMSReplyTo()") + ":" + get("Resource"));
             thread.start();
-            if (Env.getInstance().logDebug)
-                Logger.global.info("-=-=-=-=-" + getClass().getName() + ":" + get("Resource").toString() + " ThreadStart ");
+            if (false)
+                Logger.getAnonymousLogger().info("-=-=-=-=-" + getClass().getName() + ":" + get("Resource").toString() + " ThreadStart ");
         } catch (Exception e) {
-            if (Env.getInstance().logDebug)
-                Logger.global.info(getClass().getName() + ":" + get("Resource").toString() + " failure " + e.getMessage());
+            if (false)
+                Logger.getAnonymousLogger().info(getClass().getName() + ":" + get("Resource").toString() + " failure " + e.getMessage());
             e.printStackTrace();
             return;
         }
@@ -232,99 +232,95 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     public void sendRegistrations() {
         linkTo(null);
         String resource = get("Resource").toString();
-        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Protocol);
 
-        MetaProperties l1 = ProtocolType.Http.getLocation();
-        Location l = new Location(l1);
-        l.put("JMSReplyTo", getJMSReplyTo());
+        MetaProperties localHttpLocation = ProtocolType.Http.getLocation();
+        Location location = new Location(localHttpLocation);
+        location.put("JMSReplyTo", getJMSReplyTo());
 
-        httpRegistry.getInstance().registerItem(resource, l);
-        Notification n2 = new Notification();
+        Env.getInstance().getHttpRegistry().registerItem(resource, location);
+        Message n2 = new Message();
         n2.put("JMSDestination", "GateKeeper");
         n2.put("JMSType", "Register");
         n2.put("URLSpec", resource);
-        n2.put("URLFwd", l.getURI());
+        n2.put("URLFwd", location.getURI());
         send(n2);
     }
 
     /**
      * sendPayload(socket) dumps our byte[] to the socket client..
+     *
+     * @param socket outbound socket
      */
-    public void sendPayload(Socket s) {
-        /**
-         * Thanks given where due... HEAD /pub/GNU/guile/guile-1.4.tar.gz HTTP/1.0
-         * HTTP/1.1 200 OK Date: Sat, 14 Apr 2001 20:58:40 GMT Server: Apache/1.2.1 Last-Modified: Tue, 20 Jun 2000
-         * 23:05:36 GMT ETag: "854cf-114934-394ff8c0" Content-Length: 1132852 Accept-Ranges: bytes
-         * Connection: close Content-Type: application/x-tar Content-Encoding: x-gzip Connection closed by foreign host.
-         */
+    public void sendPayload(Socket socket) {
         OutputStream os = null;
         try {
             if (!nice.containsKey("Content-Type")) {
                 nice.put("Content-Type", "application/octet-stream");
             }
-            if (!nice.containsKey("Content-Length") && "text/html".intern() != nice.get("Content-Type")) {
+            if (!nice.containsKey("Content-Length") && !"text/html".intern().equals(nice.get("Content-Type"))) {
                 nice.put("Content-Length", "" + payload.length);
             }
-            os = s.getOutputStream();
+            os = socket.getOutputStream();
 
             os.write("HTTP/1.1 200 OK\n".getBytes());
-            for (int i = 0; i < nice_headers.length; i++) {
-                if (containsKey(nice_headers[i])) {
-                    nice.put(nice_headers[i], get(nice_headers[i]));
+            for (String nice_header : nice_headers) {
+                if (containsKey(nice_header)) {
+                    nice.put(nice_header, get(nice_header));
                 }
 
             }
             nice.save(os);
 
             int actual = 0;
-            int avail = 0;
             ByteArrayInputStream is = new ByteArrayInputStream(payload);
             byte[] buf = new byte[16 * 1024];
             do {
-//avail = is.ready();
-                while (is.available() > 0) {
+
+                while (0 < is.available()) {
                     actual = is.read(buf);
-                    if (actual > 0) {
-                        if (Env.getInstance().logDebug)
-                            Logger.global.info(getClass().getName() + ":" + getJMSReplyTo() + " sent " + actual + " bytes");
+                    if (0 < actual) {
                         os.write(buf, 0, actual);
                     }
                 }
             } while (actual != -1);
             os.flush();
             os.close();
-            s.close();
+            socket.close();
         } catch (Exception e) {
-            if (Env.getInstance().logDebug)
-                Logger.global.info(getClass().getName() + ":" + getJMSReplyTo() + " failure " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    ;
-
     public void handle_httpd(MetaProperties n) {
-        Socket s = (Socket) n.get("_Socket");
+        Socket s = Env.getInstance().getHttpRegistry().httpdSockets.remove("_Socket");
         sendPayload(s);
-        return;
     }
 
-    public void handle_WriteFile(MetaProperties n) {
+    /**
+     * this message tells us to write the payload and where to write it
+     *
+     * @param message
+     */
+    public void handle_WriteFile(MetaProperties message) {
         String path;
-        path = (String) n.get("Path");
+        path = (String) message.get("Path");
         String filename;
-        filename = (String) n.get("Filename");
+        filename = (String) message.get("Filename");
 
 
         File file = new File(path, filename);
-        boolean overwrite;
-        overwrite = false;
-        if (overwrite = "true".intern().equals(n.get("OverWrite"))
-                &&
-                file.exists()) {
-            Logger.global.info("cannot overwrite file " + file.toString());
+
+        boolean exists = file.exists();
+        String mOverwrite = (String) message.get("OverWrite");
+        boolean overwrite = "true".equals(mOverwrite);
+
+        if (!overwrite && exists) try {
+            throw new Exception("Overwrite not specified");
+        } catch (Exception e) {
+            Logger.getAnonymousLogger().severe(Arrays.toString(e.getStackTrace()));  //TODO: clarify autogen exception
             return;
         }
+
         File tmpfile;
         tmpfile = new File(path, filename + "...");
 

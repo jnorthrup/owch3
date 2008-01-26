@@ -2,6 +2,7 @@ package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
 
+import static java.lang.Thread.*;
 import java.util.*;
 
 /**
@@ -10,79 +11,57 @@ import java.util.*;
  * URL startswith (element <n>) </OL> The when an URL is located -- registering the URL "/" is a sure
  * bet, the owch agent registered in the WeakHashMap is notified of a waiting pipeline
  */
-public class GateKeeper extends AbstractAgent {
-    public static void main(String[] args) {
-        Map<? extends Object, ? extends Object> m = Env.getInstance(). parseCommandLineArgs(args);
-        if (!(m.containsKey("JMSReplyTo") && m.containsKey("HostPort"))) {
+public class GateKeeper extends AbstractAgent<String> {
+    private HttpRegistry httpRegistry = Env.getInstance().getHttpRegistry();
+
+
+    //todo:  modernize the agent spinning into the workerques
+    public static void main(String[] args) throws InterruptedException {
+
+        Map m = Env.getInstance().parseCommandLineArgs(args);
+
+        if (!(m.containsKey(Message.REPLYTO_KEY))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
-                    "-name name\n" + "-HostPort port\n" + "$Id: GateKeeper.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
+                    "-name name\n" + "$Id: GateKeeper.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
         }
-        ;
-        GateKeeper d = new GateKeeper(m);
         Thread t = new Thread();
-        try {
-            t.start();
-            while (true) {
-                t.sleep(60000);
-            }
+        t.start();
+        GateKeeper d = new GateKeeper(m);
+        while (!Env.getInstance().shutdown) {
+            sleep(60000);
         }
-        catch (Exception e) {
-        }
-        ;
+
     }
-
-    ;
-
 
     public void handle_Register(MetaProperties notificationIn) {
-        try {
-            String Item = notificationIn.get("URLSpec").toString();
-            notificationIn.put("URL", notificationIn.get("URLFwd"));
-//        if (webRegistry == null) {
-//            webRegistry = new httpRegistry();
-//        }
-//        return webRegistry;
-            httpRegistry.getInstance().registerItem(Item, notificationIn);
-            return;
-        }
-        catch (Exception e) {
-        }
-        ;
-        return;
+        String item = (String) notificationIn.get("URLSpec");
+        notificationIn.put("URL", notificationIn.get("URLFwd"));
+        httpRegistry.registerItem(item, new Location(notificationIn));
     }
 
-    ;
 
+    /**
+     * this once
+     *
+     * @param notificationIn
+     */
     public void handle_UnRegister(MetaProperties notificationIn) {
-        try {
-            String Item = notificationIn.get("URLSpec").toString();
-            notificationIn.put("URL", notificationIn.get("URLFwd"));
-//        if (webRegistry == null) {
-//            webRegistry = new httpRegistry();
-//        }
-//        return webRegistry;
-            httpRegistry.getInstance().unregisterItem(Item);
-            return;
-        }
-        catch (Exception e) {
-        }
-        ;
-        return;
+        String item = (String) notificationIn.get("URLSpec");
+        notificationIn.put("URL", notificationIn.get("URLFwd"));
+        httpRegistry.unregisterItem(item);
+
     }
 
     /**
      * this has the effect of taking over the command of the Http
      * service on the agent host and handling messages to marshal Http registrations
+     *
+     * @param params bootStrap stuff
      */
-    public GateKeeper(Map<? extends Object, ? extends Object> m) {
-        super(m);
-        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Protocol);
-
-        MetaProperties l = ProtocolType.Http.getLocation();
-
+    public GateKeeper(Map<String, String> params) {
+        super(params);
     }
 }
 
-;
 
 

@@ -1,11 +1,11 @@
 package net.sourceforge.gui;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
+import net.sourceforge.owch2.kernel.*;
 
 public interface AgentVisitor {
     Object get(String key);
 
-    void put(Object key, Object val);
+    void put(String key, Object val);
 
     void stopAgent();
 

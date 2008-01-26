@@ -1,7 +1,6 @@
 package net.sourceforge.owch2.kernel;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 /**
@@ -11,7 +10,8 @@ import java.util.*;
  * @version $Id: MetaProperties.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 
-public interface MetaProperties extends MetaAgent, Map {
+public interface MetaProperties<V>
+        extends MetaAgent, Map<String, V> {
     /*
     int key=0;
     int token=1;
@@ -30,15 +30,14 @@ public interface MetaProperties extends MetaAgent, Map {
      */
     public void load(InputStream reader) throws IOException;
 
-    public URI getURI();
 
     /**
      * Save properties to an OutputStream.
+     *
+     * @param writer todo: replace with serialization
+     * @throws java.io.IOException e
      */
     public void save(OutputStream writer) throws IOException;
-
-
-    public String getJMSReplyTo();
 }
 
 

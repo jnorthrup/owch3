@@ -2,59 +2,40 @@ package net.sourceforge.owch2.kernel;
 
 import static net.sourceforge.owch2.kernel.ProtocolType.*;
 
-import java.lang.ref.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
- * gatekeeper registers a prefix of an URL such as "/cgi-bin/foo.cgi" The algorithm to locate the URL works in 2 phases;<OL>
+ * gatekeeper registers a prefix of an URL such as "/cgi-bin/foo.cgi" The algorithm to locate the URL works in 2 phases;
+ * <OL>
  * <LI> The weakHashMap is checked for an exact match. <LI> The arraycache is then checked from top to bottom to see if
  * URL startswith (element <n>) </OL> The when an URL is located -- registering the URL "/" is a sure
  * bet, the owch agent registered in the WeakHashMap is notified of a waiting pipeline
+ * <p/>
+ * <p/>
+ * update.... 12 years after i wrote this... java had NO REGEX back when this was written.  no jit either.
+ * <p/>
+ * I like the simple algorithm, but it's pretty obvious how to specialize this for a more regexy kind of registration.
  *
  * @author James Northrup
- * @version $Id: httpRegistry.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id: HttpRegistry.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
-public class httpRegistry extends Registry {
-    private static httpRegistry instance;
+public class HttpRegistry {
+    private NavigableMap<String, MetaAgent> registeredResources = new ConcurrentSkipListMap<String, MetaAgent>();
+    public Map<String, Socket> httpdSockets = new ConcurrentHashMap<String, Socket>();
 
-    public httpRegistry() {
-        int a = 4;
-
-        /** references URL prefix-> NodeName */
-        setWeakMap(new WeakHashMap(384));
-        setComparator(new URLComparator());
-        setSet(new TreeSet(getComparator()));
+    public HttpRegistry() {
     }
 
-    public String displayKey(Comparable key) {
-        return key.toString();
+    public void registerItem(String resource, Location l) {
+        MetaAgent agent = registeredResources.put(resource, l);
+
     }
 
-
-    public String displayValue(Reference reference) {
-        Map map = (Map) reference.get();
-        if (map == null) {
-            return "*something utterly unimportant*";
-        }
-
-        return map.get("JMSReplyTo").toString();
+    public void unregisterItem(String item) {
+        registeredResources.remove(item);
     }
-
-
-    /**
-     * references key ->content
-     */
-    public Reference referenceValue(Object o) {
-        return new SoftReference(o, getRefQ());
-    }
-
-    public static httpRegistry getInstance() {
-        if (instance == null) instance = new httpRegistry();
-
-        return instance;
-    }
-
 
     class URLComparator implements Comparator {
         /**
@@ -67,79 +48,63 @@ public class httpRegistry extends Registry {
             } //equal length objects are then copmred as strings
             return res;
         }
-
-        /**
-         * Indicates whether some other object is "equal to" this Comparator.
-         */
-        public boolean equals(Object obj) {
-            return obj.hashCode() == hashCode();
-        }
-
     }
-
-    //holds the reference
-    // to url strings
 
 
     /**
      * dispatchRequest
      *
-     * @return whether the request was fulfilled yet.
+     * @return whether the request was fulfilled from this agent host's registrant.
      */
     public boolean dispatchRequest(Socket socket, MetaProperties notification) {
         String resource = notification.get("Resource").toString();
+        MetaAgent registrant = getResourceHandler(resource);
+
         String method = notification.get("Method").toString();
         notification.put("Proxy-Request", notification.get("Request"));
-        MetaAgent l;
-        //it is important to recache before we look up any weak keys
-        //from URLNodeMap since cacheArray is holding registrations alive.
-        if (isCacheInvalid()) {
-            reCache();
-        }
-        //1 check resource for an exact match in our WeakRefMap
-        l = (MetaAgent) weakGet(resource);
-        if (l == null) {
-            int len = resource.length();
-            for (int i = getCache().length - 1; i >= 0; i--) {
-                String temp = getCache(i).toString();
-//                if (Env.logDebug) Env.log(500, "Pattern test on " + resource + ":" + temp);
-                if (temp.length() > len) {
-                    continue;
-                }
-                if (resource.startsWith(temp)) {
-                    l = (MetaAgent) weakGet(temp);
-//                    if (Env.logDebug) Env.log(500, "Pattern match on " + resource + ":" + temp);
-                }
-            }
-        }
-        if (l != null) {
-            String lname = l.getJMSReplyTo();
-            //check to see if the AbstractAgent that registered this
-            // resource is actually present
-            if (ipc.routerInstance().hasElement(lname)) {
-                //yes?  experimental...  just dump the
-                //inbound Socket right into a
-                //Notification... since we're certain
-                //a node exists by this name
-                notification.put("_Socket", socket);
+
+        if (registrant != null) {
+            String lname = registrant.getJMSReplyTo();
+
+            if (ipc.routerInstance().hasPath(lname)) {
+                httpdSockets.put(socket.toString(), socket);
+                notification.put("_Socket", socket.toString());
                 notification.put("JMSDestination", lname);
                 notification.put("JMSType", "httpd");
-                notification.put("JMSReplyTo", "nobody"); //apparently we
-                // *MUST* give ourselves a name..
+                notification.put("JMSReplyTo", "nobody"); //apparently we *MUST* give ourselves a name..
                 Env.getInstance().send(notification);
                 return true;
             }
-            //3 create PipeConnection to registered location
-//            if (Env.logDebug) Env.log(15, getClass().getName() + " creating PipeSocket for " + notification.get("Resource").toString());
-            PipeSocket pipeSocket = new httpPipeSocket(socket, l, notification);
+            PipeSocket pipeSocket = new httpPipeSocket(socket, registrant, notification);
             return true;
         }
-        ;
-        //4 else super.sendFile
         return false;
     }
-}
 
-;
+
+    /**
+     * @param resource a requested url
+     * @return returns the resource, or the nearest matching parent of that resource, or the shortest resource of all.
+     */
+    private MetaAgent getResourceHandler(String resource) {
+
+        if (registeredResources.containsKey(resource)) return registeredResources.get(resource);
+//        MetaAgent registrant = registeredResources.get(resource);
+
+
+        NavigableMap<String, MetaAgent> map = registeredResources.headMap(resource, false);
+        NavigableSet<String> navigableSet = map.descendingKeySet();
+
+        String key = null;
+        for (String s : navigableSet) {
+            key = s;
+            if (resource.startsWith(s)) {
+                break;
+            }
+        }
+        return registeredResources.get(key);
+    }
+
+}
 
 

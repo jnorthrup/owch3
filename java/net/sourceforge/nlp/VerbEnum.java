@@ -1,10 +1,11 @@
 package net.sourceforge.nlp;
 
 /**
- * this class builds a serialized verb matrix model from a  source of data_
+ * this class builds a serialized verb matrix model from a  _source of data_
+ * <p/>
+ * do this in c++, java uses shorts as addresses.
  */
 public enum VerbEnum {
-
     u1("Transitivity Alternations"),
     u1_1("Object of Transitive = Subject of IntransitiveAlternations"),
     u1_1_1("Middle Alternation"),
@@ -236,7 +237,7 @@ public enum VerbEnum {
     u37_6("Chitchat Verbs"),
     u37_7("Say Verbs"),
     u37_8("Complain Verbs"),
-    u37_9 ("Advise Verbs"),
+    u37_9("Advise Verbs"),
     u38("Verbs of Sounds Made by Animals"),
     u39("Verbs of Ingesting"),
     u39_1("Eat Verbs"),
@@ -341,10 +342,7 @@ public enum VerbEnum {
     u56("Weekend Verbs"),
     u57("Weather Verbs");
 
-    ;
-
-    private enum
-            VerbTOC {
+    private enum VerbTOC {
         abandon_u(new VerbEnum[]{u51_2,}),
         abash_u(new VerbEnum[]{u1_2_5, u2_13_4, u31_1,}),
         abate_u(new VerbEnum[]{u1_1_2_1, u45_4,}),
@@ -448,7 +446,7 @@ public enum VerbEnum {
         arrive_u(new VerbEnum[]{u1_4_1, u6_1, u6_2, u7_5, u51_1,}),
         articulate_u(new VerbEnum[]{u2_1, u37_7,}),
         ascend_u(new VerbEnum[]{u1_4_1, u6_1, u6_2, u7_5, u51_1,}),
-        ask_u(new VerbEnum[]{u2_1, u37_1,}),
+/*        ask_u(new VerbEnum[]{u2_1, u37_1,}),
         asphalt_u(new VerbEnum[]{u7_2, u9_9,}),
         asphyxiate_u(new VerbEnum[]{u1_1_2_3, u40_7, u42_2,}),
         assassinate_u(new VerbEnum[]{u1_1_2_1, u42_1,}),
@@ -2140,7 +2138,7 @@ public enum VerbEnum {
         outdo_u(new VerbEnum[]{u8_2,}),
         outlaw_u(new VerbEnum[]{u29_7,}),
         outrage_u(new VerbEnum[]{u1_2_5, u2_13_4, u31_1,}),
-        ovenfry_u(new VerbEnum[                   ]{u45_3,}),
+        ovenfry_u(new VerbEnum[]{u45_3,}),
         ovenpoach_u(new VerbEnum[]{u45_3,}),
         overawe_u(new VerbEnum[]{u1_2_5, u2_13_4, u31_1,}),
         overcharge_u(new VerbEnum[]{u2_1, u2_14, u54_5,}),
@@ -3447,17 +3445,16 @@ public enum VerbEnum {
         zigzag_u(new VerbEnum[]{u7_8, u51_3_2,}),
         zing_u(new VerbEnum[]{u2_3_4, u7_8, u43_2,}),
         zip_u(new VerbEnum[]{u2_5_1, u2_5_2, u7_2, u22_4,}),
-        zipcode_u(new VerbEnum[]{u7_2, u9_9,}),
+*/        zipcode_u(new VerbEnum[]{u7_2, u9_9,}),
         zoom_u(new VerbEnum[]{u7_8, u51_3_2,});
-        private VerbEnum[] verbEnums;
+        public VerbEnum[] verbEnums;
 
-        VerbTOC(VerbEnum[] verbEnums) {
+        VerbTOC(VerbEnum... verbEnums) {
             this.verbEnums = verbEnums;
         }
     }
 
     VerbEnum(String partOfSpeech) {
     }
-
-    ;}
+}
 

@@ -1,12 +1,11 @@
 package net.sourceforge.owch2.kernel;
 
 import static net.sourceforge.owch2.kernel.AgentLifecycle.*;
-import static net.sourceforge.owch2.kernel.Notification.*;
+import static net.sourceforge.owch2.kernel.Message.*;
 import net.sourceforge.owch2.router.*;
 
 import static java.lang.Thread.*;
 import java.lang.reflect.*;
-import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
@@ -20,7 +19,7 @@ import java.util.logging.*;
  * @author James Northrup
  * @version $Id: AbstractAgent.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
-abstract public class AbstractAgent extends TreeMap implements Agent {
+public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Agent {
     protected static final String MOBILEHOST_KEY = "Host";
     protected static final String DEFAULT_LINK_NAME = "default";
 
@@ -33,7 +32,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     protected boolean killFlag = false;
     boolean virgin;
-    LinkRegistry acl = null;
+//    LinkRegistry acl = null;
 
     private final static Class[] cls_m = new Class[]{MetaProperties.class};
 
@@ -46,10 +45,10 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
      *
      * @see #putValue
      */
-    public Object getValue(String key) {
+    public V getValue(String key) {
 //        if (Env.logDebug) Env.log(499, getClass().getName() + ":" + key);
         Object value = null; //= default_val;
-        Class<? extends Object> c = this.getClass();
+        Class c = this.getClass();
         try {
             value = c.getField(key).get(this);
         }
@@ -62,37 +61,38 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
                 value = get(key);
             }
         }
-        return value;
+        return (V) value;
     }
 
+
     /**
-     * Sets one of this object's properties using the associated key. If the value has
-     * changed, a <code>PropertyChangeEvent</code> is sent to listeners.
+     * Sets one of this object's properties using the associated key.
+     * <p/>
+     * If the value has changed, a <code>PropertyChangeEvent</code>
+     * is sent to listeners.
      *
      * @param key   a <code>String</code> containing the key
      * @param value an <code>Object</code> value
      */
+
     public void putValue(String key, Object value) {
+        //To change body of implemented methods use File | Settings | File Templates.
         String attempt = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-//        if (Env.logDebug)
-//            Env.log(499,                     getClass().getName() + ":" + key + "=" + value + "::" + value.getClass().getName());
-        Class<? extends Object> c = this.getClass();
+
+        Class c = this.getClass();
         Class[] vclass = new Class[]{value.getClass()};
         try {
             Method m = c.getMethod(attempt, vclass);
-            m.invoke(this,
-                    new Object[]{value});
+            m.invoke(this, value);
         }
         catch (NoSuchMethodException nsm) {
-//            if (Env.logDebug) Env.log(499, attempt);
-//            ;
             nsm.printStackTrace();
             try {
                 Field f = c.getField(key);
                 f.set(this, value);
             }
             catch (Exception e) {
-                this.put(key, value);
+                this.put(key, (V) value);
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();  //!TODO: review for fit
@@ -107,25 +107,26 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
     }
 
     /**
-     * Sends a Link notification other node(s) intended to establish direct socket communication.
+     * Sends a Link notification other node(s) intended to
+     * establish direct socket communication.
      *
      * @param linkDestination node(s) to link to
      */
     public void linkTo(String linkDestination) {
         if (linkDestination == null) {
-            Logger.global .info(".link invoked. routing to default");
+            Logger.getAnonymousLogger().info(".link invoked. routing to default");
             linkDestination = Env.getInstance().getParentNode().getJMSReplyTo();
         }
-        MetaProperties n = new Notification();
+        MetaProperties n = new Message();
         n.put(DESTINATION_KEY, linkDestination);
         n.put(TYPE_KEY, LINK_TYPE);
         send(n);
     }
 
     /**
-     * AbstractAgent level Notification insignia creation and inter-process notification routing.
+     * AbstractAgent level Message insignia creation and inter-process notification routing.
      *
-     * @param n Notification destined for somewhere else
+     * @param n Message destined for somewhere else
      */
     public void send(MetaProperties n) {
 
@@ -134,7 +135,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
             n.put(REPLYTO_KEY, this.getJMSReplyTo());
         }
         if (n.get(DESTINATION_KEY) != null) {
-            Env.getInstance() .send(n);
+            Env.getInstance().send(n);
         }
     }
 
@@ -164,34 +165,35 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     public AbstractAgent(Map proto) {
         super(proto);
-        ProtocolType.ipc.routerInstance().proxyAccepted(this);
+        ProtocolType.ipc.routerInstance().pathExists(this);
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }
     }
 
-    public void init(Map proto) {
+    public void init(Map<String, ? extends V> proto) {
         putAll(proto);
-        ProtocolType.ipc.routerInstance().proxyAccepted(this);
+        ProtocolType.ipc.routerInstance().pathExists(this);
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }
     }
 
     /**
-     * this tells our (potentially clone) agent to stop re-registering.  it will cease to spin.
+     * this tells our (potentially clone) agent to stop re-registering.
+     * it will cease to spin.
      */
     public void handle_Dissolve(MetaProperties n) {
         killFlag = true;
         //UnLink("default");
         Router r[] = {
-            ProtocolType.ipc.routerInstance(),
-            ProtocolType.owch.routerInstance(),
-            ProtocolType.Http.routerInstance(),
+                ProtocolType.ipc.routerInstance(),
+                ProtocolType.owch.routerInstance(),
+                ProtocolType.Http.routerInstance(),
         };
         for (int i = 0; i < r.length; i++) {
             try {
-                r[i].remove(this);
+                r[i].remove(getJMSReplyTo());
             }
             catch (Exception e) {
             }
@@ -200,11 +202,11 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     public void handle_Link(MetaProperties p) {
         String dest = p.getJMSReplyTo();
-        MetaProperties n = new Notification();
+        MetaProperties n = new Message();
         n.put(TYPE_KEY, UPDATE_TYPE);
         n.put(DESTINATION_KEY, dest);
         send(n);
-        Logger.global .info(getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
+        Logger.getAnonymousLogger().info(getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
     }
 
 
@@ -215,11 +217,11 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
      */
     public void handle_Update(MetaProperties p) {
         String dest = p.getJMSReplyTo();
-        MetaProperties n = new Notification();
+        MetaProperties n = new Message();
         n.put(TYPE_KEY, UPDATED_TYPE);
         n.put(DESTINATION_KEY, dest);
         send(n);
-        Logger.global.info(getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
+        Logger.getAnonymousLogger().info(getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
     }
 
     /**
@@ -233,15 +235,15 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
             lk = Env.getInstance().getParentNode().getJMSReplyTo();
         }
-        ;
-        MetaProperties n = new Notification();
+
+        MetaProperties n = new Message();
         n.put(DESTINATION_KEY, lk);
         n.put(TYPE_KEY, UNLINK_TYPE);
         send(n);
     }
 
-    public final URI getURI() {
-        return URI.create(get(URI_KEY).toString());
+    public final String getURI() {
+        return (String) get(URI_KEY);
 
     }
 
@@ -259,9 +261,9 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
      *
      * @param notificationIn the payload describing the move
      */
-    public void handle_Move(MetaProperties notificationIn) {
+    public void handle_Move(MetaProperties<? extends String> notificationIn) {
 
-        String host = notificationIn.get(MOBILEHOST_KEY).toString(); //name of a Deploy agent
+        String host = notificationIn.get(MOBILEHOST_KEY); //name of a Deploy agent
         if (host == null) {
             host = Env.getInstance().getHostname();
         }
@@ -273,7 +275,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         response.put(CLASSTYPE_KEY, getClass().getName());
         response.put(REPLYTO_KEY, getJMSReplyTo());
 
-        response.put(SOURCE_KEY, ProtocolType.Http.getLocation().getURI().toASCIIString() + get(RESOURCE_KEY));
+        response.put(SOURCE_KEY, ProtocolType.Http.getLocation().getURI() + get(RESOURCE_KEY));
 
         response.put(DESTINATION_KEY, host);
         send(response);
@@ -290,7 +292,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         response.put(REPLYTO_KEY, getJMSReplyTo());
         //if (Env.logDebug) Env.log(50, "Env.getLocation - " + ProtocolType);
 
-        response.put(SOURCE_KEY, ProtocolType.Http.getLocation().getURI().toASCIIString() + get(RESOURCE_KEY));
+        response.put(SOURCE_KEY, ProtocolType.Http.getLocation().getURI() + get(RESOURCE_KEY));
         //resource remains constant in this incarnation
         //n2.put( "Resource",get("Resource"));//produces 3 Strings
         response.put(DESTINATION_KEY, host);
@@ -302,7 +304,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
      * clone <OL><LI>recv order to clone, and host<LI>  deploy
      * new class.  <LI>deliver content.  <LI>close channel.
      */
-    public void handle_Clone(MetaProperties n) {
+    public void handle_Clone(MetaProperties<? extends V> n) {
 
         String host = n.get(MOBILEHOST_KEY).toString(); //name of a Deploy agent
         if (host == null) {
@@ -319,7 +321,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         if (containsKey(CLONE_KEY)) {
             String clist = (String) get(CLONE_KEY);
             remove(CLONE_KEY);
-            Logger.global.info(getClass().getName() + " **Cloning for " + clist);
+            Logger.getAnonymousLogger().info(getClass().getName() + " **Cloning for " + clist);
             StringTokenizer st = new StringTokenizer(clist);
             while (st.hasMoreTokens()) {
                 clone_state1(st.nextToken());
@@ -329,8 +331,6 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
             try {
                 String clist = (String) get(DEPLOY_KEY);
                 remove(DEPLOY_KEY);
-                if (Env.getInstance().logDebug)
-                    Logger.global.info(getClass().getName() + " **Cloning for " + clist);
                 StringTokenizer st = new StringTokenizer(clist);
                 while (st.hasMoreTokens()) {
                     clone_state1(st.nextToken());

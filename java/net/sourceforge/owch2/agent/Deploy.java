@@ -1,6 +1,6 @@
 /**
  *Deploy.java
- *@author   Jim Northrup
+ *@author Jim Northrup
  */
 
 package net.sourceforge.owch2.agent;
@@ -53,25 +53,25 @@ public class Deploy extends AbstractAgent {
      */
     public void handle_Deploy(MetaProperties n) {
         String _class = (String) n.get("Class");
-        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Class " + _class);
+        if (false) Logger.getAnonymousLogger().info("Deplying::Class " + _class);
         String path = (String) n.get("Path");
-        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Path " + path);
+        if (false) Logger.getAnonymousLogger().info("Deplying::Path " + path);
         String parm = (String) n.get("Parameters");
-        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Parameters " + parm);
+        if (false) Logger.getAnonymousLogger().info("Deplying::Parameters " + parm);
         String signature = (String) n.get("Signature");
-        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Signature " + signature);
+        if (false) Logger.getAnonymousLogger().info("Deplying::Signature " + signature);
         int i;
         java.util.List tokens;
         //we use a classloader based on our reletive origin..
         ClassLoader loader = getClass().getClassLoader();
         String[] tok_arr = new String[]{path, parm, signature};
-        Object[][] res_arr = new Object[ tok_arr.length ][];
+        Object[][] res_arr = new Object[tok_arr.length][];
         StringTokenizer st;
         for (i = 0; i < tok_arr.length; i++) {
             String temp_str = tok_arr[i];
             tokens = new ArrayList();
             if (temp_str == null) {
-                if (Env.getInstance().logDebug) Logger.global.info("Deploy tokenizing nullinating  " + i);
+                if (false) Logger.getAnonymousLogger().info("Deploy tokenizing nullinating  " + i);
                 temp_str = "";
             }
             st = new StringTokenizer(temp_str);
@@ -79,12 +79,12 @@ public class Deploy extends AbstractAgent {
                 tokens.add(st.nextElement());
             }
             res_arr[i] = tokens.toArray();
-            if (Env.getInstance().logDebug)
-                Logger.global.info("Deploy arr" + i + " found " + res_arr[i].length + " tokens");
+            if (false)
+                Logger.getAnonymousLogger().info("Deploy arr" + i + " found " + res_arr[i].length + " tokens");
         }
-        URL[] path_arr = new URL[ res_arr[0].length ];
-        Object[] parm_arr = new Object[ res_arr[1].length ];
-        Class[] sig_arr = new Class[ res_arr[2].length ];
+        URL[] path_arr = new URL[res_arr[0].length];
+        Object[] parm_arr = new Object[res_arr[1].length];
+        Class[] sig_arr = new Class[res_arr[2].length];
         try {
             //path is URL's, gotta do a loop to instantiate URL's...
             for (i = 0; i < res_arr[0].length; i++) {
@@ -115,22 +115,22 @@ public class Deploy extends AbstractAgent {
 
     public void handle_DeployNode(MetaProperties n) {
         String _class = (String) n.get("Class");
-        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Class " + _class);
+        if (false) Logger.getAnonymousLogger().info("Deplying::Class " + _class);
         String path = (String) n.get("Path");
-        if (Env.getInstance().logDebug) Logger.global.info("Deplying::Path " + path);
+        if (false) Logger.getAnonymousLogger().info("Deplying::Path " + path);
         int i;
         java.util.List tokens;
         //we use a classloader based on our reletive origin..
         ClassLoader loader = getClass().getClassLoader();
         String[] tok_arr = new String[]{path,};
         URL[] path_arr = new URL[]{};
-        Object[][] res_arr = new Object[ tok_arr.length ][];
+        Object[][] res_arr = new Object[tok_arr.length][];
         StringTokenizer st;
         for (i = 0; i < tok_arr.length; i++) {
             String temp_str = tok_arr[i];
             tokens = new ArrayList();
             if (temp_str == null) {
-                if (Env.getInstance().logDebug) Logger.global.info("Deploy tokenizing nullinating  " + i);
+                if (false) Logger.getAnonymousLogger().info("Deploy tokenizing nullinating  " + i);
                 temp_str = "";
             }
             st = new StringTokenizer(temp_str);
@@ -138,8 +138,8 @@ public class Deploy extends AbstractAgent {
                 tokens.add(st.nextElement());
             }
             res_arr[i] = tokens.toArray();
-            if (Env.getInstance().logDebug)
-                Logger.global.info("Deploy arr" + i + " found " + res_arr[i].length + " tokens");
+            if (false)
+                Logger.getAnonymousLogger().info("Deploy arr" + i + " found " + res_arr[i].length + " tokens");
         }
         try {
             if (!n.containsKey("Singleton")) {
@@ -155,10 +155,10 @@ public class Deploy extends AbstractAgent {
 
             /* this creates a new Object */
             Object metaAgent = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
-            //use our Notification as a bootstrap of parms
+            //use our Message as a bootstrap of parms
             if (metaAgent instanceof MetaAgent) {
                 owch.routerInstance().remove(((MetaAgent) metaAgent).getJMSReplyTo());
-                ipc.routerInstance().proxyAccepted((Map) metaAgent);
+                ipc.routerInstance().pathExists((Map) metaAgent);
             }
             return;
         }

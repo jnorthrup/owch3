@@ -9,16 +9,16 @@ import java.util.*;
  * @version $Id: NullRouter.java,v 1.1 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class NullRouter implements Router {
-    public boolean hasElement(Object key) {
+    public boolean hasPath(String key) {
         return true;
     }
 
-    public boolean proxyAccepted(Map item) {
+    public boolean pathExists(Map<String, ?> item) {
         return true;
     }
 
 
-    public void remove(Object key) {
+    public void remove(String key) {
     }
 
     public Set getPool() {
@@ -26,10 +26,10 @@ public class NullRouter implements Router {
     }
 
 
-    public void send(Map item) {
+    public void send(Map<String, ?> item) {
     }
 
-    public Object getDestination(Map item) {
+    public String getDestination(Map<String, ?> item) {
         return null;
     }
 }

@@ -20,7 +20,7 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
         this.threads = threads;
 
         attach(
-                NotificationFactory.getInstance());
+                MessageFactory.getInstance());
     }
 
     public owchListener(InetAddress hostAddr, int port) throws SocketException {
@@ -28,7 +28,7 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
     }
 
     public final void run() {
-        byte bar [ ] = new byte[32768];
+        byte bar[] = new byte[32768];
         while (true) {
             try {
                 DatagramPacket p = new DatagramPacket(bar, bar.length);
@@ -76,7 +76,7 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
     private DatagramPacket data;
 
     private static final Class[] parm_cls_DatagramPacket = new Class[]{
-        DatagramPacket.class
+            DatagramPacket.class
     };
 
     public void xmit() {

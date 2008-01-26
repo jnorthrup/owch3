@@ -34,8 +34,8 @@ public final class owchDispatch implements Runnable {
         }
         ht.put(serr, dpw);
         try {
-            if (Env.getInstance().logDebug)
-                Logger.global.info("debug: ht.put(serr,p)");
+            if (false)
+                Logger.getAnonymousLogger().info("debug: ht.put(serr,p)");
             dpw.fire();
         }
         catch (IOException e) {
@@ -47,7 +47,7 @@ public final class owchDispatch implements Runnable {
      * remove packet from queue based on messageID
      */
     void remove(String serr) {
-        if (Env.getInstance().logDebug) Logger.global.info("debug: remove " + serr.toString());
+        if (false) Logger.getAnonymousLogger().info("debug: remove " + serr.toString());
         tenacious.remove(serr);
         pending.remove(serr);
     }
@@ -68,7 +68,7 @@ public final class owchDispatch implements Runnable {
                 sleep(1800);
             }
             catch (InterruptedException ex) {
-                if (Env.getInstance().logDebug) Logger.global.info("debug: owchDispatch.run() e " + ex);
+                if (false) Logger.getAnonymousLogger().info("debug: owchDispatch.run() e " + ex);
             }
             Enumeration en;
             en = pending.keys();
@@ -95,15 +95,15 @@ public final class owchDispatch implements Runnable {
                     BehaviorState st = dpw.fire();
 
                     if (st != frozen)
-                        if (Env.getInstance().logDebug)
-                            Logger.global.info("debug: owchDispatch.run() send " + st.toString() + " " + serr);
+                        if (false)
+                            Logger.getAnonymousLogger().info("debug: owchDispatch.run() send " + st.toString() + " " + serr);
                     if (st == dead) {
                         remove(serr);
                     }
                 }
             }
             catch (IOException ex) {
-                if (Env.getInstance().logDebug) Logger.global.info("debug: owchDispatch.run() e " + ex);
+                if (false) Logger.getAnonymousLogger().info("debug: owchDispatch.run() e " + ex);
             }
         }
     }

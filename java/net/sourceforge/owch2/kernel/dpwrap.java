@@ -29,7 +29,7 @@ final class dpwrap {
         count++;
         DatagramSocket ds;
 //        final Env env = Env.getInstance();
-//        if (env.logDebug) Logger.global.info("protocolCache.getListenerCache -- " + proto);
+//        if (env.logDebug) Logger.getAnonymousLogger().info("protocolCache.getListenerCache -- " + proto);
 //        ListenerCache lc = (ListenerCache) get(proto);
 //        if (lc == null) {
 //            if (proto == ProtocolType.owch) {
@@ -57,7 +57,7 @@ final class dpwrap {
 //                pipeInit = true;
 //            }
 //        }
-        ListenerCache listenerCache = ProtocolType.owch .ListenerCacheInstance();
+        ListenerCache listenerCache = ProtocolType.owch.ListenerCacheInstance();
         if (count < lifespan) {
             ds = (DatagramSocket) listenerCache.getNextInLine().getServer();
             ds.send(p);

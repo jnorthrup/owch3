@@ -44,7 +44,7 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
             }
         }
         catch (Exception e) {
-            if (Env.getInstance().logDebug) Logger.global.info("ServerSocket creation Failure:" + e.getMessage());
+            if (false) Logger.getAnonymousLogger().info("ServerSocket creation Failure:" + e.getMessage());
         }
     }
 
@@ -53,11 +53,11 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
         while (!Env.getInstance().shutdown) {
             try {
                 Socket s = accept();
-                if (Env.getInstance().logDebug)
-                    Logger.global.info("debug: " + Thread.currentThread().getName() + " init");
+                if (false)
+                    Logger.getAnonymousLogger().info("debug: " + Thread.currentThread().getName() + " init");
             }
             catch (Exception e) {
-                if (Env.getInstance().logDebug) Logger.global.info("PipeServer thread going down in flames");
+                if (false) Logger.getAnonymousLogger().info("PipeServer thread going down in flames");
             }
         }
     }

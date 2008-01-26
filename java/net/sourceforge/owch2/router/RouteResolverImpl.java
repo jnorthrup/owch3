@@ -5,28 +5,28 @@ import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: RouteHunterImpl.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id: RouteResolverImpl.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
  */
-abstract public class RouteHunterImpl implements RouteHunter {
+abstract public class RouteResolverImpl implements RouteResolver {
     public static final String REPLYTO_KEY = "JMSReplyTo";
     public static final String DESTINATION_KEY = "JMSDestination";
 
-    public void send(Map item) {
+    public void send(Map<String, ?> item) {
         if (item.get(REPLYTO_KEY) == null) {
-            Logger.global.info("*** dropping nameless message");
+            Logger.getAnonymousLogger().info("*** dropping nameless message");
             return;
         }
         if (item.get(REPLYTO_KEY) == item.get(DESTINATION_KEY)) {
-            Logger.global.info("*** dropping routeless");
+            Logger.getAnonymousLogger().info("*** dropping routeless");
             return;
         }
 
-        boolean sated = false;
+        boolean sated;
 
         for (Router router : getOutbound()) {
-            Logger.global.info("***  testing " + item.toString());
+            Logger.getAnonymousLogger().info("***  testing " + item.toString());
             Object dest = router.getDestination(item);
-            sated = router.hasElement(dest);
+            sated = router.hasPath((String) dest);
             if (sated) {
                 router.send(item);
                 break;
@@ -34,15 +34,15 @@ abstract public class RouteHunterImpl implements RouteHunter {
         }
 
         for (Router router : getOutbound()) {
-            if (router.proxyAccepted(item)) {
+            if (router.pathExists(item)) {
                 break;
             }
         }
     }
 
-    public void remove(Object key) {
+    public void remove(String key) {
         for (Router r : getInbound())
-            r.remove(key);
+            r.remove((String) key);
 
     }
 }

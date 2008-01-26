@@ -6,9 +6,9 @@ import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: LeafRouteHunter.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id: LeafRouteResolver.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
  */
-public class LeafRouteHunter extends RouteHunterImpl {
+public class LeafRouteResolver extends RouteResolverImpl {
     public Collection getOutbound() {
         return outbound;
     }
@@ -29,10 +29,10 @@ public class LeafRouteHunter extends RouteHunterImpl {
     static {
         outbound = Arrays.asList(
                 new Router[]{
-                    ipc.routerInstance(),
-                    owch.routerInstance(),
-                    Http.routerInstance(),
-                    Default.routerInstance()});
+                        ipc.routerInstance(),
+                        owch.routerInstance(),
+                        Http.routerInstance(),
+                        Default.routerInstance()});
     }
 
 
@@ -41,8 +41,8 @@ public class LeafRouteHunter extends RouteHunterImpl {
     static {
         inbound = Arrays.asList(
                 new Router[]{ipc.routerInstance(),
-                    owch.routerInstance(),
-                    Http.routerInstance(),});
+                        owch.routerInstance(),
+                        Http.routerInstance(),});
     }
 
 

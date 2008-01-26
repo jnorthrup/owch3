@@ -5,13 +5,20 @@ import net.sourceforge.owch2.router.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
- * Env class: mobile agent host environment; <P>intent: the master object factory
+ * Env class: mobile agent host environment;
+ * <p/>
+ * <P>intent: the master object factory
+ * <p/>
  * <P>Summary: This holds quite a few package-local and global variables and accessors.
+ * <p/>
+ * This is the backbone of routing and traffic for AbstractAgents to pass MetaProperties through various communication routers and gateways.
  *
  * @author James Northrup
  * @version $Id: Env.java,v 1.4 2005/06/04 02:26:23 grrrrr Exp $
+ * @see AbstractAgent
  */
 public class Env {
     public boolean shutdown = false;
@@ -31,14 +38,15 @@ public class Env {
     MetaAgent parentNode = null;
 
 
-    private RouteHunter routeHunter = new LeafRouteHunter();
+    private RouteResolver routeResolver = new LeafRouteResolver();
 
     private InetAddress hostAddress;
     private NetworkInterface hostInterface;
 
     private static Env instance;
-    public boolean logDebug = false;
     private int pipePort;
+    public static Map<String, Socket> httpdSockets = new ConcurrentHashMap<String, Socket>();
+    private HttpRegistry httpRegistry;
 
     private Env() {
     }
@@ -68,12 +76,16 @@ public class Env {
         socketCount = t;
     }
 
-    public void send(Map item) {
-        routeHunter.send(item); //
+    public void send(Map<String, ?> item) {
+        routeResolver.send(item); //
     }
 
-    public void unRoute(Object key) {
-        routeHunter.remove(key); //
+    public void unRoute(String key) {
+        routeResolver.remove(key); //
+    }
+
+    public HttpRegistry getHttpRegistry() {
+        return httpRegistry;
     }
 
     enum ProtocolParam {
@@ -95,10 +107,13 @@ public class Env {
 
     /**
      * needs work being friendlier
+     *
+     * @param arguments usu. the commandline args or the source args for a clone instance
+     * @return the props from the commandline
      */
-    public Map parseCommandLineArgs(String[] arguments) {
+    public Map<String, String> parseCommandLineArgs(String[] arguments) {
         try {
-            Notification bootNotification = new Notification();
+            Message bootMessage = new Message();
             //harsh but effective, asume everything is key value pairs.
             for (int i = 0; i < (arguments.length - arguments.length % 2); i += 2) {
 
@@ -114,7 +129,7 @@ public class Env {
                     throw new RuntimeException("requested help");
                 }
                 if (protoToken.equals("name")) {
-                    protoToken = Notification.REPLYTO_KEY;
+                    protoToken = Message.REPLYTO_KEY;
                 }
 
                 //intercept a few Env specific keywords...
@@ -132,7 +147,7 @@ public class Env {
                         ProtocolType ptype = ProtocolType.valueOf(protoToken);
                         String attrToken = strings[1];
 
-                        ProtocolParam param = ProtocolParam .valueOf(attrToken);
+                        ProtocolParam param = ProtocolParam.valueOf(attrToken);
 
                         switch (param) {
                             case HostAddress:
@@ -156,10 +171,10 @@ public class Env {
                     }
                 }
                 if (protoToken.equals("HostThreads")) {
-                    setHostThreads(Integer.decode(valueString).intValue());
+                    setHostThreads(Integer.decode(valueString));
                 }
                 if (protoToken.equals("SocketCount")) {
-                    setSocketCount(Integer.decode(valueString).intValue());
+                    setSocketCount(Integer.decode(valueString));
                 }
                 if (protoToken.equals("ParentURL")) {
                     Location location = (Location) getParentNode();
@@ -174,23 +189,17 @@ public class Env {
                     while (streamTokenizer.hasMoreElements()) {
                         String tempString = (String) streamTokenizer.nextElement();
                         InputStream fileInputStream = new FileInputStream(tempString);
-                        bootNotification.load(fileInputStream);
+                        bootMessage.load(fileInputStream);
                     }
                     continue;
                 }
-                bootNotification.put(protoToken, valueString);
+                bootMessage.put(protoToken, valueString);
             }
-            return bootNotification;
+            return bootMessage;
         } catch (RuntimeException e) {
             e.printStackTrace();
             cmdLineHelp("<this was an Env-cmdline syntax problem>");
-        } catch (SocketException e) {
-            e.printStackTrace();  //!TODO: review for fit
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();  //!TODO: review for fit
-        } catch (UnknownHostException e) {
-            e.printStackTrace();  //!TODO: review for fit
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();  //!TODO: review for fit
         }
         return null;
@@ -230,7 +239,7 @@ public class Env {
     }
 
 
-    public void sethttpRegistry(httpRegistry h) {
+    public void sethttpRegistry(HttpRegistry h) {
     }
 
     public Format getFormat(String name) {
@@ -249,7 +258,7 @@ public class Env {
         return formatCache;
     }
 
-    public URI getDefaultURI() {
+    public String getDefaultURI() {
         if (!isParentHost()) {
             return getParentNode().getURI();
         } else {
@@ -283,7 +292,7 @@ public class Env {
 
     public MetaAgent getParentNode() {
         if (parentNode == null) {
-            Location l = new Location();
+            Location<String> l = new Location<String>();
             l.put("Created", "env.getDomain()");
             l.put("JMSReplyTo", "default");
             l.put("URL", "owch://" + getHostAddress().getCanonicalHostName() + ":2112/");
@@ -297,12 +306,12 @@ public class Env {
         domainName = dName;
     }
 
-    public RouteHunter getRouteHunter() {
-        return routeHunter;
+    public RouteResolver getRouteHunter() {
+        return routeResolver;
     }
 
-    public void setRouteHunter(RouteHunter r) {
-        routeHunter = r;
+    public void setRouteHunter(RouteResolver r) {
+        routeResolver = r;
     }
 
 

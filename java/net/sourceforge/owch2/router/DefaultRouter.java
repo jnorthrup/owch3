@@ -1,10 +1,10 @@
 package net.sourceforge.owch2.router;
 
-import static net.sourceforge.owch2.kernel.Env.*;
 import net.sourceforge.owch2.kernel.*;
+import static net.sourceforge.owch2.kernel.Env.*;
+import static net.sourceforge.owch2.kernel.Message.*;
 
 import java.util.*;
-import java.util.logging.*;
 
 /**
  * @author James Northrup
@@ -15,35 +15,31 @@ public class DefaultRouter implements Router {
         return new TreeSet(); //
     }
 
-    public void send(Map item) {
+    public void send(Map<String, ?> item) {
         boolean hasParent = getInstance().getParentNode() != null;
         if (!hasParent) {
-            if (getInstance().logDebug) Logger.global.info("dropping item" + item.toString());
             return;
         }
-        Router router = ProtocolType .owch.routerInstance();
-        item.put(Notification.URI_KEY, getInstance().getDefaultURI());
+        Router router = ProtocolType.owch.routerInstance();
+
+
+        ((Map) item).put(URI_KEY, Env.getInstance().getDefaultURI());
         router.send(item);
     }
 
-    public void remove(Object key) { //
+    public void remove(String key) { //
     }
 
 
-    public Object getDestination(Map item) {
+    public String getDestination(Map<String, ?> item) {
         return null;
     }
 
-    public boolean proxyAccepted(Map item) {
+    public boolean pathExists(Map<String, ?> item) {
         return false;
     }
 
-    public boolean hasElement(Object key) {
-        boolean sated = getInstance().getParentNode() != null;
-        return sated; //
+    public boolean hasPath(String key) {
+        return null != getInstance().getParentNode(); //
     }
 }
-
-;
-
-

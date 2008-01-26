@@ -34,27 +34,25 @@ public class IRCBridge extends AbstractAgent {
                 preliminaryValue = m.get("Value").toString(),
                 finalValue = "<" + ircNickName + "@" + ircAgent + "> " + preliminaryValue;
         String agent;
-        Notification repeatedMessage;
+        Message repeatedMessage;
 
         for (int i = 0; i < agents.length; i++) {
             agent = agents[i];
             if (ircAgent.equals(agent))
                 continue;
-            repeatedMessage = new Notification(m);
+            repeatedMessage = new Message(m);
             repeatedMessage.put("JMSType", "MSG");
             repeatedMessage.put("IRCChannel", getJMSReplyTo());
             repeatedMessage.put("JMSDestination", agent);
             repeatedMessage.put("Value", finalValue);
-            if (Env.getInstance().logDebug)
-                Logger.global.info(getJMSReplyTo() + ">>" + repeatedMessage.toString());
+            if (false)
+                Logger.getAnonymousLogger().info(getJMSReplyTo() + ">>" + repeatedMessage.toString());
             send(repeatedMessage);
         }
     }
 
-    ;
-
     public static void main(String[] args) {
-        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
+        Map m = Env.getInstance().parseCommandLineArgs(args);
         final String[] ka = {"JMSReplyTo", "IRCAgents",};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {

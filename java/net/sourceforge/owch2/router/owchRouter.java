@@ -2,7 +2,7 @@ package net.sourceforge.owch2.router;
 
 import net.sourceforge.owch2.kernel.*;
 import static net.sourceforge.owch2.kernel.Location.URI_KEY;
-import static net.sourceforge.owch2.kernel.Notification.*;
+import static net.sourceforge.owch2.kernel.Message.*;
 
 import java.io.*;
 import java.net.*;
@@ -17,13 +17,13 @@ public class owchRouter implements Router {
     static long ser = 0;
     private Map<String, MetaAgent> proxies = new TreeMap<String, MetaAgent>();
 
-    public void remove(Object key) {
+    public void remove(String key) {
         proxies.remove(key);
     }
 
 
-    public Object getDestination(Map item) {
-        return item.get(DESTINATION_KEY);
+    public String getDestination(Map<String, ?> item) {
+        return String.valueOf(item.get(DESTINATION_KEY));
     }
 
     public Set getPool() {
@@ -31,12 +31,12 @@ public class owchRouter implements Router {
     }
 
 
-    public boolean hasElement(Object key) {
+    public boolean hasPath(String key) {
         return proxies.containsKey(key);
     }
 
 
-    public boolean proxyAccepted(Map item) {
+    public boolean pathExists(Map<String, ?> item) {
         Location location = new Location();
         decorateProxy(location, item);
         return true;
@@ -48,24 +48,25 @@ public class owchRouter implements Router {
             location.put(URI_KEY, item.get(URI_KEY).toString());
         }
         catch (Exception e) {
+            e.printStackTrace();
         }
         proxies.put(item.get(REPLYTO_KEY).toString(), location);
     }
 
-    public void send(Map item) {
-        Notification notification = new Notification(item);
-        if (notification.getJMSReplyTo() == null) return;
+    public void send(Map<String, ?> item) {
+        Message message = new Message(item);
+        if (message.getJMSReplyTo() == null) return;
 
-        final String serial = createSerialNumber(notification);
-        MetaProperties outProx = PrepareDelivery(notification, serial);
+        final String serial = createSerialNumber(message);
+        MetaProperties outProx = PrepareDelivery(message, serial);
         URI destinationURI = null;
         if (outProx.containsKey(URI_KEY)) {
             destinationURI = URI.create(String.valueOf(outProx.get(URI_KEY)));
         } else {
             if (!Env.getInstance().isParentHost()) {
-                destinationURI = Env.getInstance().getParentNode().getURI();
+                destinationURI = URI.create(Env.getInstance().getParentNode().getURI());
             } else {
-                Logger.global.info("******Domain:  DROPPING PACKET FOR " + outProx.get(REPLYTO_KEY));
+                Logger.getAnonymousLogger().info("******Domain:  DROPPING PACKET FOR " + outProx.get(REPLYTO_KEY));
                 return;
             }
         }
@@ -73,12 +74,12 @@ public class owchRouter implements Router {
 
         try {
             byte[] buf;
-            buf = createByteBuffer(notification);
+            buf = createByteBuffer(message);
             DatagramPacket p =
                     new DatagramPacket(buf, buf.length, InetAddress.getByName(
                             destinationURI.getHost()),
                             destinationURI.getPort());
-            owchDispatch.getInstance().handleDatagram(serial, p, notification.get(PRIORITY_KEY) != null);
+            owchDispatch.getInstance().handleDatagram(serial, p, message.get(PRIORITY_KEY) != null);
         }
         catch (UnknownHostException e) {
         }
@@ -86,8 +87,8 @@ public class owchRouter implements Router {
         }
     }
 
-    private MetaProperties PrepareDelivery(Notification n, final String serial) {
-        n.put(SERIALNUMBER_KEY, serial);
+    private MetaProperties PrepareDelivery(Message n, final String serial) {
+        n.put(MESSAGE_ID_KEY, serial);
 
         MetaProperties l = ProtocolType.owch.getLocation();
         n.put(URI_KEY, l.getURI());
@@ -95,14 +96,14 @@ public class owchRouter implements Router {
         return outProx;
     }
 
-    public byte[] createByteBuffer(Notification n) throws IOException {
+    public byte[] createByteBuffer(Message n) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         n.save(os);
         byte[] buf = os.toString().getBytes();
         return buf;
     }
 
-    private MetaProperties getProxy(Notification n) {
+    private MetaProperties getProxy(Message n) {
         MetaProperties prox = (MetaProperties) proxies.get(n.get(DESTINATION_KEY));
         if (prox != null) {
             return prox;
@@ -111,7 +112,7 @@ public class owchRouter implements Router {
         return prox;
     }
 
-    private String createSerialNumber(Notification n) {
+    private String createSerialNumber(Message n) {
         return n.get(REPLYTO_KEY) + ":" + n.get(DESTINATION_KEY).toString() + ":" + n.get(TYPE_KEY).toString() + "[" + new Date() + "] " + ser++;
     }
 }

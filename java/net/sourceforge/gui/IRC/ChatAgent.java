@@ -82,7 +82,7 @@ public class ChatAgent extends AbstractAgent {
             lm.addElement(tk.nextToken()); //
         }
         ;
-        if (Env.getInstance().logDebug) Logger.global.info("recvd names");
+        if (false) Logger.getAnonymousLogger().info("recvd names");
     }
 
     ;

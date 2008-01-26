@@ -1,77 +1,70 @@
 package net.sourceforge.owch2.router;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Agent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.Notification;
+import net.sourceforge.owch2.kernel.*;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: IPCRouter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
+ * @version $Id: ipcRouter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
  */
-public class IPCRouter implements  Router {
-    private Map elements = new WeakHashMap();
+public class ipcRouter implements Router {
+    private Map<String, Map> paths = new WeakHashMap<String, Map>();
 
-    public void remove(Object key) {
-        AbstractAgent n = (AbstractAgent) elements.get(key);
+    public void remove(String key) {
+        AbstractAgent n = (AbstractAgent) paths.get(key);
         n.handle_Dissolve(null);
-        elements.remove(key);
+        paths.remove(key);
     }
 
-    ;
 
-    public void send(Map item) {
-        if (Env.getInstance().logDebug)
-            Env.getInstance().log(500, getClass().getName() + " sending item to" + getDestination(item));
-        Agent node = (Agent) elements.get(getDestination(item));
-        node.recv(new Notification(item));
+    public void send(Map<String, ?> message) {
+//        if (Env.getInstance().logDebug)
+//            Env.getInstance().log(500, getClass().getName() + " sending message to" + getDestination(message));
+        Agent node = (Agent) paths.get(getDestination(message));
+        node.recv(new Message(message));
     }
 
-    public Object getDestination(Map item) {
-        return item.get("JMSDestination"); //
+    public String getDestination(Map<String, ?> item) {
+        return String.valueOf(item.get("JMSDestination")); //
     }
 
-    ;
+    public boolean pathExists(Map<String, ?> message) {
+        if (!paths.containsKey(getDestination(message)))
+            return false;
+
+        send(message);
+        return true;
+    }
 
     public Set getPool() {
-        return elements.keySet(); //
+        return paths.keySet(); //
     }
 
-    ;
 
-    public boolean hasElement(Object key) {
-        return elements.containsKey(key); //
+    public boolean hasPath(String key) {
+        return paths.containsKey(key); //
     }
-
-    ;
 
     public void put(AbstractAgent node) {
-        elements.put(node.getJMSReplyTo(), node); //
+        paths.put(node.getJMSReplyTo(), node); //
     }
 
-    public boolean addElement(Map item) {
-        if (item instanceof Agent) {
+    public boolean addPath(Map agentProxy) {
+        if (agentProxy instanceof Agent) {
             //check for a previous element of same name...
             // dissolve it..
-            AbstractAgent n = (AbstractAgent) elements.get("JMSReplyTo");
+            AbstractAgent n = (AbstractAgent) paths.get("JMSReplyTo");
             if (n != null) {
                 n.handle_Dissolve(null);
             }
-            elements.put(item.get("JMSReplyTo"), item);
-            if (Env.getInstance().logDebug)
-                Env.getInstance().log(500, getClass().getName() + " adding item " + item.get("JMSReplyTo"));
+            paths.put((String) agentProxy.get("JMSReplyTo"), agentProxy);
+
+            Logger.getAnonymousLogger().finest(" adding agentProxy " + agentProxy.get("JMSReplyTo"));
             return true;
         }
         return false;
     }
 
-    ;
 }
-
-;
-
-

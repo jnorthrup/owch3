@@ -29,48 +29,51 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.util.*;
+public class ChannelExec extends ChannelSession {
 
-public class ChannelExec extends ChannelSession{
+    String command = "";
 
-  String command="";
+    public void start() throws JSchException {
+        try {
+            sendRequests();
+            Request request = new RequestExec(command);
+            request.request(session, this);
+        }
+        catch (Exception e) {
+            if (e instanceof JSchException) throw (JSchException) e;
+            if (e instanceof Throwable)
+                throw new JSchException("ChannelExec", (Throwable) e);
+            throw new JSchException("ChannelExec");
+        }
 
-  public void start() throws JSchException{
-    try{
-      sendRequests();
-      Request request=new RequestExec(command);
-      request.request(session, this);
+        if (io.in != null) {
+            thread = new Thread(this);
+            thread.setName("Exec thread " + session.getHost());
+            if (session.daemon_thread) {
+                thread.setDaemon(session.daemon_thread);
+            }
+            thread.start();
+        }
     }
-    catch(Exception e){
-      if(e instanceof JSchException) throw (JSchException)e;
-      if(e instanceof Throwable)
-        throw new JSchException("ChannelExec", (Throwable)e);
-      throw new JSchException("ChannelExec");
+
+    public void setCommand(String foo) {
+        command = foo;
     }
 
-    if(io.in!=null){
-      thread=new Thread(this);
-      thread.setName("Exec thread "+session.getHost());
-      if(session.daemon_thread){
-        thread.setDaemon(session.daemon_thread);
-      }
-      thread.start();
+    public void init() {
+        io.setInputStream(session.in);
+        io.setOutputStream(session.out);
     }
-  }
 
-  public void setCommand(String foo){ command=foo;}
-  public void init(){
-    io.setInputStream(session.in);
-    io.setOutputStream(session.out);
-  }
+    public void setErrStream(java.io.OutputStream out) {
+        setExtOutputStream(out);
+    }
 
-  public void setErrStream(java.io.OutputStream out){
-    setExtOutputStream(out);
-  }
-  public void setErrStream(java.io.OutputStream out, boolean dontclose){
-    setExtOutputStream(out, dontclose);
-  }
-  public java.io.InputStream getErrStream() throws java.io.IOException {
-    return getExtInputStream();
-  }
+    public void setErrStream(java.io.OutputStream out, boolean dontclose) {
+        setExtOutputStream(out, dontclose);
+    }
+
+    public java.io.InputStream getErrStream() throws java.io.IOException {
+        return getExtInputStream();
+    }
 }

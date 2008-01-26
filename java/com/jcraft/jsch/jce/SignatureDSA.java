@@ -29,39 +29,42 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jce;
 
-import java.math.BigInteger;
+import java.math.*;
 import java.security.*;
 import java.security.spec.*;
 
-public class SignatureDSA implements com.jcraft.jsch.SignatureDSA{
+public class SignatureDSA implements com.jcraft.jsch.SignatureDSA {
 
-  java.security.Signature signature;
-  KeyFactory keyFactory;
+    java.security.Signature signature;
+    KeyFactory keyFactory;
 
-  public void init() throws Exception{
-    signature=java.security.Signature.getInstance("SHA1withDSA");
-    keyFactory=KeyFactory.getInstance("DSA");
-  }     
-  public void setPubKey(byte[] y, byte[] p, byte[] q, byte[] g) throws Exception{
-    KeySpec dsaPubKeySpec =
-	new DSAPublicKeySpec(new BigInteger(y),
-			     new BigInteger(p),
-			     new BigInteger(q),
-			     new BigInteger(g));
-    PublicKey pubKey=keyFactory.generatePublic(dsaPubKeySpec);
-    signature.initVerify(pubKey);
-  }
-  public void setPrvKey(byte[] x, byte[] p, byte[] q, byte[] g) throws Exception{
-    KeySpec dsaPrivKeySpec =
-	new DSAPrivateKeySpec(new BigInteger(x),
-			      new BigInteger(p),
-			      new BigInteger(q),
-			      new BigInteger(g));
-    PrivateKey prvKey = keyFactory.generatePrivate(dsaPrivKeySpec);
-    signature.initSign(prvKey);
-  }
-  public byte[] sign() throws Exception{
-    byte[] sig=signature.sign();      
+    public void init() throws Exception {
+        signature = java.security.Signature.getInstance("SHA1withDSA");
+        keyFactory = KeyFactory.getInstance("DSA");
+    }
+
+    public void setPubKey(byte[] y, byte[] p, byte[] q, byte[] g) throws Exception {
+        KeySpec dsaPubKeySpec =
+                new DSAPublicKeySpec(new BigInteger(y),
+                        new BigInteger(p),
+                        new BigInteger(q),
+                        new BigInteger(g));
+        PublicKey pubKey = keyFactory.generatePublic(dsaPubKeySpec);
+        signature.initVerify(pubKey);
+    }
+
+    public void setPrvKey(byte[] x, byte[] p, byte[] q, byte[] g) throws Exception {
+        KeySpec dsaPrivKeySpec =
+                new DSAPrivateKeySpec(new BigInteger(x),
+                        new BigInteger(p),
+                        new BigInteger(q),
+                        new BigInteger(g));
+        PrivateKey prvKey = keyFactory.generatePrivate(dsaPrivKeySpec);
+        signature.initSign(prvKey);
+    }
+
+    public byte[] sign() throws Exception {
+        byte[] sig = signature.sign();
 /*
 System.err.print("sign["+sig.length+"] ");
 for(int i=0; i<sig.length;i++){
@@ -69,41 +72,42 @@ System.err.print(Integer.toHexString(sig[i]&0xff)+":");
 }
 System.err.println("");
 */
-    // sig is in ASN.1
-    // SEQUENCE::={ r INTEGER, s INTEGER }
-    int len=0;	
-    int index=3;
-    len=sig[index]&0xff;
-      index++;
+        // sig is in ASN.1
+        // SEQUENCE::={ r INTEGER, s INTEGER }
+        int len = 0;
+        int index = 3;
+        len = sig[index] & 0xff;
+        index++;
 //System.err.println("! len="+len);
-    byte[] r=new byte[len];
-    System.arraycopy(sig, index, r, 0, r.length);
-    index=index+len+1;
-    len=sig[index]&0xff;
-      index++;
+        byte[] r = new byte[len];
+        System.arraycopy(sig, index, r, 0, r.length);
+        index = index + len + 1;
+        len = sig[index] & 0xff;
+        index++;
 //System.err.println("!! len="+len);
-    byte[] s=new byte[len];
-    System.arraycopy(sig, index, s, 0, s.length);
+        byte[] s = new byte[len];
+        System.arraycopy(sig, index, s, 0, s.length);
 
-    byte[] result=new byte[40];
+        byte[] result = new byte[40];
 
-    // result must be 40 bytes, but length of r and s may not be 20 bytes  
+        // result must be 40 bytes, but length of r and s may not be 20 bytes
 
-    System.arraycopy(r, r.length > 20 ? 1 : 0,
-		     result, r.length > 20 ? 0 : 20 - r.length,
-            r.length > 20 ? 20 : r.length);
-    System.arraycopy(s, s.length > 20 ? 1 : 0,
-		     result, s.length > 20 ? 20 : 40 - s.length,
-            s.length > 20 ? 20 : s.length);
- 
+        System.arraycopy(r, r.length > 20 ? 1 : 0,
+                result, r.length > 20 ? 0 : 20 - r.length,
+                r.length > 20 ? 20 : r.length);
+        System.arraycopy(s, s.length > 20 ? 1 : 0,
+                result, s.length > 20 ? 20 : 40 - s.length,
+                s.length > 20 ? 20 : s.length);
+
 //  System.arraycopy(sig, (sig[3]==20?4:5), result, 0, 20);
 //  System.arraycopy(sig, sig.length-20, result, 20, 20);
 
-    return result;
-  }
-  public void update(byte[] foo) throws Exception{
-   signature.update(foo);
-  }
+        return result;
+    }
+
+    public void update(byte[] foo) throws Exception {
+        signature.update(foo);
+    }
 
     public boolean verify(byte[] sig) throws Exception {
         byte[] sig1 = sig;

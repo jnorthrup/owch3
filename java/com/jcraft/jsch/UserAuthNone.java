@@ -29,107 +29,110 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-class UserAuthNone extends UserAuth{
-  private static final int SSH_MSG_SERVICE_ACCEPT=                  6;
-  private String methods=null;
+class UserAuthNone extends UserAuth {
+    private static final int SSH_MSG_SERVICE_ACCEPT = 6;
+    private String methods = null;
 
-  public boolean start(Session session) throws Exception{
-    super.start(session);
+    public boolean start(Session session) throws Exception {
+        super.start(session);
 
+        // send
+        // byte      SSH_MSG_SERVICE_REQUEST(5)
+        // string    service name "ssh-userauth"
+        packet.reset();
+        buf.putByte((byte) Session.SSH_MSG_SERVICE_REQUEST);
+        buf.putString("ssh-userauth".getBytes());
+        session.write(packet);
 
-    // send
-    // byte      SSH_MSG_SERVICE_REQUEST(5)
-    // string    service name "ssh-userauth"
-    packet.reset();
-    buf.putByte((byte)Session.SSH_MSG_SERVICE_REQUEST);
-    buf.putString("ssh-userauth".getBytes());
-    session.write(packet);
-
-    if(JSch.getLogger().isEnabled(Logger.INFO)){
-      JSch.getLogger().log(Logger.INFO, 
-                           "SSH_MSG_SERVICE_REQUEST sent");
-    }
-
-    // receive
-    // byte      SSH_MSG_SERVICE_ACCEPT(6)
-    // string    service name
-    buf=session.read(buf);
-    int command=buf.getCommand();
-
-    boolean result= command == SSH_MSG_SERVICE_ACCEPT;
-
-    if(JSch.getLogger().isEnabled(Logger.INFO)){
-      JSch.getLogger().log(Logger.INFO, 
-                           "SSH_MSG_SERVICE_ACCEPT received");
-    }
-    if(!result)
-      return false;
-
-    byte[] _username=null;
-    _username=Util.str2byte(username);
-
-    // send
-    // byte      SSH_MSG_USERAUTH_REQUEST(50)
-    // string    user name
-    // string    service name ("ssh-connection")
-    // string    "none"
-    packet.reset();
-    buf.putByte((byte)SSH_MSG_USERAUTH_REQUEST);
-    buf.putString(_username);
-    buf.putString("ssh-connection".getBytes());
-    buf.putString("none".getBytes());
-    session.write(packet);
-
-    loop:
-    while(true){
-      buf=session.read(buf);
-      command=buf.getCommand()&0xff;
-
-      if(command==SSH_MSG_USERAUTH_SUCCESS){
-	return true;
-      }
-      if(command==SSH_MSG_USERAUTH_BANNER){
-	buf.getInt(); buf.getByte(); buf.getByte();
-	byte[] _message=buf.getString();
-	byte[] lang=buf.getString();
-	String message=null;
-	try{ 
-          message=new String(_message, "UTF-8"); 
+        if (JSch.getLogger().isEnabled(Logger.INFO)) {
+            JSch.getLogger().log(Logger.INFO,
+                    "SSH_MSG_SERVICE_REQUEST sent");
         }
-	catch(java.io.UnsupportedEncodingException e){
-	  message=new String(_message);
-	}
-	if(userinfo!=null){
-          try{
-            userinfo.showMessage(message);
-          }
-          catch(RuntimeException ee){
-          }
-	}
-	continue loop;
-      }
-      if(command==SSH_MSG_USERAUTH_FAILURE){
-	buf.getInt(); buf.getByte(); buf.getByte(); 
-	byte[] foo=buf.getString();
-	int partial_success=buf.getByte();
-	methods=new String(foo);
+
+        // receive
+        // byte      SSH_MSG_SERVICE_ACCEPT(6)
+        // string    service name
+        buf = session.read(buf);
+        int command = buf.getCommand();
+
+        boolean result = command == SSH_MSG_SERVICE_ACCEPT;
+
+        if (JSch.getLogger().isEnabled(Logger.INFO)) {
+            JSch.getLogger().log(Logger.INFO,
+                    "SSH_MSG_SERVICE_ACCEPT received");
+        }
+        if (!result)
+            return false;
+
+        byte[] _username = null;
+        _username = Util.str2byte(username);
+
+        // send
+        // byte      SSH_MSG_USERAUTH_REQUEST(50)
+        // string    user name
+        // string    service name ("ssh-connection")
+        // string    "none"
+        packet.reset();
+        buf.putByte((byte) SSH_MSG_USERAUTH_REQUEST);
+        buf.putString(_username);
+        buf.putString("ssh-connection".getBytes());
+        buf.putString("none".getBytes());
+        session.write(packet);
+
+        loop:
+        while (true) {
+            buf = session.read(buf);
+            command = buf.getCommand() & 0xff;
+
+            if (command == SSH_MSG_USERAUTH_SUCCESS) {
+                return true;
+            }
+            if (command == SSH_MSG_USERAUTH_BANNER) {
+                buf.getInt();
+                buf.getByte();
+                buf.getByte();
+                byte[] _message = buf.getString();
+                byte[] lang = buf.getString();
+                String message = null;
+                try {
+                    message = new String(_message, "UTF-8");
+                }
+                catch (java.io.UnsupportedEncodingException e) {
+                    message = new String(_message);
+                }
+                if (userinfo != null) {
+                    try {
+                        userinfo.showMessage(message);
+                    }
+                    catch (RuntimeException ee) {
+                    }
+                }
+                continue loop;
+            }
+            if (command == SSH_MSG_USERAUTH_FAILURE) {
+                buf.getInt();
+                buf.getByte();
+                buf.getByte();
+                byte[] foo = buf.getString();
+                int partial_success = buf.getByte();
+                methods = new String(foo);
 //System.err.println("UserAuthNONE: "+methods+
 //		   " partial_success:"+(partial_success!=0));
 //	if(partial_success!=0){
 //	  throw new JSchPartialAuthException(new String(foo));
 //	}
 
-        break;
-      }
-      else{
+                break;
+            } else {
 //      System.err.println("USERAUTH fail ("+command+")");
-	throw new JSchException("USERAUTH fail ("+command+")");
-      }
+                throw new JSchException("USERAUTH fail (" + command + ")");
+            }
+        }
+        //throw new JSchException("USERAUTH fail");
+        return false;
     }
-   //throw new JSchException("USERAUTH fail");
-    return false;
-  }
-  String getMethods(){
-    return methods;
-  }
+
+    String getMethods() {
+        return methods;
+    }
 }

@@ -28,76 +28,76 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 package com.jcraft.jsch.jcraft;
+
 import com.jcraft.jzlib.*;
-import com.jcraft.jsch.*;
 
 public class Compression implements com.jcraft.jsch.Compression {
-  static private final int BUF_SIZE=4096;
+    static private final int BUF_SIZE = 4096;
 
-  private int type;
-  private ZStream stream;
-  private byte[] tmpbuf=new byte[BUF_SIZE];
+    private int type;
+    private ZStream stream;
+    private byte[] tmpbuf = new byte[BUF_SIZE];
 
-  public Compression(){
-    stream=new ZStream();
-  }
-
-  public void init(int type, int level){
-    if(type==DEFLATER){
-      stream.deflateInit(level);
-      this.type=DEFLATER;
+    public Compression() {
+        stream = new ZStream();
     }
-    else if(type==INFLATER){
-      stream.inflateInit();
-      inflated_buf=new byte[BUF_SIZE];
-      this.type=INFLATER;
-    }
-  }
-  /*
-  static Compression getDeflater(int level){
-    Compression foo=new Compression();
-    foo.stream.deflateInit(level);
-    foo.type=DEFLATER;
-    return foo;
-  }
-  */
-  private byte[] inflated_buf;
-  /*
-  static Compression getInflater(){
-    Compression foo=new Compression();
-    foo.stream.inflateInit();
-    foo.inflated_buf=new byte[BUF_SIZE];
-    foo.type=INFLATER;
-    return foo;
-  }
-  */
 
-  public int compress(byte[] buf, int start, int len){
-    stream.next_in=buf;
-    stream.next_in_index=start;
-    stream.avail_in=len-start;
-    int status;
-    int outputlen=start;
-
-    do{
-      stream.next_out=tmpbuf;
-      stream.next_out_index=0;
-      stream.avail_out=BUF_SIZE;
-      status=stream.deflate(JZlib.Z_PARTIAL_FLUSH);
-      switch(status){
-        case JZlib.Z_OK:
-	    System.arraycopy(tmpbuf, 0,
-			     buf, outputlen,
-			     BUF_SIZE-stream.avail_out);
-            outputlen += BUF_SIZE - stream.avail_out;
-	    break;
-        default:
-	    System.err.println("compress: deflate returnd "+status);
-      }
+    public void init(int type, int level) {
+        if (type == DEFLATER) {
+            stream.deflateInit(level);
+            this.type = DEFLATER;
+        } else if (type == INFLATER) {
+            stream.inflateInit();
+            inflated_buf = new byte[BUF_SIZE];
+            this.type = INFLATER;
+        }
     }
-    while(stream.avail_out==0);
-    return outputlen;
-  }
+
+    /*
+    static Compression getDeflater(int level){
+      Compression foo=new Compression();
+      foo.stream.deflateInit(level);
+      foo.type=DEFLATER;
+      return foo;
+    }
+    */
+    private byte[] inflated_buf;
+    /*
+    static Compression getInflater(){
+      Compression foo=new Compression();
+      foo.stream.inflateInit();
+      foo.inflated_buf=new byte[BUF_SIZE];
+      foo.type=INFLATER;
+      return foo;
+    }
+    */
+
+    public int compress(byte[] buf, int start, int len) {
+        stream.next_in = buf;
+        stream.next_in_index = start;
+        stream.avail_in = len - start;
+        int status;
+        int outputlen = start;
+
+        do {
+            stream.next_out = tmpbuf;
+            stream.next_out_index = 0;
+            stream.avail_out = BUF_SIZE;
+            status = stream.deflate(JZlib.Z_PARTIAL_FLUSH);
+            switch (status) {
+                case JZlib.Z_OK:
+                    System.arraycopy(tmpbuf, 0,
+                            buf, outputlen,
+                            BUF_SIZE - stream.avail_out);
+                    outputlen += BUF_SIZE - stream.avail_out;
+                    break;
+                default:
+                    System.err.println("compress: deflate returnd " + status);
+            }
+        }
+        while (stream.avail_out == 0);
+        return outputlen;
+    }
 
     public byte[] uncompress(byte[] buffer, int start, int[] length) {
         byte[] buffer1 = buffer;

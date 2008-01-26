@@ -31,32 +31,34 @@ package com.jcraft.jsch.jcraft;
 
 import java.security.*;
 
-class HMAC{
+class HMAC {
 
-  /*
-   * Refer to RFC2104.
-   *
-   * H(K XOR opad, H(K XOR ipad, text))
-   *
-   * where K is an n byte key
-   * ipad is the byte 0x36 repeated 64 times
-   * opad is the byte 0x5c repeated 64 times
-   * and text is the data being protected
-   */
-  private static final int B=64;
-  private byte[] k_ipad=null;
-  private byte[] k_opad=null;
+    /*
+    * Refer to RFC2104.
+    *
+    * H(K XOR opad, H(K XOR ipad, text))
+    *
+    * where K is an n byte key
+    * ipad is the byte 0x36 repeated 64 times
+    * opad is the byte 0x5c repeated 64 times
+    * and text is the data being protected
+    */
+    private static final int B = 64;
+    private byte[] k_ipad = null;
+    private byte[] k_opad = null;
 
-  private MessageDigest md=null;
+    private MessageDigest md = null;
 
-  private int bsize=0;
+    private int bsize = 0;
 
-  protected void setH(MessageDigest md){
-    this.md=md;
-    bsize=md.getDigestLength();
-  }
+    protected void setH(MessageDigest md) {
+        this.md = md;
+        bsize = md.getDigestLength();
+    }
 
-  public int getBlockSize(){return bsize;}
+    public int getBlockSize() {
+        return bsize;
+    }
 
     public void init(byte[] key) throws Exception {
         byte[] key1 = key;
@@ -86,24 +88,28 @@ class HMAC{
         md.update(k_ipad, 0, B);
     }
 
-  private final byte[] tmp=new byte[4];
-  public void update(int i){
-    tmp[0]=(byte)(i>>>24);
-    tmp[1]=(byte)(i>>>16);
-    tmp[2]=(byte)(i>>>8);
-    tmp[3]=(byte)i;
-    update(tmp, 0, 4);
-  }
+    private final byte[] tmp = new byte[4];
 
-  public void update(byte foo[], int s, int l){
-    md.update(foo, s, l);
-  }
+    public void update(int i) {
+        tmp[0] = (byte) (i >>> 24);
+        tmp[1] = (byte) (i >>> 16);
+        tmp[2] = (byte) (i >>> 8);
+        tmp[3] = (byte) i;
+        update(tmp, 0, 4);
+    }
 
-  public void doFinal(byte[] buf, int offset){
-    byte[] result=md.digest();
-    md.update(k_opad, 0, B);
-    md.update(result, 0, bsize);
-    try{md.digest(buf, offset, bsize);}catch(Exception e){}
-    md.update(k_ipad, 0, B);
-  }
+    public void update(byte foo[], int s, int l) {
+        md.update(foo, s, l);
+    }
+
+    public void doFinal(byte[] buf, int offset) {
+        byte[] result = md.digest();
+        md.update(k_opad, 0, B);
+        md.update(result, 0, bsize);
+        try {
+            md.digest(buf, offset, bsize);
+        } catch (Exception e) {
+        }
+        md.update(k_ipad, 0, B);
+    }
 }

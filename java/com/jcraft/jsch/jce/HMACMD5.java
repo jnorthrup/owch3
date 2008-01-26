@@ -29,16 +29,20 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.MAC;
+import com.jcraft.jsch.*;
+
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.security.*;
 
-public class HMACMD5 implements MAC{
-  private static final String name="hmac-md5";
-  private static final int BSIZE=16;
-  private Mac mac;
-  public int getBlockSize(){return BSIZE;}
+public class HMACMD5 implements MAC {
+    private static final String name = "hmac-md5";
+    private static final int BSIZE = 16;
+    private Mac mac;
+
+    public int getBlockSize() {
+        return BSIZE;
+    }
 
     public void init(byte[] key) throws Exception {
         byte[] key1 = key;
@@ -53,26 +57,29 @@ public class HMACMD5 implements MAC{
         mac.init(skey);
     }
 
-  private final byte[] tmp=new byte[4];
-  public void update(int i){
-    tmp[0]=(byte)(i>>>24);
-    tmp[1]=(byte)(i>>>16);
-    tmp[2]=(byte)(i>>>8);
-    tmp[3]=(byte)i;
-    update(tmp, 0, 4);
-  }
-  public void update(byte foo[], int s, int l){
-    mac.update(foo, s, l);      
-  }
-  public void doFinal(byte[] buf, int offset){
-    try{
-      mac.doFinal(buf, offset);
-    }
-    catch(ShortBufferException e){
-    }
-  }
+    private final byte[] tmp = new byte[4];
 
-  public String getName(){
-    return name;
-  }
+    public void update(int i) {
+        tmp[0] = (byte) (i >>> 24);
+        tmp[1] = (byte) (i >>> 16);
+        tmp[2] = (byte) (i >>> 8);
+        tmp[3] = (byte) i;
+        update(tmp, 0, 4);
+    }
+
+    public void update(byte foo[], int s, int l) {
+        mac.update(foo, s, l);
+    }
+
+    public void doFinal(byte[] buf, int offset) {
+        try {
+            mac.doFinal(buf, offset);
+        }
+        catch (ShortBufferException e) {
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
 }

@@ -29,16 +29,20 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.MAC;
+import com.jcraft.jsch.*;
+
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.security.*;
 
-public class HMACSHA1 implements MAC{
-  private static final String name="hmac-sha1";
-  private static final int bsize=20;
-  private Mac mac;
-  public int getBlockSize(){return bsize;}
+public class HMACSHA1 implements MAC {
+    private static final String name = "hmac-sha1";
+    private static final int bsize = 20;
+    private Mac mac;
+
+    public int getBlockSize() {
+        return bsize;
+    }
 
     public void init(byte[] key) throws Exception {
         byte[] key1 = key;
@@ -51,28 +55,30 @@ public class HMACSHA1 implements MAC{
         mac = Mac.getInstance("HmacSHA1");
         mac.init(skey);
     }
-  private final byte[] tmp=new byte[4];
-  public void update(int i){
-    tmp[0]=(byte)(i>>>24);
-    tmp[1]=(byte)(i>>>16);
-    tmp[2]=(byte)(i>>>8);
-    tmp[3]=(byte)i;
-    update(tmp, 0, 4);
-  }
 
-  public void update(byte foo[], int s, int l){
-    mac.update(foo, s, l);      
-  }
+    private final byte[] tmp = new byte[4];
 
-  public void doFinal(byte[] buf, int offset){
-    try{
-      mac.doFinal(buf, offset);
+    public void update(int i) {
+        tmp[0] = (byte) (i >>> 24);
+        tmp[1] = (byte) (i >>> 16);
+        tmp[2] = (byte) (i >>> 8);
+        tmp[3] = (byte) i;
+        update(tmp, 0, 4);
     }
-    catch(ShortBufferException e){
-    }
-  }
 
-  public String getName(){
-    return name;
-  }
+    public void update(byte foo[], int s, int l) {
+        mac.update(foo, s, l);
+    }
+
+    public void doFinal(byte[] buf, int offset) {
+        try {
+            mac.doFinal(buf, offset);
+        }
+        catch (ShortBufferException e) {
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
 }

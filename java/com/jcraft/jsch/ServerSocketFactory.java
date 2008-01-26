@@ -29,9 +29,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.net.*;
 import java.io.*;
+import java.net.*;
 
-public interface ServerSocketFactory{
-  public ServerSocket createServerSocket(int port, int backlog, InetAddress bindAddr) throws IOException;
+public interface ServerSocketFactory {
+    public ServerSocket createServerSocket(int port, int backlog, InetAddress bindAddr) throws IOException;
 }

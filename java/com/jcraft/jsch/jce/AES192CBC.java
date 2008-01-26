@@ -29,16 +29,23 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.Cipher;
+import com.jcraft.jsch.*;
+
 import javax.crypto.spec.*;
 import java.security.*;
 
-public class AES192CBC implements Cipher{
-  private static final int ivsize=16;
-  private static final int bsize=24;
-  private javax.crypto.Cipher cipher;    
-  public int getIVSize(){return ivsize;} 
-  public int getBlockSize(){return bsize;}
+public class AES192CBC implements Cipher {
+    private static final int ivsize = 16;
+    private static final int bsize = 24;
+    private javax.crypto.Cipher cipher;
+
+    public int getIVSize() {
+        return ivsize;
+    }
+
+    public int getBlockSize() {
+        return bsize;
+    }
 
     public void init(int mode, byte[] key, byte[] iv) throws Exception {
         byte[] key1 = key;
@@ -65,7 +72,8 @@ public class AES192CBC implements Cipher{
             throw e;
         }
     }
-  public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-    cipher.update(foo, s1, len, bar, s2);
-  }
+
+    public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception {
+        cipher.update(foo, s1, len, bar, s2);
+    }
 }

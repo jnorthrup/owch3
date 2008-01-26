@@ -29,40 +29,44 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jce;
 
-import java.math.BigInteger;
+import java.math.*;
 import java.security.*;
 import java.security.spec.*;
 
-public class SignatureRSA implements com.jcraft.jsch.SignatureRSA{
+public class SignatureRSA implements com.jcraft.jsch.SignatureRSA {
 
-  java.security.Signature signature;
-  KeyFactory keyFactory;
+    java.security.Signature signature;
+    KeyFactory keyFactory;
 
-  public void init() throws Exception{
-    signature=java.security.Signature.getInstance("SHA1withRSA");
-    keyFactory=KeyFactory.getInstance("RSA");
-  }     
-  public void setPubKey(byte[] e, byte[] n) throws Exception{
-    KeySpec rsaPubKeySpec =
-	new RSAPublicKeySpec(new BigInteger(n),
-			     new BigInteger(e));
-    PublicKey pubKey=keyFactory.generatePublic(rsaPubKeySpec);
-    signature.initVerify(pubKey);
-  }
-  public void setPrvKey(byte[] d, byte[] n) throws Exception{
-    KeySpec rsaPrivKeySpec =
-	new RSAPrivateKeySpec(new BigInteger(n),
-			      new BigInteger(d));
-    PrivateKey prvKey = keyFactory.generatePrivate(rsaPrivKeySpec);
-    signature.initSign(prvKey);
-  }
-  public byte[] sign() throws Exception{
-    byte[] sig=signature.sign();      
-    return sig;
-  }
-  public void update(byte[] foo) throws Exception{
-   signature.update(foo);
-  }
+    public void init() throws Exception {
+        signature = java.security.Signature.getInstance("SHA1withRSA");
+        keyFactory = KeyFactory.getInstance("RSA");
+    }
+
+    public void setPubKey(byte[] e, byte[] n) throws Exception {
+        KeySpec rsaPubKeySpec =
+                new RSAPublicKeySpec(new BigInteger(n),
+                        new BigInteger(e));
+        PublicKey pubKey = keyFactory.generatePublic(rsaPubKeySpec);
+        signature.initVerify(pubKey);
+    }
+
+    public void setPrvKey(byte[] d, byte[] n) throws Exception {
+        KeySpec rsaPrivKeySpec =
+                new RSAPrivateKeySpec(new BigInteger(n),
+                        new BigInteger(d));
+        PrivateKey prvKey = keyFactory.generatePrivate(rsaPrivKeySpec);
+        signature.initSign(prvKey);
+    }
+
+    public byte[] sign() throws Exception {
+        byte[] sig = signature.sign();
+        return sig;
+    }
+
+    public void update(byte[] foo) throws Exception {
+        signature.update(foo);
+    }
 
     public boolean verify(byte[] sig) throws Exception {
         byte[] sig1 = sig;

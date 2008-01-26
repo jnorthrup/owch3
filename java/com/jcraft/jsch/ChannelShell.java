@@ -29,41 +29,39 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.util.*;
+public class ChannelShell extends ChannelSession {
 
-public class ChannelShell extends ChannelSession{
-
-  ChannelShell(){
-    super();
-    pty=true;
-  }
-
-  public void start() throws JSchException{
-    try{
-      sendRequests();
-
-      Request request=new RequestShell();
-      request.request(session, this);
-    }
-    catch(Exception e){
-      if(e instanceof JSchException) throw (JSchException)e;
-      if(e instanceof Throwable)
-        throw new JSchException("ChannelShell", (Throwable)e);
-      throw new JSchException("ChannelShell");
+    ChannelShell() {
+        super();
+        pty = true;
     }
 
-    if(io.in!=null){
-      thread=new Thread(this);
-      thread.setName("Shell for "+session.host);
-      if(session.daemon_thread){
-        thread.setDaemon(session.daemon_thread);
-      }
-      thread.start();
-    }
-  }
+    public void start() throws JSchException {
+        try {
+            sendRequests();
 
-  public void init(){
-    io.setInputStream(session.in);
-    io.setOutputStream(session.out);
-  }
+            Request request = new RequestShell();
+            request.request(session, this);
+        }
+        catch (Exception e) {
+            if (e instanceof JSchException) throw (JSchException) e;
+            if (e instanceof Throwable)
+                throw new JSchException("ChannelShell", (Throwable) e);
+            throw new JSchException("ChannelShell");
+        }
+
+        if (io.in != null) {
+            thread = new Thread(this);
+            thread.setName("Shell for " + session.host);
+            if (session.daemon_thread) {
+                thread.setDaemon(session.daemon_thread);
+            }
+            thread.start();
+        }
+    }
+
+    public void init() {
+        io.setInputStream(session.in);
+        io.setOutputStream(session.out);
+    }
 }

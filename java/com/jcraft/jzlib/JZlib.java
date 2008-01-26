@@ -42,7 +42,7 @@ final public class JZlib{
   static final public int Z_NO_COMPRESSION=0;
   static final public int Z_BEST_SPEED=1;
   static final public int Z_BEST_COMPRESSION=9;
-  static final public int Z_DEFAULT_COMPRESSION=(-1);
+  static final public int Z_DEFAULT_COMPRESSION= -1;
 
   // compression strategy
   static final public int Z_FILTERED=1;

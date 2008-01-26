@@ -32,22 +32,25 @@ package com.jcraft.jsch.jce;
 import com.jcraft.jsch.MAC;
 import javax.crypto.*;
 import javax.crypto.spec.*;
+import java.security.*;
 
 public class HMACSHA1 implements MAC{
   private static final String name="hmac-sha1";
   private static final int bsize=20;
   private Mac mac;
-  public int getBlockSize(){return bsize;};
-  public void init(byte[] key) throws Exception{
-    if(key.length>bsize){
-      byte[] tmp=new byte[bsize];
-      System.arraycopy(key, 0, tmp, 0, bsize);	  
-      key=tmp;
+  public int getBlockSize(){return bsize;}
+
+    public void init(byte[] key) throws Exception {
+        byte[] key1 = key;
+        if (key1.length > bsize) {
+            byte[] tmp = new byte[bsize];
+            System.arraycopy(key1, 0, tmp, 0, bsize);
+            key1 = tmp;
+        }
+        Key skey = new SecretKeySpec(key1, "HmacSHA1");
+        mac = Mac.getInstance("HmacSHA1");
+        mac.init(skey);
     }
-    SecretKeySpec skey=new SecretKeySpec(key, "HmacSHA1");
-    mac=Mac.getInstance("HmacSHA1");
-    mac.init(skey);
-  } 
   private final byte[] tmp=new byte[4];
   public void update(int i){
     tmp[0]=(byte)(i>>>24);

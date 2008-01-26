@@ -45,7 +45,7 @@ final class Adler32{
     if(buf == null){ return 1L; }
 
     long s1=adler&0xffff;
-    long s2=(adler>>16)&0xffff;
+    long s2= adler >> 16 & 0xffff;
     int k;
 
     while(len > 0) {
@@ -79,7 +79,7 @@ final class Adler32{
       s1%=BASE;
       s2%=BASE;
     }
-    return (s2<<16)|s1;
+    return s2 << 16 | s1;
   }
 
   /*

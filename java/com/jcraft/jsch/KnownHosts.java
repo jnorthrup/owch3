@@ -190,7 +190,7 @@ loop:
 
     synchronized(pool){
     for(int i=0; i<pool.size(); i++){
-      hk=(HostKey)(pool.elementAt(i));
+      hk= (HostKey) pool.elementAt(i);
       if(hk.isMatched(host) && hk.type==type){
         if(Util.array_equals(hk.key, key)){
 	  //System.err.println("find!!");
@@ -213,7 +213,7 @@ loop:
     HostKey hk=null;
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        hk=(HostKey)(pool.elementAt(i));
+        hk= (HostKey) pool.elementAt(i);
         if(hk.isMatched(host) && hk.type==type){
 /*
 	  if(Util.array_equals(hk.key, key)){ return; }
@@ -280,9 +280,7 @@ loop:
       for(int i=0; i<pool.size(); i++){
 	HostKey hk=(HostKey)pool.elementAt(i);
 	if(hk.type==HostKey.UNKNOWN) continue;
-	if(host==null || 
-	   (hk.isMatched(host) && 
-	    (type==null || hk.getType().equals(type)))){
+	if(host == null || hk.isMatched(host) && (type == null || hk.getType().equals(type))){
 	  count++;
 	}
       }
@@ -292,9 +290,7 @@ loop:
       for(int i=0; i<pool.size(); i++){
 	HostKey hk=(HostKey)pool.elementAt(i);
 	if(hk.type==HostKey.UNKNOWN) continue;
-	if(host==null || 
-	   (hk.isMatched(host) && 
-	    (type==null || hk.getType().equals(type)))){
+	if(host == null || hk.isMatched(host) && (type == null || hk.getType().equals(type))){
 	  foo[j++]=hk;
 	}
       }
@@ -308,15 +304,10 @@ loop:
     boolean sync=false;
     synchronized(pool){
     for(int i=0; i<pool.size(); i++){
-      HostKey hk=(HostKey)(pool.elementAt(i));
-      if(host==null ||
-	 (hk.isMatched(host) && 
-	  (type==null || (hk.getType().equals(type) &&
-			  (key==null || Util.array_equals(key, hk.key)))))){
+      HostKey hk= (HostKey) pool.elementAt(i);
+      if(host == null || hk.isMatched(host) && (type == null || hk.getType().equals(type) && (key == null || Util.array_equals(key, hk.key)))){
         String hosts=hk.getHost();
-        if(hosts.equals(host) || 
-           ((hk instanceof HashedHostKey) &&
-            ((HashedHostKey)hk).isHashed())){
+        if(hosts.equals(host) || hk instanceof HashedHostKey && ((HashedHostKey) hk).isHashed()){
           pool.removeElement(hk);
         }
         else{
@@ -327,7 +318,7 @@ loop:
     }
     }
     if(sync){
-      try{sync();}catch(Exception e){};
+      try{sync();}catch(Exception e){}
     }
   }
 
@@ -349,7 +340,7 @@ loop:
       HostKey hk;
       synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        hk=(HostKey)(pool.elementAt(i));
+        hk= (HostKey) pool.elementAt(i);
         //hk.dump(out);
 	String host=hk.getHost();
 	String type=hk.getType();
@@ -391,7 +382,7 @@ loop:
       return hosts.substring(0, i)+hosts.substring(j+1);
     }
     if(hosts.endsWith(host) && hostslen-i==hostlen){
-      return hosts.substring(0, (hostlen==hostslen) ? 0 :hostslen-hostlen-1);
+      return hosts.substring(0, hostlen == hostslen ? 0 : hostslen - hostlen - 1);
     }
     return hosts;
   }
@@ -400,7 +391,7 @@ loop:
     if(hmacsha1==null){
       try{
         Class c=Class.forName(jsch.getConfig("hmac-sha1"));
-        hmacsha1=(MAC)(c.newInstance());
+        hmacsha1= (MAC) c.newInstance();
       }
       catch(Exception e){ 
         System.err.println("hmacsha1: "+e); 

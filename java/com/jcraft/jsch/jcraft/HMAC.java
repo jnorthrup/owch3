@@ -56,33 +56,35 @@ class HMAC{
     bsize=md.getDigestLength();
   }
 
-  public int getBlockSize(){return bsize;};
-  public void init(byte[] key) throws Exception{
-    if(key.length>bsize){
-      byte[] tmp=new byte[bsize];
-      System.arraycopy(key, 0, tmp, 0, bsize);	  
-      key=tmp;
+  public int getBlockSize(){return bsize;}
+
+    public void init(byte[] key) throws Exception {
+        byte[] key1 = key;
+        if (key1.length > bsize) {
+            byte[] tmp = new byte[bsize];
+            System.arraycopy(key1, 0, tmp, 0, bsize);
+            key1 = tmp;
+        }
+
+        /* if key is longer than B bytes reset it to key=MD5(key) */
+        if (key1.length > B) {
+            md.update(key1, 0, key1.length);
+            key1 = md.digest();
+        }
+
+        k_ipad = new byte[B];
+        System.arraycopy(key1, 0, k_ipad, 0, key1.length);
+        k_opad = new byte[B];
+        System.arraycopy(key1, 0, k_opad, 0, key1.length);
+
+        /* XOR key with ipad and opad values */
+        for (int i = 0; i < B; i++) {
+            k_ipad[i] ^= (byte) 0x36;
+            k_opad[i] ^= (byte) 0x5c;
+        }
+
+        md.update(k_ipad, 0, B);
     }
-
-    /* if key is longer than B bytes reset it to key=MD5(key) */
-    if(key.length>B){
-      md.update(key, 0, key.length);
-      key=md.digest();
-    }
-
-    k_ipad=new byte[B];
-    System.arraycopy(key, 0, k_ipad, 0, key.length);
-    k_opad=new byte[B];
-    System.arraycopy(key, 0, k_opad, 0, key.length);
-
-    /* XOR key with ipad and opad values */
-    for(int i=0; i<B; i++) {
-      k_ipad[i]^=(byte)0x36;
-      k_opad[i]^=(byte)0x5c;
-    }
-
-    md.update(k_ipad, 0, B);
-  }
 
   private final byte[] tmp=new byte[4];
   public void update(int i){

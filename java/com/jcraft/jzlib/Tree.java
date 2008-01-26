@@ -40,8 +40,8 @@ final class Tree{
   static final private int D_CODES=30;
   static final private int LITERALS=256;
   static final private int LENGTH_CODES=29;
-  static final private int L_CODES=(LITERALS+1+LENGTH_CODES);
-  static final private int HEAP_SIZE=(2*L_CODES+1);
+  static final private int L_CODES= LITERALS + 1 + LENGTH_CODES;
+  static final private int HEAP_SIZE= 2 * L_CODES + 1;
 
   // Bit length codes must not exceed MAX_BL_BITS bits
   static final int MAX_BL_BITS=7; 
@@ -146,7 +146,7 @@ final class Tree{
   // must not have side effects. _dist_code[256] and _dist_code[257] are never
   // used.
   static int d_code(int dist){
-    return ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>>7)]);
+    return dist < 256 ? _dist_code[dist] : _dist_code[256 + (dist >>> 7)];
   }
 
   short[] dyn_tree;      // the dynamic tree
@@ -261,7 +261,7 @@ final class Tree{
     // possible code. So to avoid special checks later on we force at least
     // two codes of non zero frequency.
     while (s.heap_len < 2) {
-      node = s.heap[++s.heap_len] = (max_code < 2 ? ++max_code : 0);
+      node = s.heap[++s.heap_len] = max_code < 2 ? ++max_code : 0;
       tree[node*2] = 1;
       s.depth[node] = 0;
       s.opt_len--; if (stree!=null) s.static_len -= stree[node*2+1];
@@ -329,7 +329,7 @@ final class Tree{
     // The distribution counts are first used to generate the code values
     // without bit reversal.
     for (bits = 1; bits <= MAX_BITS; bits++) {
-      next_code[bits] = code = (short)((code + bl_count[bits-1]) << 1);
+      next_code[bits] = code = (short)(code + bl_count[bits - 1] << 1);
     }
 
     // Check that the bit counts in bl_count are consistent. The last code
@@ -342,7 +342,7 @@ final class Tree{
       int len = tree[n*2+1];
       if (len == 0) continue;
       // Now reverse the bits
-      tree[n*2] = (short)(bi_reverse(next_code[len]++, len));
+      tree[n*2] = (short) bi_reverse(next_code[len]++, len);
     }
   }
 

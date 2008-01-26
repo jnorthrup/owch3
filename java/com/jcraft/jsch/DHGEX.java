@@ -77,7 +77,7 @@ public class DHGEX extends KeyExchange{
 
     try{
       Class c=Class.forName(session.getConfig("sha-1"));
-      sha=(HASH)(c.newInstance());
+      sha= (HASH) c.newInstance();
       sha.init();
     }
     catch(Exception e){
@@ -89,7 +89,7 @@ public class DHGEX extends KeyExchange{
 
     try{
       Class c=Class.forName(session.getConfig("dh"));
-      dh=(com.jcraft.jsch.DH)(c.newInstance());
+      dh= (DH) c.newInstance();
       dh.init();
     }
     catch(Exception e){
@@ -231,9 +231,12 @@ System.err.println("0x"+Integer.toHexString(g[iii]&0xff)+",");
 
       i=0;
       j=0;
-      j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
-      String alg=new String(K_S, i, j);
+      j= K_S[i] << 24 & 0xff000000 | K_S[i] << 16 & 0x00ff0000 | K_S[i] << 8 & 0x0000ff00 | K_S[i] & 0x000000ff;
+        i++;
+        i++;
+        i++;
+        i++;
+        Object alg=new String(K_S, i, j);
       i+=j;
 
       boolean result=false;
@@ -244,13 +247,19 @@ System.err.println("0x"+Integer.toHexString(g[iii]&0xff)+",");
 	
 	type=RSA;
 
-	j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	  ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
-	tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
+	j= K_S[i] << 24 & 0xff000000 | K_S[i] << 16 & 0x00ff0000 | K_S[i] << 8 & 0x0000ff00 | K_S[i] & 0x000000ff;
+          i++;
+          i++;
+          i++;
+          i++;
+          tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
 	ee=tmp;
-	j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	  ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
-	tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
+	j= K_S[i] << 24 & 0xff000000 | K_S[i] << 16 & 0x00ff0000 | K_S[i] << 8 & 0x0000ff00 | K_S[i] & 0x000000ff;
+          i++;
+          i++;
+          i++;
+          i++;
+          tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
 	n=tmp;
 
 //	SignatureRSA sig=new SignatureRSA();
@@ -259,7 +268,7 @@ System.err.println("0x"+Integer.toHexString(g[iii]&0xff)+",");
 	SignatureRSA sig=null;
 	try{
 	  Class c=Class.forName(session.getConfig("signature.rsa"));
-	  sig=(SignatureRSA)(c.newInstance());
+	  sig= (SignatureRSA) c.newInstance();
 	  sig.init();
 	}
 	catch(Exception e){
@@ -282,21 +291,33 @@ System.err.println("0x"+Integer.toHexString(g[iii]&0xff)+",");
 
 	type=DSS;
 
-	j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	  ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
-	tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
+	j= K_S[i] << 24 & 0xff000000 | K_S[i] << 16 & 0x00ff0000 | K_S[i] << 8 & 0x0000ff00 | K_S[i] & 0x000000ff;
+          i++;
+          i++;
+          i++;
+          i++;
+          tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
 	p=tmp;
-	j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	  ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
-	tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
+	j= K_S[i] << 24 & 0xff000000 | K_S[i] << 16 & 0x00ff0000 | K_S[i] << 8 & 0x0000ff00 | K_S[i] & 0x000000ff;
+          i++;
+          i++;
+          i++;
+          i++;
+          tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
 	q=tmp;
-	j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	  ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
-	tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
+	j= K_S[i] << 24 & 0xff000000 | K_S[i] << 16 & 0x00ff0000 | K_S[i] << 8 & 0x0000ff00 | K_S[i] & 0x000000ff;
+          i++;
+          i++;
+          i++;
+          i++;
+          tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
 	g=tmp;
-	j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	  ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
-	tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
+	j= K_S[i] << 24 & 0xff000000 | K_S[i] << 16 & 0x00ff0000 | K_S[i] << 8 & 0x0000ff00 | K_S[i] & 0x000000ff;
+          i++;
+          i++;
+          i++;
+          i++;
+          tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
 	f=tmp;
 	
 //	SignatureDSA sig=new SignatureDSA();
@@ -305,7 +326,7 @@ System.err.println("0x"+Integer.toHexString(g[iii]&0xff)+",");
 	SignatureDSA sig=null;
 	try{
 	  Class c=Class.forName(session.getConfig("signature.dss"));
-	  sig=(SignatureDSA)(c.newInstance());
+	  sig= (SignatureDSA) c.newInstance();
 	  sig.init();
 	}
 	catch(Exception e){

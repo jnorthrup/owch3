@@ -75,21 +75,21 @@ public class ZInputStream extends FilterInputStream {
 
   public int read() throws IOException {
     if(read(buf1, 0, 1)==-1)
-      return(-1);
-    return(buf1[0]&0xFF);
+      return -1;
+    return buf1[0] & 0xFF;
   }
 
   private boolean nomoreinput=false;
 
   public int read(byte[] b, int off, int len) throws IOException {
     if(len==0)
-      return(0);
+      return 0;
     int err;
     z.next_out=b;
     z.next_out_index=off;
     z.avail_out=len;
     do {
-      if((z.avail_in==0)&&(!nomoreinput)) { // if buffer is empty and more input is avaiable, refill it
+      if(z.avail_in == 0 && !nomoreinput) { // if buffer is empty and more input is avaiable, refill it
 	z.next_in_index=0;
 	z.avail_in=in.read(buf, 0, bufsize);//(bufsize<z.avail_out ? bufsize : z.avail_out));
 	if(z.avail_in==-1) {
@@ -101,16 +101,16 @@ public class ZInputStream extends FilterInputStream {
 	err=z.deflate(flush);
       else
 	err=z.inflate(flush);
-      if(nomoreinput&&(err==JZlib.Z_BUF_ERROR))
-        return(-1);
+      if(nomoreinput && err == JZlib.Z_BUF_ERROR)
+        return -1;
       if(err!=JZlib.Z_OK && err!=JZlib.Z_STREAM_END)
 	throw new ZStreamException((compress ? "de" : "in")+"flating: "+z.msg);
-      if((nomoreinput||err==JZlib.Z_STREAM_END)&&(z.avail_out==len))
-	return(-1);
+      if((nomoreinput || err == JZlib.Z_STREAM_END) && z.avail_out == len)
+	return -1;
     } 
     while(z.avail_out==len&&err==JZlib.Z_OK);
     //System.err.print("("+(len-z.avail_out)+")");
-    return(len-z.avail_out);
+    return len - z.avail_out;
   }
 
   public long skip(long n) throws IOException {
@@ -118,11 +118,11 @@ public class ZInputStream extends FilterInputStream {
     if(n<len)
       len=(int)n;
     byte[] tmp=new byte[len];
-    return((long)read(tmp));
+    return (long) read(tmp);
   }
 
   public int getFlushMode() {
-    return(flush);
+    return flush;
   }
 
   public void setFlushMode(int flush) {

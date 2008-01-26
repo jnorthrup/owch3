@@ -51,7 +51,7 @@ public class KeyPairRSA extends KeyPair{
     this.key_size=key_size;
     try{
       Class c=Class.forName(jsch.getConfig("keypairgen.rsa"));
-      KeyPairGenRSA keypairgen=(KeyPairGenRSA)(c.newInstance());
+      KeyPairGenRSA keypairgen= (KeyPairGenRSA) c.newInstance();
       keypairgen.init(key_size);
       pub_array=keypairgen.getE();
       prv_array=keypairgen.getD();
@@ -136,19 +136,31 @@ public class KeyPairRSA extends KeyPair{
       }
 
       index++; // SEQUENCE
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
 
       if(plain[index]!=0x02)return false;
       index++; // INTEGER
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       index+=length;
 
 //System.err.println("int: len="+length);
@@ -156,11 +168,17 @@ public class KeyPairRSA extends KeyPair{
 //System.err.println("");
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       n_array=new byte[length];
       System.arraycopy(plain, index, n_array, 0, length);
       index+=length;
@@ -172,11 +190,17 @@ System.err.print(Integer.toHexString(n_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       pub_array=new byte[length];
       System.arraycopy(plain, index, pub_array, 0, length);
       index+=length;
@@ -188,11 +212,17 @@ System.err.print(Integer.toHexString(pub_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       prv_array=new byte[length];
       System.arraycopy(plain, index, prv_array, 0, length);
       index+=length;
@@ -205,11 +235,17 @@ System.err.println("");
 */
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       p_array=new byte[length];
       System.arraycopy(plain, index, p_array, 0, length);
       index+=length;
@@ -221,11 +257,17 @@ System.err.print(Integer.toHexString(p_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       q_array=new byte[length];
       System.arraycopy(plain, index, q_array, 0, length);
       index+=length;
@@ -237,11 +279,17 @@ System.err.print(Integer.toHexString(q_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       ep_array=new byte[length];
       System.arraycopy(plain, index, ep_array, 0, length);
       index+=length;
@@ -253,11 +301,17 @@ System.err.print(Integer.toHexString(ep_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       eq_array=new byte[length];
       System.arraycopy(plain, index, eq_array, 0, length);
       index+=length;
@@ -269,11 +323,17 @@ System.err.print(Integer.toHexString(eq_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       c_array=new byte[length];
       System.arraycopy(plain, index, c_array, 0, length);
       index+=length;

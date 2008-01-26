@@ -39,7 +39,7 @@ class UserAuthKeyboardInteractive extends UserAuth{
 
     String dest=username+"@"+session.host;
     if(session.port!=22){
-      dest+=(":"+session.port);
+        dest += ":" + session.port;
     }
     byte[] password=session.password;
 
@@ -118,12 +118,11 @@ class UserAuthKeyboardInteractive extends UserAuth{
 	  boolean[] echo=new boolean[num];
 	  for(int i=0; i<num; i++){
 	    prompt[i]=new String(buf.getString());
-	    echo[i]=(buf.getByte()!=0);
+          echo[i] = buf.getByte() != 0;
 	  }
 
 	  byte[][] response=null;
-	  if(num>0
-	     ||(name.length()>0 || instruction.length()>0)
+	  if(num > 0 || name.length() > 0 || instruction.length() > 0
 	     ){
 	    if(userinfo!=null){
               UIKeyboardInteractive kbi=(UIKeyboardInteractive)userinfo;

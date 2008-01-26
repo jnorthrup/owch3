@@ -112,13 +112,17 @@ public class ProxySOCKS5 implements Proxy{
           o  X'FF' NO ACCEPTABLE METHODS
 */
 
-      buf[index++]=5;
+      buf[index]=5;
+        index++;
 
-      buf[index++]=2;
-      buf[index++]=0;           // NO AUTHENTICATION REQUIRED
-      buf[index++]=2;           // USERNAME/PASSWORD
+        buf[index]=2;
+        index++;
+        buf[index]=0;           // NO AUTHENTICATION REQUIRED
+        index++;
+        buf[index]=2;           // USERNAME/PASSWORD
+        index++;
 
-      out.write(buf, 0, index);
+        out.write(buf, 0, index);
 
 /*
     The server selects from one of the methods given in METHODS, and
@@ -134,7 +138,7 @@ public class ProxySOCKS5 implements Proxy{
       fill(in, buf, 2);
  
       boolean check=false;
-      switch((buf[1])&0xff){
+      switch(buf[1] & 0xff){
         case 0:                // NO AUTHENTICATION REQUIRED
           check=true;
           break;
@@ -161,12 +165,15 @@ public class ProxySOCKS5 implements Proxy{
    association with the given UNAME.
 */
           index=0;
-          buf[index++]=1;
-          buf[index++]=(byte)(user.length());
-	  System.arraycopy(user.getBytes(), 0, buf, index, user.length());
+          buf[index]=1;
+            index++;
+            buf[index]= (byte) user.length();
+            index++;
+            System.arraycopy(user.getBytes(), 0, buf, index, user.length());
 	  index+=user.length();
-          buf[index++]=(byte)(passwd.length());
-	  System.arraycopy(passwd.getBytes(), 0, buf, index, passwd.length());
+          buf[index]= (byte) passwd.length();
+            index++;
+            System.arraycopy(passwd.getBytes(), 0, buf, index, passwd.length());
 	  index+=passwd.length();
 
           out.write(buf, 0, index);
@@ -227,20 +234,27 @@ public class ProxySOCKS5 implements Proxy{
 */
      
       index=0;
-      buf[index++]=5;
-      buf[index++]=1;       // CONNECT
-      buf[index++]=0;
+      buf[index]=5;
+        index++;
+        buf[index]=1;       // CONNECT
+        index++;
+        buf[index]=0;
+        index++;
 
-      byte[] hostb=host.getBytes();
+        byte[] hostb=host.getBytes();
       int len=hostb.length;
-      buf[index++]=3;      // DOMAINNAME
-      buf[index++]=(byte)(len);
-      System.arraycopy(hostb, 0, buf, index, len);
+      buf[index]=3;      // DOMAINNAME
+        index++;
+        buf[index]= (byte) len;
+        index++;
+        System.arraycopy(hostb, 0, buf, index, len);
       index+=len;
-      buf[index++]=(byte)(port>>>8);
-      buf[index++]=(byte)(port&0xff);
+      buf[index]=(byte)(port>>>8);
+        index++;
+        buf[index]=(byte)(port&0xff);
+        index++;
 
-      out.write(buf, 0, index);
+        out.write(buf, 0, index);
 
 /*
    The SOCKS request information is sent by the client as soon as it has

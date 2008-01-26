@@ -47,7 +47,7 @@ public class KeyPairDSA extends KeyPair{
     this.key_size=key_size;
     try{
       Class c=Class.forName(jsch.getConfig("keypairgen.dsa"));
-      KeyPairGenDSA keypairgen=(KeyPairGenDSA)(c.newInstance());
+      KeyPairGenDSA keypairgen= (KeyPairGenDSA) c.newInstance();
       keypairgen.init(key_size);
       P_array=keypairgen.getP();
       Q_array=keypairgen.getQ();
@@ -117,67 +117,109 @@ public class KeyPairDSA extends KeyPair{
 
       if(plain[index]!=0x30)return false;
       index++; // SEQUENCE
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
 
       if(plain[index]!=0x02)return false;
       index++; // INTEGER
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       P_array=new byte[length];
       System.arraycopy(plain, index, P_array, 0, length);
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       Q_array=new byte[length];
       System.arraycopy(plain, index, Q_array, 0, length);
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       G_array=new byte[length];
       System.arraycopy(plain, index, G_array, 0, length);
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       pub_array=new byte[length];
       System.arraycopy(plain, index, pub_array, 0, length);
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       prv_array=new byte[length];
       System.arraycopy(plain, index, prv_array, 0, length);
       index+=length;

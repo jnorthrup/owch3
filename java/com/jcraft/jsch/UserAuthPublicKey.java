@@ -51,7 +51,7 @@ class UserAuthPublicKey extends UserAuth{
       _username=Util.str2byte(username);
 
       for(int i=0; i<identities.size(); i++){
-        Identity identity=(Identity)(identities.elementAt(i));
+        Identity identity= (Identity) identities.elementAt(i);
         byte[] pubkeyblob=identity.getPublicKeyBlob();
 
 //System.err.println("UserAuthPublicKey: "+identity+" "+pubkeyblob);
@@ -115,7 +115,7 @@ class UserAuthPublicKey extends UserAuth{
 
         int count=5;
         while(true){
-          if((identity.isEncrypted() && passphrase==null)){
+          if(identity.isEncrypted() && passphrase == null){
             if(userinfo==null) throw new JSchException("USERAUTH fail");
             if(identity.isEncrypted() &&
                !userinfo.promptPassphrase("Passphrase for "+identity.getName())){
@@ -176,7 +176,7 @@ class UserAuthPublicKey extends UserAuth{
         tmp[0]=(byte)(sidlen>>>24);
         tmp[1]=(byte)(sidlen>>>16);
         tmp[2]=(byte)(sidlen>>>8);
-        tmp[3]=(byte)(sidlen);
+        tmp[3]= (byte) sidlen;
         System.arraycopy(sid, 0, tmp, 4, sidlen);
         System.arraycopy(buf.buffer, 5, tmp, 4+sidlen, buf.index-5);
         byte[] signature=identity.getSignature(tmp);

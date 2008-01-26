@@ -91,7 +91,7 @@ public class ZOutputStream extends OutputStream {
   }
 
   public int getFlushMode() {
-    return(flush);
+    return flush;
   }
 
   public void setFlushMode(int flush) {

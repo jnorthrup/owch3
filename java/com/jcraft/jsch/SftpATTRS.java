@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.Date;
 
 /*
@@ -70,7 +70,7 @@ public class SftpATTRS {
   private static final int pmask = 0xFFF;
 
   public String getPermissionsString() {
-    StringBuffer buf = new StringBuffer(10);
+    Appendable buf = new StringBuffer(10);
 
     if(isDir()) buf.append('d');
     else if(isLink()) buf.append('l');
@@ -104,17 +104,17 @@ public class SftpATTRS {
 
     if((permissions & S_IXOTH) != 0) buf.append('x');
     else buf.append('-');
-    return (buf.toString());
+    return buf.toString();
   }
 
   public String  getAtimeString(){
-    SimpleDateFormat locale=new SimpleDateFormat();
-    return (locale.format(new Date(atime)));
+    DateFormat locale=new SimpleDateFormat();
+    return locale.format(new Date(atime));
   }
 
   public String  getMtimeString(){
-    Date date= new Date(((long)mtime)*1000);
-    return (date.toString());
+    Object date= new Date((long) mtime * 1000);
+    return date.toString();
   }
 
   public static final int SSH_FILEXFER_ATTR_SIZE=         0x00000001;
@@ -225,19 +225,18 @@ public class SftpATTRS {
     this.atime=atime;
     this.mtime=mtime;
   }
-  public void setPERMISSIONS(int permissions){
-    flags|=SSH_FILEXFER_ATTR_PERMISSIONS;
-    permissions=(this.permissions&~pmask)|(permissions&pmask);
-    this.permissions=permissions;
-  }
+
+    public void setPERMISSIONS(int permissions) {
+        flags |= SSH_FILEXFER_ATTR_PERMISSIONS;
+        int permissions1 = this.permissions & ~pmask | permissions & pmask;
+        this.permissions = permissions1;
+    }
 
   public boolean isDir(){
-    return ((flags&SSH_FILEXFER_ATTR_PERMISSIONS)!=0 && 
-	    ((permissions&S_IFDIR)==S_IFDIR));
+    return (flags & SSH_FILEXFER_ATTR_PERMISSIONS) != 0 && (permissions & S_IFDIR) == S_IFDIR;
   }      
   public boolean isLink(){
-    return ((flags&SSH_FILEXFER_ATTR_PERMISSIONS)!=0 && 
-	    ((permissions&S_IFLNK)==S_IFLNK));
+    return (flags & SSH_FILEXFER_ATTR_PERMISSIONS) != 0 && (permissions & S_IFLNK) == S_IFLNK;
   }      
   public int getFlags() { return flags; }
   public long getSize() { return size; }
@@ -249,7 +248,7 @@ public class SftpATTRS {
   public String[] getExtended() { return extended; }
 
   public String toString() {
-    return (getPermissionsString()+" "+getUId()+" "+getGId()+" "+getSize()+" "+getMtimeString());
+    return getPermissionsString() + " " + getUId() + " " + getGId() + " " + getSize() + " " + getMtimeString();
   }
   /*
   public String toString(){

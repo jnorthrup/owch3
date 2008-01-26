@@ -31,6 +31,7 @@ package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
 import java.security.*;
+import java.security.spec.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
@@ -53,13 +54,13 @@ public class DH implements com.jcraft.jsch.DH{
   }
   public byte[] getE() throws Exception{
     if(e==null){
-      DHParameterSpec dhSkipParamSpec=new DHParameterSpec(p, g);
+      AlgorithmParameterSpec dhSkipParamSpec=new DHParameterSpec(p, g);
       myKpairGen.initialize(dhSkipParamSpec);
       KeyPair myKpair=myKpairGen.generateKeyPair();
       myKeyAgree.init(myKpair.getPrivate());
 //    BigInteger x=((javax.crypto.interfaces.DHPrivateKey)(myKpair.getPrivate())).getX();
       byte[] myPubKeyEnc=myKpair.getPublic().getEncoded();
-      e=((javax.crypto.interfaces.DHPublicKey)(myKpair.getPublic())).getY();
+      e=((javax.crypto.interfaces.DHPublicKey) myKpair.getPublic()).getY();
       e_array=e.toByteArray();
     }
     return e_array;
@@ -67,7 +68,7 @@ public class DH implements com.jcraft.jsch.DH{
   public byte[] getK() throws Exception{
     if(K==null){
       KeyFactory myKeyFac=KeyFactory.getInstance("DH");
-      DHPublicKeySpec keySpec=new DHPublicKeySpec(f, p, g);
+      KeySpec keySpec=new DHPublicKeySpec(f, p, g);
       PublicKey yourPubKey=myKeyFac.generatePublic(keySpec);
       myKeyAgree.doPhase(yourPubKey, true);
       byte[] mySharedSecret=myKeyAgree.generateSecret();

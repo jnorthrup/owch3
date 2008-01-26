@@ -46,7 +46,8 @@ public class Buffer{
   }
   public Buffer(){ this(1024*10*2); }
   public void putByte(byte foo){
-    buffer[index++]=foo;
+    buffer[index]=foo;
+      index++;
   }
   public void putByte(byte[] foo) {
     putByte(foo, 0, foo.length);
@@ -66,7 +67,7 @@ public class Buffer{
     tmp[0]=(byte)(val >>> 24);
     tmp[1]=(byte)(val >>> 16);
     tmp[2]=(byte)(val >>> 8);
-    tmp[3]=(byte)(val);
+    tmp[3]= (byte) val;
     System.arraycopy(tmp, 0, buffer, index, 4);
     index+=4;
   }
@@ -79,19 +80,21 @@ public class Buffer{
     tmp[0]=(byte)(val >>> 24);
     tmp[1]=(byte)(val >>> 16);
     tmp[2]=(byte)(val >>> 8);
-    tmp[3]=(byte)(val);
+    tmp[3]= (byte) val;
     System.arraycopy(tmp, 0, buffer, index+4, 4);
     index+=8;
   }
   void skip(int n) {
     index+=n;
   }
-  void putPad(int n) {
-    while(n>0){
-      buffer[index++]=(byte)0;
-      n--;
+
+    void putPad(int n) {
+        int n1 = n;
+        while (n1 > 0) {
+            buffer[index++] = (byte) 0;
+            n1--;
+        }
     }
-  }
   public void putMPInt(byte[] foo){
     int i=foo.length;
     if((foo[0]&0x80)!=0){
@@ -115,21 +118,21 @@ public class Buffer{
   }
   public long getLong(){
     long foo = getInt()&0xffffffffL;
-    foo = ((foo<<32)) | (getInt()&0xffffffffL);
+    foo = foo << 32 | getInt() & 0xffffffffL;
     return foo;
   }
   public int getInt(){
     int foo = getShort();
-    foo = ((foo<<16)&0xffff0000) | (getShort()&0xffff);
+    foo = foo << 16 & 0xffff0000 | getShort() & 0xffff;
     return foo;
   }
   int getShort() {
     int foo = getByte();
-    foo = ((foo<<8)&0xff00)|(getByte()&0xff);
+    foo = foo << 8 & 0xff00 | getByte() & 0xff;
     return foo;
   }
   public int getByte() {
-    return (buffer[s++]&0xff);
+    return buffer[s] & 0xff;
   }
   public void getByte(byte[] foo) {
     getByte(foo, 0, foo.length);
@@ -181,7 +184,7 @@ public class Buffer{
   public void shift(){
     if(s==0)return;
     System.arraycopy(buffer, s, buffer, 0, index-s);
-    index=index-s;
+      index -= s;
     s=0;
   }
   void rewind(){

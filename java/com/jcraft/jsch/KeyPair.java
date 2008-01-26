@@ -29,9 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.File;
+import java.io.*;
 
 public abstract class KeyPair{
   public static final int ERROR=0;
@@ -95,7 +93,7 @@ public abstract class KeyPair{
 	out.write(header[0]); out.write(cr);
 	out.write(header[1]); 
 	for(int i=0; i<iv.length; i++){
-	  out.write(b2a((byte)((iv[i]>>>4)&0x0f)));
+	  out.write(b2a((byte)(iv[i] >>> 4 & 0x0f)));
 	  out.write(b2a((byte)(iv[i]&0x0f)));
 	}
         out.write(cr);
@@ -141,7 +139,7 @@ public abstract class KeyPair{
   }
 
   public void writePublicKey(String name, String comment) throws java.io.FileNotFoundException, java.io.IOException{
-    FileOutputStream fos=new FileOutputStream(name);
+    OutputStream fos=new FileOutputStream(name);
     writePublicKey(fos, comment);
     fos.close();
   }
@@ -155,7 +153,7 @@ public abstract class KeyPair{
       int index=0;
       while(index<pub.length){
 	int len=70;
-	if((pub.length-index)<len)len=pub.length-index;
+	if(pub.length - index < len)len=pub.length-index;
 	out.write(pub, index, len); out.write(cr);
 	index+=len;
       }
@@ -166,14 +164,14 @@ public abstract class KeyPair{
   }
 
   public void writeSECSHPublicKey(String name, String comment) throws java.io.FileNotFoundException, java.io.IOException{
-    FileOutputStream fos=new FileOutputStream(name);
+    OutputStream fos=new FileOutputStream(name);
     writeSECSHPublicKey(fos, comment);
     fos.close();
   }
 
 
   public void writePrivateKey(String name) throws java.io.FileNotFoundException, java.io.IOException{
-    FileOutputStream fos=new FileOutputStream(name);
+    OutputStream fos=new FileOutputStream(name);
     writePrivateKey(fos);
     fos.close();
   }
@@ -204,7 +202,7 @@ public abstract class KeyPair{
       byte[] foo=new byte[(encoded.length/bsize+1)*bsize];
       System.arraycopy(encoded, 0, foo, 0, encoded.length);
       int padding=bsize-encoded.length%bsize;
-      for(int i=foo.length-1; (foo.length-padding)<=i; i--){
+      for(int i=foo.length-1; foo.length - padding <= i; i--){
         foo[i]=(byte)padding;
       }
       encoded=foo;
@@ -244,50 +242,55 @@ public abstract class KeyPair{
     return null;
   }
 
-  int writeSEQUENCE(byte[] buf, int index, int len){
-    buf[index++]=0x30;
-    index=writeLength(buf, index, len);
-    return index;
-  }
-  int writeINTEGER(byte[] buf, int index, byte[] data){
-    buf[index++]=0x02;
-    index=writeLength(buf, index, data.length);
-    System.arraycopy(data, 0, buf, index, data.length);
-    index+=data.length;
-    return index;
-  }
+    int writeSEQUENCE(byte[] buf, int index, int len) {
+        int index1 = index;
+        buf[index1++] = 0x30;
+        index1 = writeLength(buf, index1, len);
+        return index1;
+    }
 
-  int countLength(int len){
-    int i=1;
-    if(len<=0x7f) return i;
-    while(len>0){
-      len>>>=8;
-      i++;
+    int writeINTEGER(byte[] buf, int index, byte[] data) {
+        int index1 = index;
+        buf[index1++] = 0x02;
+        index1 = writeLength(buf, index1, data.length);
+        System.arraycopy(data, 0, buf, index1, data.length);
+        index1 += data.length;
+        return index1;
     }
-    return i;
-  }
 
-  int writeLength(byte[] data, int index, int len){
-    int i=countLength(len)-1;
-    if(i==0){
-      data[index++]=(byte)len;
-      return index;
+    int countLength(int len) {
+        int len1 = len;
+        int i = 1;
+        if (len1 <= 0x7f) return i;
+        while (len1 > 0) {
+            len1 >>>= 8;
+            i++;
+        }
+        return i;
     }
-    data[index++]=(byte)(0x80|i);
-    int j=index+i;
-    while(i>0){
-      data[index+i-1]=(byte)(len&0xff);
-      len>>>=8;
-      i--;
+
+    int writeLength(byte[] data, int index, int len) {
+        int len1 = len;
+        int i = countLength(len1) - 1;
+        if (i == 0) {
+            data[index++] = (byte) len1;
+            return index;
+        }
+        data[index++] = (byte) (0x80 | i);
+        int j = index + i;
+        while (i > 0) {
+            data[index + i - 1] = (byte) (len1 & 0xff);
+            len1 >>>= 8;
+            i--;
+        }
+        return j;
     }
-    return j;
-  }
 
   private Random genRandom(){
     if(random==null){
       try{
 	Class c=Class.forName(jsch.getConfig("random"));
-        random=(Random)(c.newInstance());
+        random= (Random) c.newInstance();
       }
       catch(Exception e){ System.err.println("connect: random "+e); }
     }
@@ -297,7 +300,7 @@ public abstract class KeyPair{
   private HASH genHash(){
     try{
       Class c=Class.forName(jsch.getConfig("md5"));
-      hash=(HASH)(c.newInstance());
+      hash= (HASH) c.newInstance();
       hash.init();
     }
     catch(Exception e){
@@ -308,7 +311,7 @@ public abstract class KeyPair{
     try{
       Class c;
       c=Class.forName(jsch.getConfig("3des-cbc"));
-      cipher=(Cipher)(c.newInstance());
+      cipher= (Cipher) c.newInstance();
     }
     catch(Exception e){
     }
@@ -367,11 +370,13 @@ public abstract class KeyPair{
       setPassphrase(Util.str2byte(passphrase));
     }
   }
-  public void setPassphrase(byte[] passphrase){
-    if(passphrase!=null && passphrase.length==0) 
-      passphrase=null;
-    this.passphrase=passphrase;
-  }
+
+    public void setPassphrase(byte[] passphrase) {
+        byte[] passphrase1 = passphrase;
+        if (passphrase1 != null && passphrase1.length == 0)
+            passphrase1 = null;
+        this.passphrase = passphrase1;
+    }
 
   private boolean encrypted=false;
   private byte[] data=null;
@@ -385,23 +390,25 @@ public abstract class KeyPair{
     }
     return decrypt(Util.str2byte(_passphrase));
   }
-  public boolean decrypt(byte[] _passphrase){
-    if(!encrypted){
-      return true;
+
+    public boolean decrypt(byte[] _passphrase) {
+        byte[] _passphrase1 = _passphrase;
+        if (!encrypted) {
+            return true;
+        }
+        if (_passphrase1 == null) {
+            return !encrypted;
+        }
+        byte[] bar = new byte[_passphrase1.length];
+        System.arraycopy(_passphrase1, 0, bar, 0, bar.length);
+        _passphrase1 = bar;
+        byte[] foo = decrypt(data, _passphrase1, iv);
+        Util.bzero(_passphrase1);
+        if (parse(foo)) {
+            encrypted = false;
+        }
+        return !encrypted;
     }
-    if(_passphrase==null){
-      return !encrypted;
-    }
-    byte[] bar=new byte[_passphrase.length];
-    System.arraycopy(_passphrase, 0, bar, 0, bar.length);
-    _passphrase=bar;
-    byte[] foo=decrypt(data, _passphrase, iv);
-    Util.bzero(_passphrase);
-    if(parse(foo)){
-      encrypted=false;
-    }
-    return !encrypted;
-  }
 
   public static KeyPair load(JSch jsch, String prvkey) throws JSchException{
     String pubkey=prvkey+".pub";
@@ -424,7 +431,7 @@ public abstract class KeyPair{
     try{
       File file=new File(prvkey);
       FileInputStream fis=new FileInputStream(prvkey);
-      byte[] buf=new byte[(int)(file.length())];
+      byte[] buf=new byte[(int) file.length()];
       int len=0;
       while(true){
         int i=fis.read(buf, len, buf.length-len);
@@ -455,8 +462,10 @@ public abstract class KeyPair{
         if(buf[i]=='C'&& buf[i+1]=='B'&& buf[i+2]=='C'&& buf[i+3]==','){
           i+=4;
 	  for(int ii=0; ii<iv.length; ii++){
-            iv[ii]=(byte)(((a2b(buf[i++])<<4)&0xf0)+(a2b(buf[i++])&0xf));
-  	  }
+            iv[ii]=(byte)((a2b(buf[i]) << 4 & 0xf0)+(a2b(buf[i])&0xf));
+          i++;
+          i++;
+      }
 	  continue;
 	}
 	if(buf[i]==0x0d &&
@@ -492,7 +501,7 @@ public abstract class KeyPair{
       int start=i;
       while(i<len){
         if(buf[i]==0x0a){
-	  boolean xd=(buf[i-1]==0x0d);
+	  boolean xd= buf[i - 1] == 0x0d;
           System.arraycopy(buf, i+1, 
 			   buf, 
 			   i-(xd ? 1 : 0), 
@@ -519,7 +528,7 @@ public abstract class KeyPair{
 	byte[]_type=_buf.getString();
 	//System.err.println("type: "+new String(_type)); 
 	byte[] _cipher=_buf.getString();
-	String cipher=new String(_cipher);
+	Object cipher=new String(_cipher);
 	//System.err.println("cipher: "+cipher); 
 	if(cipher.equals("3des-cbc")){
   	   _buf.getInt();
@@ -545,7 +554,7 @@ public abstract class KeyPair{
 	try{
 	  file=new File(pubkey);
 	  fis=new FileInputStream(pubkey);
-	  buf=new byte[(int)(file.length())];
+	  buf=new byte[(int) file.length()];
           len=0;
           while(true){
             i=fis.read(buf, len, buf.length-len);

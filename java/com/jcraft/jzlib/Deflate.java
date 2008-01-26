@@ -157,15 +157,15 @@ final class Deflate{
 
   static final private int MIN_MATCH=3;
   static final private int MAX_MATCH=258;
-  static final private int MIN_LOOKAHEAD=(MAX_MATCH+MIN_MATCH+1);
+  static final private int MIN_LOOKAHEAD= MAX_MATCH + MIN_MATCH + 1;
 
   static final private int MAX_BITS=15;
   static final private int D_CODES=30;
   static final private int BL_CODES=19;
   static final private int LENGTH_CODES=29;
   static final private int LITERALS=256;
-  static final private int L_CODES=(LITERALS+1+LENGTH_CODES);
-  static final private int HEAP_SIZE=(2*L_CODES+1);
+  static final private int L_CODES= LITERALS + 1 + LENGTH_CODES;
+  static final private int HEAP_SIZE= 2 * L_CODES + 1;
 
   static final private int END_BLOCK=256;
 
@@ -405,8 +405,7 @@ final class Deflate{
   static boolean smaller(short[] tree, int n, int m, byte[] depth){
     short tn2=tree[n*2];
     short tm2=tree[m*2];
-    return (tn2<tm2 ||
-	    (tn2==tm2 && depth[n] <= depth[m]));
+    return tn2 < tm2 || tn2 == tm2 && depth[n] <= depth[m];
   }
 
   // Scan a literal or distance tree to determine the frequencies of the codes
@@ -561,17 +560,17 @@ final class Deflate{
     pending_buf[pending++]=c;
   }
   final void put_short(int w) {
-    put_byte((byte)(w/*&0xff*/));
+    put_byte((byte) w);
     put_byte((byte)(w>>>8));
   }
   final void putShortMSB(int b){
     put_byte((byte)(b>>8));
-    put_byte((byte)(b/*&0xff*/));
+    put_byte((byte) b);
   }   
 
   final void send_code(int c, short[] tree){
     int c2=c*2;
-    send_bits((tree[c2]&0xffff), (tree[c2+1]&0xffff));
+    send_bits(tree[c2] & 0xffff, tree[c2 + 1] & 0xffff);
   }
 
   void send_bits(int value, int length){
@@ -579,13 +578,13 @@ final class Deflate{
     if (bi_valid > (int)Buf_size - len) {
       int val = value;
 //      bi_buf |= (val << bi_valid);
-      bi_buf |= ((val << bi_valid)&0xffff);
+        bi_buf |= val << bi_valid & 0xffff;
       put_short(bi_buf);
-      bi_buf = (short)(val >>> (Buf_size - bi_valid));
+      bi_buf = (short)(val >>> Buf_size - bi_valid);
       bi_valid += len - Buf_size;
     } else {
 //      bi_buf |= (value) << bi_valid;
-      bi_buf |= (((value) << bi_valid)&0xffff);
+        bi_buf |= value << bi_valid & 0xffff;
       bi_valid += len;
     }
   }
@@ -651,10 +650,10 @@ final class Deflate{
 	  (5L+Tree.extra_dbits[dcode]);
       }
       out_length >>>= 3;
-      if ((matches < (last_lit/2)) && out_length < in_length/2) return true;
+      if (matches < last_lit / 2 && out_length < in_length / 2) return true;
     }
 
-    return (last_lit == lit_bufsize-1);
+    return last_lit == lit_bufsize - 1;
     // We avoid equality with lit_bufsize because of wraparound at 64K
     // on 16 bit machines and because stored blocks are restricted to
     // 64K-1 bytes.
@@ -670,9 +669,8 @@ final class Deflate{
 
     if (last_lit != 0){
       do{
-	dist=((pending_buf[d_buf+lx*2]<<8)&0xff00)|
-	  (pending_buf[d_buf+lx*2+1]&0xff);
-	lc=(pending_buf[l_buf+lx])&0xff; lx++;
+	dist= pending_buf[d_buf + lx * 2] << 8 & 0xff00 | pending_buf[d_buf + lx * 2 + 1] & 0xff;
+	lc= pending_buf[l_buf + lx] & 0xff; lx++;
 
 	if(dist == 0){
 	  send_code(lc, ltree); // send a literal byte
@@ -718,7 +716,7 @@ final class Deflate{
     while(n<7){ bin_freq += dyn_ltree[n*2]; n++;}
     while(n<128){ ascii_freq += dyn_ltree[n*2]; n++;}
     while(n<LITERALS){ bin_freq += dyn_ltree[n*2]; n++;}
-    data_type=(byte)(bin_freq > (ascii_freq >>> 2) ? Z_BINARY : Z_ASCII);
+    data_type=(byte)(bin_freq > ascii_freq >>> 2 ? Z_BINARY : Z_ASCII);
   }
 
   // Flush the bit buffer, keeping at most 7 bits in it.
@@ -828,7 +826,7 @@ final class Deflate{
 
     flush_block_only(flush == Z_FINISH);
     if(strm.avail_out==0)
-      return (flush == Z_FINISH) ? FinishStarted : NeedMore;
+      return flush == Z_FINISH ? FinishStarted : NeedMore;
 
     return flush == Z_FINISH ? FinishDone : BlockDone;
   }
@@ -869,8 +867,8 @@ final class Deflate{
       max_blindex=build_bl_tree();
 
       // Determine the best encoding. Compute first the block length in bytes
-      opt_lenb=(opt_len+3+7)>>>3;
-      static_lenb=(static_len+3+7)>>>3;
+      opt_lenb= opt_len + 3 + 7 >>> 3;
+      static_lenb= static_len + 3 + 7 >>> 3;
 
       if(static_lenb<=opt_lenb) opt_lenb=static_lenb;
     }
@@ -921,7 +919,7 @@ final class Deflate{
     int more;    // Amount of free space at the end of the window.
 
     do{
-      more = (window_size-lookahead-strstart);
+        more = window_size - lookahead - strstart;
 
       // Deal with !@#$% 64K limit:
       if(more==0 && strstart==0 && lookahead==0){
@@ -950,16 +948,16 @@ final class Deflate{
 	n = hash_size;
 	p=n;
 	do {
-	  m = (head[--p]&0xffff);
-	  head[p]=(m>=w_size ? (short)(m-w_size) : 0);
+        m = head[--p] & 0xffff;
+        head[p] = m >= w_size ? (short) (m - w_size) : 0;
 	}
 	while (--n != 0);
 
 	n = w_size;
 	p = n;
 	do {
-	  m = (prev[--p]&0xffff);
-	  prev[p] = (m >= w_size ? (short)(m-w_size) : 0);
+        m = prev[--p] & 0xffff;
+        prev[p] = m >= w_size ? (short) (m - w_size) : 0;
 	  // If n is not on any hash chain, prev[n] is garbage but
 	  // its value will never be used.
 	}
@@ -986,7 +984,7 @@ final class Deflate{
       // Initialize the hash value now that we have some input:
       if(lookahead >= MIN_MATCH) {
 	ins_h = window[strstart]&0xff;
-	ins_h=(((ins_h)<<hash_shift)^(window[strstart+1]&0xff))&hash_mask;
+	ins_h=(ins_h << hash_shift ^ window[strstart + 1] & 0xff)&hash_mask;
       }
       // If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
       // but this is not important since only literal bytes will be emitted.
@@ -1020,10 +1018,10 @@ final class Deflate{
       // Insert the string window[strstart .. strstart+2] in the
       // dictionary, and set hash_head to the head of the hash chain:
       if(lookahead >= MIN_MATCH){
-	ins_h=(((ins_h)<<hash_shift)^(window[(strstart)+(MIN_MATCH-1)]&0xff))&hash_mask;
+	ins_h=(ins_h << hash_shift ^ window[strstart + (MIN_MATCH - 1)] & 0xff)&hash_mask;
 
 //	prev[strstart&w_mask]=hash_head=head[ins_h];
-        hash_head=(head[ins_h]&0xffff);
+          hash_head = head[ins_h] & 0xffff;
 	prev[strstart&w_mask]=head[ins_h];
 	head[ins_h]=(short)strstart;
       }
@@ -1032,7 +1030,7 @@ final class Deflate{
       // At this point we have always match_length < MIN_MATCH
 
       if(hash_head!=0L && 
-	 ((strstart-hash_head)&0xffff) <= w_size-MIN_LOOKAHEAD
+	 (strstart - hash_head & 0xffff) <= w_size-MIN_LOOKAHEAD
 	 ){
 	// To simplify the code, we prevent matches with the string
 	// of window index 0 (in particular we have to avoid a match
@@ -1057,9 +1055,9 @@ final class Deflate{
 	  do{
 	    strstart++;
 
-	    ins_h=((ins_h<<hash_shift)^(window[(strstart)+(MIN_MATCH-1)]&0xff))&hash_mask;
+	    ins_h=(ins_h << hash_shift ^ window[strstart + (MIN_MATCH - 1)] & 0xff)&hash_mask;
 //	    prev[strstart&w_mask]=hash_head=head[ins_h];
-	    hash_head=(head[ins_h]&0xffff);
+          hash_head = head[ins_h] & 0xffff;
 	    prev[strstart&w_mask]=head[ins_h];
 	    head[ins_h]=(short)strstart;
 
@@ -1074,7 +1072,7 @@ final class Deflate{
 	  match_length = 0;
 	  ins_h = window[strstart]&0xff;
 
-	  ins_h=(((ins_h)<<hash_shift)^(window[strstart+1]&0xff))&hash_mask;
+	  ins_h=(ins_h << hash_shift ^ window[strstart + 1] & 0xff)&hash_mask;
 	  // If lookahead < MIN_MATCH, ins_h is garbage, but it does not
 	  // matter since it will be recomputed at next deflate call.
 	}
@@ -1128,9 +1126,9 @@ final class Deflate{
       // dictionary, and set hash_head to the head of the hash chain:
 
       if(lookahead >= MIN_MATCH) {
-	ins_h=(((ins_h)<<hash_shift)^(window[(strstart)+(MIN_MATCH-1)]&0xff)) & hash_mask;
+	ins_h=(ins_h << hash_shift ^ window[strstart + (MIN_MATCH - 1)] & 0xff) & hash_mask;
 //	prev[strstart&w_mask]=hash_head=head[ins_h];
-	hash_head=(head[ins_h]&0xffff);
+          hash_head = head[ins_h] & 0xffff;
 	prev[strstart&w_mask]=head[ins_h];
 	head[ins_h]=(short)strstart;
       }
@@ -1140,7 +1138,7 @@ final class Deflate{
       match_length = MIN_MATCH-1;
 
       if (hash_head != 0 && prev_length < max_lazy_match &&
-	  ((strstart-hash_head)&0xffff) <= w_size-MIN_LOOKAHEAD
+	  (strstart - hash_head & 0xffff) <= w_size-MIN_LOOKAHEAD
 	  ){
 	// To simplify the code, we prevent matches with the string
 	// of window index 0 (in particular we have to avoid a match
@@ -1151,9 +1149,7 @@ final class Deflate{
 	}
 	// longest_match() sets match_start
 
-	if (match_length <= 5 && (strategy == Z_FILTERED ||
-				  (match_length == MIN_MATCH &&
-				   strstart - match_start > 4096))) {
+	if (match_length <= 5 && (strategy == Z_FILTERED || match_length == MIN_MATCH && strstart - match_start > 4096)) {
 
 	  // If prev_match is also MIN_MATCH, match_start is garbage
 	  // but we will ignore the current match anyway.
@@ -1179,9 +1175,9 @@ final class Deflate{
 	prev_length -= 2;
 	do{
 	  if(++strstart <= max_insert) {
-	    ins_h=(((ins_h)<<hash_shift)^(window[(strstart)+(MIN_MATCH-1)]&0xff))&hash_mask;
+	    ins_h=(ins_h << hash_shift ^ window[strstart + (MIN_MATCH - 1)] & 0xff)&hash_mask;
 	    //prev[strstart&w_mask]=hash_head=head[ins_h];
-	    hash_head=(head[ins_h]&0xffff);
+          hash_head = head[ins_h] & 0xffff;
 	    prev[strstart&w_mask]=head[ins_h];
 	    head[ins_h]=(short)strstart;
 	  }
@@ -1239,7 +1235,7 @@ final class Deflate{
     int match;                           // matched string
     int len;                             // length of current match
     int best_len = prev_length;          // best match length so far
-    int limit = strstart>(w_size-MIN_LOOKAHEAD) ?
+    int limit = strstart > w_size - MIN_LOOKAHEAD ?
       strstart-(w_size-MIN_LOOKAHEAD) : 0;
     int nice_match=this.nice_match;
 
@@ -1305,7 +1301,7 @@ final class Deflate{
 	scan_end   = window[scan+best_len];
       }
 
-    } while ((cur_match = (prev[cur_match & wmask]&0xffff)) > limit
+    } while ((cur_match = prev[cur_match & wmask] & 0xffff) > limit
 	     && --chain_length != 0);
 
     if (best_len <= lookahead) return best_len;
@@ -1356,13 +1352,13 @@ final class Deflate{
     hash_bits = memLevel + 7;
     hash_size = 1 << hash_bits;
     hash_mask = hash_size - 1;
-    hash_shift = ((hash_bits+MIN_MATCH-1)/MIN_MATCH);
+      hash_shift = (hash_bits + MIN_MATCH - 1) / MIN_MATCH;
 
     window = new byte[w_size*2];
     prev = new short[w_size];
     head = new short[hash_size];
 
-    lit_bufsize = 1 << (memLevel + 6); // 16K elements by default
+    lit_bufsize = 1 << memLevel + 6; // 16K elements by default
 
     // We overlay pending_buf and d_buf+l_buf. This works since the average
     // output size for (length,distance) codes is <= 24 bits.
@@ -1393,7 +1389,7 @@ final class Deflate{
     if(noheader < 0) {
       noheader = 0; // was set to -1 by deflate(..., Z_FINISH);
     }
-    status = (noheader!=0) ? BUSY_STATE : INIT_STATE;
+    status = noheader != 0 ? BUSY_STATE : INIT_STATE;
     strm.adler=strm._adler.adler32(0, null, 0, 0);
 
     last_flush = Z_NO_FLUSH;
@@ -1468,10 +1464,10 @@ final class Deflate{
     // call of fill_window.
 
     ins_h = window[0]&0xff;
-    ins_h=(((ins_h)<<hash_shift)^(window[1]&0xff))&hash_mask;
+    ins_h=(ins_h << hash_shift ^ window[1] & 0xff)&hash_mask;
 
     for(int n=0; n<=length-MIN_MATCH; n++){
-      ins_h=(((ins_h)<<hash_shift)^(window[(n)+(MIN_MATCH-1)]&0xff))&hash_mask;
+      ins_h=(ins_h << hash_shift ^ window[n + (MIN_MATCH - 1)] & 0xff)&hash_mask;
       prev[n&w_mask]=head[ins_h];
       head[ins_h]=(short)n;
     }
@@ -1485,14 +1481,12 @@ final class Deflate{
       return Z_STREAM_ERROR;
     }
 
-    if(strm.next_out == null ||
-       (strm.next_in == null && strm.avail_in != 0) ||
-       (status == FINISH_STATE && flush != Z_FINISH)) {
-      strm.msg=z_errmsg[Z_NEED_DICT-(Z_STREAM_ERROR)];
+    if(strm.next_out == null || strm.next_in == null && strm.avail_in != 0 || status == FINISH_STATE && flush != Z_FINISH) {
+      strm.msg=z_errmsg[(Z_NEED_DICT - Z_STREAM_ERROR)];
       return Z_STREAM_ERROR;
     }
     if(strm.avail_out == 0){
-      strm.msg=z_errmsg[Z_NEED_DICT-(Z_BUF_ERROR)];
+      strm.msg=z_errmsg[(Z_NEED_DICT - Z_BUF_ERROR)];
       return Z_BUF_ERROR;
     }
 
@@ -1502,13 +1496,13 @@ final class Deflate{
 
     // Write the zlib header
     if(status == INIT_STATE) {
-      int header = (Z_DEFLATED+((w_bits-8)<<4))<<8;
-      int level_flags=((level-1)&0xff)>>1;
+      int header = Z_DEFLATED + (w_bits - 8 << 4) << 8;
+      int level_flags=(level - 1 & 0xff)>>1;
 
       if(level_flags>3) level_flags=3;
-      header |= (level_flags<<6);
+        header |= level_flags << 6;
       if(strstart!=0) header |= PRESET_DICT;
-      header+=31-(header % 31);
+      header+= 31 - header % 31;
 
       status=BUSY_STATE;
       putShortMSB(header);
@@ -1542,19 +1536,18 @@ final class Deflate{
     }
     else if(strm.avail_in==0 && flush <= old_flush &&
 	    flush != Z_FINISH) {
-      strm.msg=z_errmsg[Z_NEED_DICT-(Z_BUF_ERROR)];
+      strm.msg=z_errmsg[(Z_NEED_DICT - Z_BUF_ERROR)];
       return Z_BUF_ERROR;
     }
 
     // User must not provide more input after the first FINISH:
     if(status == FINISH_STATE && strm.avail_in != 0) {
-      strm.msg=z_errmsg[Z_NEED_DICT-(Z_BUF_ERROR)];
+      strm.msg=z_errmsg[(Z_NEED_DICT - Z_BUF_ERROR)];
       return Z_BUF_ERROR;
     }
 
     // Start a new block or continue the current one.
-    if(strm.avail_in!=0 || lookahead!=0 ||
-       (flush != Z_NO_FLUSH && status != FINISH_STATE)) {
+    if(strm.avail_in != 0 || lookahead != 0 || flush != Z_NO_FLUSH && status != FINISH_STATE) {
       int bstate=-1;
       switch(config_table[level].func){
       case STORED: 

@@ -77,17 +77,18 @@ public class IO{
     getByte(array, 0, array.length);
   }
 
-  void getByte(byte[] array, int begin, int length) throws IOException {
-    do{
-      int completed = in.read(array, begin, length);
-      if(completed<0){
-	throw new IOException("End of IO Stream Read");
-      }
-      begin+=completed;
-      length-=completed;
+    void getByte(byte[] array, int begin, int length) throws IOException {
+        int length1 = length;
+        do {
+            int completed = in.read(array, begin, length1);
+            if (completed < 0) {
+                throw new IOException("End of IO Stream Read");
+            }
+            begin += completed;
+            length1 -= completed;
+        }
+        while (length1 > 0);
     }
-    while (length>0);
-  }
 
   public void close(){
     try{

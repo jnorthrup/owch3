@@ -72,7 +72,7 @@ public class HostKey{
     HASH hash=null;
     try{
       Class c=Class.forName(jsch.getConfig("md5"));
-      hash=(HASH)(c.newInstance());
+      hash= (HASH) c.newInstance();
     }
     catch(Exception e){ System.err.println("getFingerPrint: "+e); }
     return Util.getFingerPrint(hash, key);
@@ -94,7 +94,7 @@ public class HostKey{
        if(hostlen!=hostslen-i) return false;
        return hosts.regionMatches(true, i, _host, 0, hostlen);
       }
-      if(hostlen==(j-i)){
+      if(hostlen == j - i){
 	if(hosts.regionMatches(true, i, _host, 0, hostlen)) return true;
       }
       i=j+1;

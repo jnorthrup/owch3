@@ -56,7 +56,7 @@ class UserAuthNone extends UserAuth{
     buf=session.read(buf);
     int command=buf.getCommand();
 
-    boolean result=(command==SSH_MSG_SERVICE_ACCEPT);
+    boolean result= command == SSH_MSG_SERVICE_ACCEPT;
 
     if(JSch.getLogger().isEnabled(Logger.INFO)){
       JSch.getLogger().log(Logger.INFO, 

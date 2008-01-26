@@ -171,9 +171,9 @@ final class Inflate{
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        b = (z.next_in[z.next_in_index++])&0xff;
+        b = z.next_in[z.next_in_index++] & 0xff;
 
-        if((((z.istate.method << 8)+b) % 31)!=0){
+        if(((z.istate.method << 8) + b) % 31 != 0){
           z.istate.mode = BAD;
           z.msg = "incorrect header check";
           z.istate.marker = 5;       // can't try inflateSync
@@ -190,28 +190,28 @@ final class Inflate{
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        z.istate.need=((z.next_in[z.next_in_index++]&0xff)<<24)&0xff000000L;
+        z.istate.need= (z.next_in[z.next_in_index++] & 0xff) << 24 & 0xff000000L;
         z.istate.mode=DICT3;
       case DICT3:
 
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        z.istate.need+=((z.next_in[z.next_in_index++]&0xff)<<16)&0xff0000L;
+        z.istate.need+= (z.next_in[z.next_in_index++] & 0xff) << 16 & 0xff0000L;
         z.istate.mode=DICT2;
       case DICT2:
 
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        z.istate.need+=((z.next_in[z.next_in_index++]&0xff)<<8)&0xff00L;
+        z.istate.need+= (z.next_in[z.next_in_index++] & 0xff) << 8 & 0xff00L;
         z.istate.mode=DICT1;
       case DICT1:
 
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        z.istate.need += (z.next_in[z.next_in_index++]&0xffL);
+          z.istate.need += z.next_in[z.next_in_index++] & 0xffL;
         z.adler = z.istate.need;
         z.istate.mode = DICT0;
         return Z_NEED_DICT;
@@ -246,30 +246,30 @@ final class Inflate{
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        z.istate.need=((z.next_in[z.next_in_index++]&0xff)<<24)&0xff000000L;
+        z.istate.need= (z.next_in[z.next_in_index++] & 0xff) << 24 & 0xff000000L;
         z.istate.mode=CHECK3;
       case CHECK3:
 
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        z.istate.need+=((z.next_in[z.next_in_index++]&0xff)<<16)&0xff0000L;
+        z.istate.need+= (z.next_in[z.next_in_index++] & 0xff) << 16 & 0xff0000L;
         z.istate.mode = CHECK2;
       case CHECK2:
 
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        z.istate.need+=((z.next_in[z.next_in_index++]&0xff)<<8)&0xff00L;
+        z.istate.need+= (z.next_in[z.next_in_index++] & 0xff) << 8 & 0xff00L;
         z.istate.mode = CHECK1;
       case CHECK1:
 
         if(z.avail_in==0)return r;r=f;
 
         z.avail_in--; z.total_in++;
-        z.istate.need+=(z.next_in[z.next_in_index++]&0xffL);
+          z.istate.need += z.next_in[z.next_in_index++] & 0xffL;
 
-        if(((int)(z.istate.was[0])) != ((int)(z.istate.need))){
+        if((int) z.istate.was[0] != (int) z.istate.need){
           z.istate.mode = BAD;
           z.msg = "incorrect data check";
           z.istate.marker = 5;       // can't try inflateSync
@@ -300,7 +300,7 @@ final class Inflate{
 
     z.adler = z._adler.adler32(0, null, 0, 0);
 
-    if(length >= (1<<z.istate.wbits)){
+    if(length >= 1 << z.istate.wbits){
       length = (1<<z.istate.wbits)-1;
       index=dictLength - length;
     }

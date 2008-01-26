@@ -110,17 +110,22 @@ public class ProxySOCKS4 implements Proxy{
 */
      
       index=0;
-      buf[index++]=4;
-      buf[index++]=1;
+      buf[index]=4;
+        index++;
+        buf[index]=1;
+        index++;
 
-      buf[index++]=(byte)(port>>>8);
-      buf[index++]=(byte)(port&0xff);
+        buf[index]=(byte)(port>>>8);
+        index++;
+        buf[index]=(byte)(port&0xff);
+        index++;
 
-      try{
+        try{
         InetAddress addr=InetAddress.getByName(host);
         byte[] byteAddress = addr.getAddress();
         for (int i = 0; i < byteAddress.length; i++) {
-          buf[index++]=byteAddress[i];
+          buf[index]=byteAddress[i];
+            index++;
         }
       }
       catch(UnknownHostException uhe){
@@ -131,8 +136,9 @@ public class ProxySOCKS4 implements Proxy{
         System.arraycopy(user.getBytes(), 0, buf, index, user.length());
         index+=user.length();
       }
-      buf[index++]=0;
-      out.write(buf, 0, index);
+      buf[index]=0;
+        index++;
+        out.write(buf, 0, index);
 
 /*
    The SOCKS server checks to see whether such a request should be granted

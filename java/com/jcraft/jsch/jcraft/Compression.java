@@ -89,7 +89,7 @@ public class Compression implements com.jcraft.jsch.Compression {
 	    System.arraycopy(tmpbuf, 0,
 			     buf, outputlen,
 			     BUF_SIZE-stream.avail_out);
-	    outputlen+=(BUF_SIZE-stream.avail_out);
+            outputlen += BUF_SIZE - stream.avail_out;
 	    break;
         default:
 	    System.err.println("compress: deflate returnd "+status);
@@ -99,47 +99,47 @@ public class Compression implements com.jcraft.jsch.Compression {
     return outputlen;
   }
 
-  public byte[] uncompress(byte[] buffer, int start, int[] length){
-    int inflated_end=0;
+    public byte[] uncompress(byte[] buffer, int start, int[] length) {
+        byte[] buffer1 = buffer;
+        int inflated_end = 0;
 
-    stream.next_in=buffer;
-    stream.next_in_index=start;
-    stream.avail_in=length[0];
+        stream.next_in = buffer1;
+        stream.next_in_index = start;
+        stream.avail_in = length[0];
 
-    while(true){
-      stream.next_out=tmpbuf;
-      stream.next_out_index=0;
-      stream.avail_out=BUF_SIZE;
-      int status=stream.inflate(JZlib.Z_PARTIAL_FLUSH);
-      switch(status){
-        case JZlib.Z_OK:
-	  if(inflated_buf.length<inflated_end+BUF_SIZE-stream.avail_out){
-            byte[] foo=new byte[inflated_end+BUF_SIZE-stream.avail_out];
-	    System.arraycopy(inflated_buf, 0, foo, 0, inflated_end);
-	    inflated_buf=foo;
-	  }
-	  System.arraycopy(tmpbuf, 0,
-			   inflated_buf, inflated_end,
-			   BUF_SIZE-stream.avail_out);
-	  inflated_end+=(BUF_SIZE-stream.avail_out);
-          length[0]=inflated_end;
-	  break;
-        case JZlib.Z_BUF_ERROR:
-          if(inflated_end>buffer.length-start){
-            byte[] foo=new byte[inflated_end+start];
-            System.arraycopy(buffer, 0, foo, 0, start);
-            System.arraycopy(inflated_buf, 0, foo, start, inflated_end);
-	    buffer=foo;
-	  }
-	  else{
-            System.arraycopy(inflated_buf, 0, buffer, start, inflated_end);
-	  }
-          length[0]=inflated_end;
-	  return buffer;
-	default:
-	  System.err.println("uncompress: inflate returnd "+status);
-          return null;
-      }
+        while (true) {
+            stream.next_out = tmpbuf;
+            stream.next_out_index = 0;
+            stream.avail_out = BUF_SIZE;
+            int status = stream.inflate(JZlib.Z_PARTIAL_FLUSH);
+            switch (status) {
+                case JZlib.Z_OK:
+                    if (inflated_buf.length < inflated_end + BUF_SIZE - stream.avail_out) {
+                        byte[] foo = new byte[inflated_end + BUF_SIZE - stream.avail_out];
+                        System.arraycopy(inflated_buf, 0, foo, 0, inflated_end);
+                        inflated_buf = foo;
+                    }
+                    System.arraycopy(tmpbuf, 0,
+                            inflated_buf, inflated_end,
+                            BUF_SIZE - stream.avail_out);
+                    inflated_end += BUF_SIZE - stream.avail_out;
+                    length[0] = inflated_end;
+                    break;
+                case JZlib.Z_BUF_ERROR:
+                    if (inflated_end > buffer1.length - start) {
+                        byte[] foo = new byte[inflated_end + start];
+                        System.arraycopy(buffer1, 0, foo, 0, start);
+                        System.arraycopy(inflated_buf, 0, foo, start, inflated_end);
+                        buffer1 = foo;
+                    } else {
+                        System.arraycopy(inflated_buf, 0, buffer1, start, inflated_end);
+                    }
+                    length[0] = inflated_end;
+                    return buffer1;
+                default:
+                    System.err.println("uncompress: inflate returnd " + status);
+                    return null;
+            }
+        }
     }
-  }
 }

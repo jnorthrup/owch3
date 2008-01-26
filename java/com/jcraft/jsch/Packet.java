@@ -44,7 +44,7 @@ public class Packet{
   }
   void padding(int bsize){
     int len=buffer.index;
-    int pad=(-len)&(bsize-1);
+    int pad= -len & bsize - 1;
     if(pad<bsize){
       pad+=bsize;
     }
@@ -52,7 +52,7 @@ public class Packet{
     ba4[0]=(byte)(len>>>24);
     ba4[1]=(byte)(len>>>16);
     ba4[2]=(byte)(len>>>8);
-    ba4[3]=(byte)(len);
+    ba4[3]= (byte) len;
     System.arraycopy(ba4, 0, buffer.buffer, 0, 4);
     buffer.buffer[4]=(byte)pad;
     synchronized(random){
@@ -70,7 +70,7 @@ System.err.println("");
 
   int shift(int len, int mac){
     int s=len+5+9;
-    int pad=(-s)&15;
+    int pad= -s & 15;
     if(pad<16)pad+=16;
     s+=pad;
     s+=mac;

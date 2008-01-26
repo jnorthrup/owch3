@@ -112,13 +112,13 @@ class ChannelAgentForwarding extends Channel{
       synchronized(identities){
         int count=0;
         for(int i=0; i<identities.size(); i++){
-          Identity identity=(Identity)(identities.elementAt(i));
+          Identity identity= (Identity) identities.elementAt(i);
           if(identity.getPublicKeyBlob()!=null)
             count++;
         }
         mbuf.putInt(count);
         for(int i=0; i<identities.size(); i++){
-          Identity identity=(Identity)(identities.elementAt(i));
+          Identity identity= (Identity) identities.elementAt(i);
           byte[] pubkeyblob=identity.getPublicKeyBlob();
           if(pubkeyblob==null)
             continue;
@@ -143,7 +143,7 @@ class ChannelAgentForwarding extends Channel{
       Identity identity=null;
       synchronized(identities){
         for(int i=0; i<identities.size(); i++){
-          Identity _identity=(Identity)(identities.elementAt(i));
+          Identity _identity= (Identity) identities.elementAt(i);
           if(_identity.getPublicKeyBlob()==null)
             continue;
           if(!Util.array_equals(blob, _identity.getPublicKeyBlob())){

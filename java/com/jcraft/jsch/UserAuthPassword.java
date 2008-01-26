@@ -38,7 +38,7 @@ class UserAuthPassword extends UserAuth{
     byte[] password=session.password;
     String dest=username+"@"+session.host;
     if(session.port!=22){
-      dest+=(":"+session.port);
+        dest += ":" + session.port;
     }
 
     try{

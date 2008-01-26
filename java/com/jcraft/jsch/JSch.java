@@ -115,7 +115,7 @@ public class JSch{
   public JSch(){
 
     try{
-      String osname=(String)(System.getProperties().get("os.name"));
+      String osname= (String) System.getProperties().get("os.name");
       if(osname!=null && osname.equals("Mac OS X")){
         config.put("hmac-sha1",     "com.jcraft.jsch.jcraft.HMACSHA1"); 
         config.put("hmac-md5",      "com.jcraft.jsch.jcraft.HMACMD5"); 
@@ -150,7 +150,7 @@ public class JSch{
     }
   }
 
-  protected boolean removeSession(Session session){
+  protected boolean removeSession(Object session){
     synchronized(pool){
       return pool.remove(session);
     }
@@ -210,29 +210,30 @@ public class JSch{
     addIdentity(identity, passphrase);
   }
 
-  public void addIdentity(Identity identity, byte[] passphrase) throws JSchException{
-    if(passphrase!=null){
-      try{ 
-        byte[] goo=new byte[passphrase.length];
-        System.arraycopy(passphrase, 0, goo, 0, passphrase.length);
-        passphrase=goo;
-        identity.setPassphrase(passphrase); 
-      }
-      finally{
-        Util.bzero(passphrase);
-      }
+    public void addIdentity(Identity identity, byte[] passphrase) throws JSchException {
+        byte[] passphrase1 = passphrase;
+        if (passphrase1 != null) {
+            try {
+                byte[] goo = new byte[passphrase1.length];
+                System.arraycopy(passphrase1, 0, goo, 0, passphrase1.length);
+                passphrase1 = goo;
+                identity.setPassphrase(passphrase1);
+            }
+            finally {
+                Util.bzero(passphrase1);
+            }
+        }
+        synchronized (identities) {
+            if (!identities.contains(identity)) {
+                identities.addElement(identity);
+            }
+        }
     }
-    synchronized(identities){
-      if(!identities.contains(identity)){
-	identities.addElement(identity);
-      }
-    }
-  }
 
-  public void removeIdentity(String name) throws JSchException{
+  public void removeIdentity(Object name) throws JSchException{
     synchronized(identities){
       for(int i=0; i<identities.size(); i++){
-        Identity identity=(Identity)(identities.elementAt(i));
+        Identity identity= (Identity) identities.elementAt(i);
 	if(!identity.getName().equals(name))
           continue;
         identities.removeElement(identity);
@@ -246,7 +247,7 @@ public class JSch{
     Vector foo=new Vector();
     synchronized(identities){
       for(int i=0; i<identities.size(); i++){
-        Identity identity=(Identity)(identities.elementAt(i));
+        Identity identity= (Identity) identities.elementAt(i);
         foo.addElement(identity.getName());
       }
     }
@@ -257,21 +258,21 @@ public class JSch{
     synchronized(identities){
       Vector foo=getIdentityNames();
       for(int i=0; i<foo.size(); i++){
-        String name=((String)foo.elementAt(i));
+        String name= (String) foo.elementAt(i);
         removeIdentity(name);
       }
     }
   }
 
-  String getConfig(String key){ 
-    return (String)(config.get(key)); 
+  String getConfig(Object key){
+    return (String) config.get(key);
   }
 
   public static void setConfig(java.util.Hashtable newconf){
     synchronized(config){
       for(java.util.Enumeration e=newconf.keys() ; e.hasMoreElements() ;) {
-	String key=(String)(e.nextElement());
-	config.put(key, (String)(newconf.get(key)));
+	String key= (String) e.nextElement();
+	config.put(key, (String) newconf.get(key));
       }
     }
   }

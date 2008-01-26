@@ -82,7 +82,7 @@ public abstract class Channel implements Runnable{
   static Channel getChannel(int id, Session session){
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-	Channel c=(Channel)(pool.elementAt(i));
+	Channel c= (Channel) pool.elementAt(i);
 	if(c.id==id && c.session==session) return c;
       }
     }
@@ -172,7 +172,7 @@ public abstract class Channel implements Runnable{
 	    session.isConnected() &&
 	    retry>0){
         if(timeout>0L){
-          if((System.currentTimeMillis()-start)>timeout){
+          if(System.currentTimeMillis() - start > timeout){
             retry=0;
             continue;
           }
@@ -502,7 +502,7 @@ public abstract class Channel implements Runnable{
       channels=new Channel[pool.size()];
       for(int i=0; i<pool.size(); i++){
 	try{
-	  Channel c=((Channel)(pool.elementAt(i)));
+	  Channel c= (Channel) pool.elementAt(i);
 	  if(c.session==session){
 	    channels[count++]=c;
 	  }

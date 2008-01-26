@@ -61,11 +61,10 @@ class ChannelX11 extends Channel{
     return 0;
   }
   static void setCookie(String foo){
-    cookie_hex=foo.getBytes(); 
+    cookie_hex=foo.getBytes();
     cookie=new byte[16];
     for(int i=0; i<16; i++){
-	cookie[i]=(byte)(((revtable(cookie_hex[i*2])<<4)&0xf0) |
-			 ((revtable(cookie_hex[i*2+1]))&0xf));
+	cookie[i]=(byte)(revtable(cookie_hex[i * 2]) << 4 & 0xf0 | revtable(cookie_hex[i * 2 + 1]) & 0xf);
     }
   }
   static void setHost(String foo){ host=foo; }
@@ -89,8 +88,8 @@ System.err.println("");
 	faked_cookie_pool.put(session, foo);
 	byte[] bar=new byte[32];
 	for(int i=0; i<16; i++){
-	  bar[2*i]=table[(foo[i]>>>4)&0xf];
-	  bar[2*i+1]=table[(foo[i])&0xf];
+	  bar[2*i]=table[(foo[i] >>> 4 & 0xf)];
+	  bar[2*i+1]=table[(foo[i] & 0xf)];
 	}
 	faked_cookie_hex_pool.put(session, bar);
 	foo=bar;
@@ -182,73 +181,71 @@ System.err.println("");
     return cache;
   }
 
-  void write(byte[] foo, int s, int l) throws java.io.IOException {
-    //if(eof_local)return;
+    void write(byte[] foo, int s, int l) throws java.io.IOException {
+        int l1 = l;
+        //if(eof_local)return;
 
-    if(init){
+        if (init) {
 
-      foo=addCache(foo, s, l);
-      s=0; 
-      l=foo.length;
+            foo = addCache(foo, s, l1);
+            s = 0;
+            l1 = foo.length;
 
-      if(l<9)
-        return;
+            if (l1 < 9)
+                return;
 
-      int plen=(foo[s+6]&0xff)*256+(foo[s+7]&0xff);
-      int dlen=(foo[s+8]&0xff)*256+(foo[s+9]&0xff);
+            int plen = (foo[s + 6] & 0xff) * 256 + (foo[s + 7] & 0xff);
+            int dlen = (foo[s + 8] & 0xff) * 256 + (foo[s + 9] & 0xff);
 
-      if((foo[s]&0xff)==0x42){
+            if ((foo[s] & 0xff) == 0x42) {
+            } else if ((foo[s] & 0xff) == 0x6c) {
+                plen = plen >>> 8 & 0xff | plen << 8 & 0xff00;
+                dlen = dlen >>> 8 & 0xff | dlen << 8 & 0xff00;
+            } else {
+                // ??
+            }
+
+            if (l1 < 12 + plen + (-plen & 3) + dlen)
+                return;
+
+            byte[] bar = new byte[dlen];
+            System.arraycopy(foo, s + 12 + plen + (-plen & 3), bar, 0, dlen);
+            byte[] faked_cookie = null;
+
+            synchronized (faked_cookie_pool) {
+                faked_cookie = (byte[]) faked_cookie_pool.get(session);
+            }
+
+            /*
+      System.err.print("faked_cookie: ");
+      for(int i=0; i<faked_cookie.length; i++){
+          System.err.print(Integer.toHexString(faked_cookie[i]&0xff)+":");
       }
-      else if((foo[s]&0xff)==0x6c){
-         plen=((plen>>>8)&0xff)|((plen<<8)&0xff00);
-         dlen=((dlen>>>8)&0xff)|((dlen<<8)&0xff00);
+      System.err.println("");
+      System.err.print("bar: ");
+      for(int i=0; i<bar.length; i++){
+          System.err.print(Integer.toHexString(bar[i]&0xff)+":");
       }
-      else{
-	  // ??
-      }
+      System.err.println("");
+            */
 
-      if(l<12+plen+((-plen)&3)+dlen)
-        return;
-
-      byte[] bar=new byte[dlen];
-      System.arraycopy(foo, s+12+plen+((-plen)&3), bar, 0, dlen);
-      byte[] faked_cookie=null;
-
-      synchronized(faked_cookie_pool){
-	faked_cookie=(byte[])faked_cookie_pool.get(session);
-      }
-
-      /*
-System.err.print("faked_cookie: ");
-for(int i=0; i<faked_cookie.length; i++){
-    System.err.print(Integer.toHexString(faked_cookie[i]&0xff)+":");
-}
-System.err.println("");
-System.err.print("bar: ");
-for(int i=0; i<bar.length; i++){
-    System.err.print(Integer.toHexString(bar[i]&0xff)+":");
-}
-System.err.println("");
-      */
-
-      if(equals(bar, faked_cookie)){
-        if(cookie!=null)
-          System.arraycopy(cookie, 0, foo, s+12+plen+((-plen)&3), dlen);
-      }
-      else{
-	  //System.err.println("wrong cookie");
-          thread=null;
-          eof();
-          io.close();
-          disconnect();
-      }
-      init=false;
-      io.put(foo, s, l);
-      cache=null;
-      return;
+            if (equals(bar, faked_cookie)) {
+                if (cookie != null)
+                    System.arraycopy(cookie, 0, foo, s + 12 + plen + (-plen & 3), dlen);
+            } else {
+                //System.err.println("wrong cookie");
+                thread = null;
+                eof();
+                io.close();
+                disconnect();
+            }
+            init = false;
+            io.put(foo, s, l1);
+            cache = null;
+            return;
+        }
+        io.put(foo, s, l1);
     }
-    io.put(foo, s, l);
-  }
 
   private static boolean equals(byte[] foo, byte[] bar){
     if(foo.length!=bar.length)return false;

@@ -72,7 +72,7 @@ class IdentityFile implements Identity{
 
   private boolean encrypted=true;
 
-  static IdentityFile newInstance(String prvfile, String pubfile, JSch jsch) throws JSchException{
+  static Identity newInstance(String prvfile, String pubfile, JSch jsch) throws JSchException{
     byte[] prvkey=null;
     byte[] pubkey=null;
 
@@ -81,7 +81,7 @@ class IdentityFile implements Identity{
     try{
       file=new File(prvfile);
       fis=new FileInputStream(prvfile);
-      prvkey=new byte[(int)(file.length())];
+      prvkey=new byte[(int) file.length()];
       int len=0;
       while(true){
         int i=fis.read(prvkey, len, prvkey.length-len);
@@ -107,7 +107,7 @@ class IdentityFile implements Identity{
     try{
       file=new File(_pubfile);
       fis = new FileInputStream(_pubfile);
-      pubkey=new byte[(int)(file.length())];
+      pubkey=new byte[(int) file.length()];
       int len=0;
       while(true){
         int i=fis.read(pubkey, len, pubkey.length-len);
@@ -145,11 +145,11 @@ class IdentityFile implements Identity{
     try{
       Class c;
       c=Class.forName((String)jsch.getConfig("3des-cbc"));
-      cipher=(Cipher)(c.newInstance());
+      cipher= (Cipher) c.newInstance();
       key=new byte[cipher.getBlockSize()];   // 24
       iv=new byte[cipher.getIVSize()];       // 8
       c=Class.forName((String)jsch.getConfig("md5"));
-      hash=(HASH)(c.newInstance());
+      hash= (HASH) c.newInstance();
       hash.init();
 
       byte[] buf=prvkey;
@@ -175,9 +175,11 @@ class IdentityFile implements Identity{
         if(buf[i]=='C'&& buf[i+1]=='B'&& buf[i+2]=='C'&& buf[i+3]==','){
           i+=4;
 	  for(int ii=0; ii<iv.length; ii++){
-            iv[ii]=(byte)(((a2b(buf[i++])<<4)&0xf0)+
-			  (a2b(buf[i++])&0xf));
-  	  }
+            iv[ii]=(byte)((a2b(buf[i]) << 4 & 0xf0)+
+			  (a2b(buf[i])&0xf));
+          i++;
+          i++;
+      }
 	  continue;
 	}
 	if(buf[i]==0x0d &&
@@ -213,7 +215,7 @@ class IdentityFile implements Identity{
       int start=i;
       while(i<len){
         if(buf[i]==0x0a){
-	  boolean xd=(buf[i-1]==0x0d);
+	  boolean xd= buf[i - 1] == 0x0d;
           System.arraycopy(buf, i+1, 
 			   buf, 
 			   i-(xd ? 1 : 0), 
@@ -240,7 +242,7 @@ class IdentityFile implements Identity{
 	byte[]_type=_buf.getString();
 	//System.err.println("type: "+new String(_type)); 
 	byte[] _cipher=_buf.getString();
-	String cipher=new String(_cipher);
+	Object cipher=new String(_cipher);
 	//System.err.println("cipher: "+cipher); 
 	if(cipher.equals("3des-cbc")){
   	   _buf.getInt();
@@ -436,7 +438,7 @@ class IdentityFile implements Identity{
   byte[] getSignature_rsa(byte[] data){
     try{      
       Class c=Class.forName((String)jsch.getConfig("signature.rsa"));
-      SignatureRSA rsa=(SignatureRSA)(c.newInstance());
+      SignatureRSA rsa= (SignatureRSA) c.newInstance();
 
       rsa.init();
       rsa.setPrvKey(d_array, n_array);
@@ -480,7 +482,7 @@ class IdentityFile implements Identity{
 
     try{      
       Class c=Class.forName((String)jsch.getConfig("signature.dss"));
-      SignatureDSA dsa=(SignatureDSA)(c.newInstance());
+      SignatureDSA dsa= (SignatureDSA) c.newInstance();
       dsa.init();
       dsa.setPrvKey(prv_array, P_array, Q_array, G_array);
 
@@ -553,19 +555,31 @@ class IdentityFile implements Identity{
 
       if(plain[index]!=0x30)return false;
       index++; // SEQUENCE
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
 
       if(plain[index]!=0x02)return false;
       index++; // INTEGER
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       index+=length;
 
 //System.err.println("int: len="+length);
@@ -573,11 +587,17 @@ class IdentityFile implements Identity{
 //System.err.println("");
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       n_array=new byte[length];
       System.arraycopy(plain, index, n_array, 0, length);
       index+=length;
@@ -589,11 +609,17 @@ System.err.print(Integer.toHexString(n_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       e_array=new byte[length];
       System.arraycopy(plain, index, e_array, 0, length);
       index+=length;
@@ -605,11 +631,17 @@ System.err.print(Integer.toHexString(e_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       d_array=new byte[length];
       System.arraycopy(plain, index, d_array, 0, length);
       index+=length;
@@ -622,11 +654,17 @@ System.err.println("");
 */
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       p_array=new byte[length];
       System.arraycopy(plain, index, p_array, 0, length);
       index+=length;
@@ -638,11 +676,17 @@ System.err.print(Integer.toHexString(p_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       q_array=new byte[length];
       System.arraycopy(plain, index, q_array, 0, length);
       index+=length;
@@ -654,11 +698,17 @@ System.err.print(Integer.toHexString(q_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       dmp1_array=new byte[length];
       System.arraycopy(plain, index, dmp1_array, 0, length);
       index+=length;
@@ -670,11 +720,17 @@ System.err.print(Integer.toHexString(dmp1_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       dmq1_array=new byte[length];
       System.arraycopy(plain, index, dmq1_array, 0, length);
       index+=length;
@@ -686,11 +742,17 @@ System.err.print(Integer.toHexString(dmq1_array[i]&0xff)+":");
 System.err.println("");
 */
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       iqmp_array=new byte[length];
       System.arraycopy(plain, index, iqmp_array, 0, length);
       index+=length;
@@ -757,66 +819,108 @@ System.err.println("");
       int length=0;
       if(plain[index]!=0x30)return false;
       index++; // SEQUENCE
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       if(plain[index]!=0x02)return false;
       index++; // INTEGER
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       P_array=new byte[length];
       System.arraycopy(plain, index, P_array, 0, length);
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       Q_array=new byte[length];
       System.arraycopy(plain, index, Q_array, 0, length);
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       G_array=new byte[length];
       System.arraycopy(plain, index, G_array, 0, length);
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       pub_array=new byte[length];
       System.arraycopy(plain, index, pub_array, 0, length);
       index+=length;
 
       index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
+      length=plain[index]&0xff;
+        index++;
+        if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+        while(foo >0){
+            foo--;
+            length=(length<<8)+(plain[index]&0xff);
+            index++;
+        }
+            foo--;
+        }
       prv_array=new byte[length];
       System.arraycopy(plain, index, prv_array, 0, length);
       index+=length;
@@ -845,7 +949,7 @@ System.err.println("");
 
   public boolean equals(Object o){
     if(!(o instanceof IdentityFile)) return super.equals(o);
-    IdentityFile foo=(IdentityFile)o;
+    Identity foo=(IdentityFile)o;
     return getName().equals(foo.getName());
   }
 

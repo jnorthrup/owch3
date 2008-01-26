@@ -152,7 +152,7 @@ final class InfCodes{
       case LEN:           // i: get length/literal/eob next
 	j = need;
 
-	while(k<(j)){
+	while(k < j){
 	  if(n!=0)r=Z_OK;
 	  else{
 
@@ -168,8 +168,8 @@ final class InfCodes{
 
 	tindex=(tree_index+(b&inflate_mask[j]))*3;
 
-	b>>>=(tree[tindex+1]);
-	k-=(tree[tindex+1]);
+          b >>>= tree[tindex + 1];
+          k -= tree[tindex + 1];
 
 	e=tree[tindex];
 
@@ -205,7 +205,7 @@ final class InfCodes{
       case LENEXT:        // i: getting length extra (have base)
 	j = get;
 
-	while(k<(j)){
+	while(k < j){
 	  if(n!=0)r=Z_OK;
 	  else{
 
@@ -218,7 +218,7 @@ final class InfCodes{
 	  k+=8;
 	}
 
-	len += (b & inflate_mask[j]);
+          len += b & inflate_mask[j];
 
 	b>>=j;
 	k-=j;
@@ -230,7 +230,7 @@ final class InfCodes{
       case DIST:          // i: get distance next
 	j = need;
 
-	while(k<(j)){
+	while(k < j){
 	  if(n!=0)r=Z_OK;
 	  else{
 
@@ -248,7 +248,7 @@ final class InfCodes{
 	b>>=tree[tindex+1];
 	k-=tree[tindex+1];
 
-	e = (tree[tindex]);
+          e = tree[tindex];
 	if((e & 16)!=0){               // distance
 	  get = e & 15;
 	  dist = tree[tindex+2];
@@ -272,7 +272,7 @@ final class InfCodes{
       case DISTEXT:       // i: getting distance extra
 	j = get;
 
-	while(k<(j)){
+	while(k < j){
 	  if(n!=0)r=Z_OK;
 	  else{
 
@@ -285,7 +285,7 @@ final class InfCodes{
 	  k+=8;
 	}
 
-	dist += (b & inflate_mask[j]);
+          dist += b & inflate_mask[j];
 
 	b>>=j;
 	k-=j;
@@ -431,7 +431,7 @@ final class InfCodes{
     // do until not enough input or output space for fast loop
     do {                          // assume called with m >= 258 && n >= 10
       // get literal/length code
-      while(k<(20)){              // max bits for literal/length code
+      while(k < 20){              // max bits for literal/length code
 	n--;
 	b|=(z.next_in[p++]&0xff)<<k;k+=8;
       }
@@ -441,7 +441,8 @@ final class InfCodes{
       tp_index=tl_index;
       tp_index_t_3=(tp_index+t)*3;
       if ((e = tp[tp_index_t_3]) == 0){
-	b>>=(tp[tp_index_t_3+1]); k-=(tp[tp_index_t_3+1]);
+          b >>= tp[tp_index_t_3 + 1];
+          k -= tp[tp_index_t_3 + 1];
 
 	s.window[q++] = (byte)tp[tp_index_t_3+2];
 	m--;
@@ -449,7 +450,8 @@ final class InfCodes{
       }
       do {
 
-	b>>=(tp[tp_index_t_3+1]); k-=(tp[tp_index_t_3+1]);
+          b >>= tp[tp_index_t_3 + 1];
+          k -= tp[tp_index_t_3 + 1];
 
 	if((e&16)!=0){
 	  e &= 15;
@@ -458,7 +460,7 @@ final class InfCodes{
 	  b>>=e; k-=e;
 
 	  // decode distance base of block to copy
-	  while(k<(15)){           // max bits for distance code
+	  while(k < 15){           // max bits for distance code
 	    n--;
 	    b|=(z.next_in[p++]&0xff)<<k;k+=8;
 	  }
@@ -471,26 +473,28 @@ final class InfCodes{
 
 	  do {
 
-	    b>>=(tp[tp_index_t_3+1]); k-=(tp[tp_index_t_3+1]);
+          b >>= tp[tp_index_t_3 + 1];
+          k -= tp[tp_index_t_3 + 1];
 
 	    if((e&16)!=0){
 	      // get extra bits to add to distance base
 	      e &= 15;
-	      while(k<(e)){         // get extra bits (up to 13)
+	      while(k < e){         // get extra bits (up to 13)
 		n--;
 		b|=(z.next_in[p++]&0xff)<<k;k+=8;
 	      }
 
 	      d = tp[tp_index_t_3+2] + (b&inflate_mask[e]);
 
-	      b>>=(e); k-=(e);
+            b >>= e;
+            k -= e;
 
 	      // do the copy
 	      m -= c;
 	      if (q >= d){                // offset before dest
 		//  just copy
 		r=q-d;
-		if(q-r>0 && 2>(q-r)){           
+		if(q-r>0 && 2 > q - r){
 		  s.window[q++]=s.window[r++]; // minimum count is three,
 		  s.window[q++]=s.window[r++]; // so unroll loop a little
 		  c-=2;
@@ -508,7 +512,7 @@ final class InfCodes{
 		e=s.end-r;
 		if(c>e){             // if source crosses,
 		  c-=e;              // wrapped copy
-		  if(q-r>0 && e>(q-r)){           
+		  if(q-r>0 && e > q - r){
 		    do{s.window[q++] = s.window[r++];}
 		    while(--e!=0);
 		  }
@@ -522,7 +526,7 @@ final class InfCodes{
 	      }
 
 	      // copy all or what's left
-	      if(q-r>0 && c>(q-r)){           
+	      if(q-r>0 && c > q - r){
 		do{s.window[q++] = s.window[r++];}
 		while(--c!=0);
 	      }
@@ -534,14 +538,14 @@ final class InfCodes{
 	    }
 	    else if((e&64)==0){
 	      t+=tp[tp_index_t_3+2];
-	      t+=(b&inflate_mask[e]);
+            t += b & inflate_mask[e];
 	      tp_index_t_3=(tp_index+t)*3;
 	      e=tp[tp_index_t_3];
 	    }
 	    else{
 	      z.msg = "invalid distance code";
 
-	      c=z.avail_in-n;c=(k>>3)<c?k>>3:c;n+=c;p-=c;k-=c<<3;
+	      c=z.avail_in-n;c= k >> 3 < c ?k>>3:c;n+=c;p-=c;k-=c<<3;
 
 	      s.bitb=b;s.bitk=k;
 	      z.avail_in=n;z.total_in+=p-z.next_in_index;z.next_in_index=p;
@@ -556,11 +560,12 @@ final class InfCodes{
 
 	if((e&64)==0){
 	  t+=tp[tp_index_t_3+2];
-	  t+=(b&inflate_mask[e]);
+        t += b & inflate_mask[e];
 	  tp_index_t_3=(tp_index+t)*3;
 	  if((e=tp[tp_index_t_3])==0){
 
-	    b>>=(tp[tp_index_t_3+1]); k-=(tp[tp_index_t_3+1]);
+          b >>= tp[tp_index_t_3 + 1];
+          k -= tp[tp_index_t_3 + 1];
 
 	    s.window[q++]=(byte)tp[tp_index_t_3+2];
 	    m--;
@@ -569,7 +574,7 @@ final class InfCodes{
 	}
 	else if((e&32)!=0){
 
-	  c=z.avail_in-n;c=(k>>3)<c?k>>3:c;n+=c;p-=c;k-=c<<3;
+	  c=z.avail_in-n;c= k >> 3 < c ?k>>3:c;n+=c;p-=c;k-=c<<3;
  
 	  s.bitb=b;s.bitk=k;
 	  z.avail_in=n;z.total_in+=p-z.next_in_index;z.next_in_index=p;
@@ -580,7 +585,7 @@ final class InfCodes{
 	else{
 	  z.msg="invalid literal/length code";
 
-	  c=z.avail_in-n;c=(k>>3)<c?k>>3:c;n+=c;p-=c;k-=c<<3;
+	  c=z.avail_in-n;c= k >> 3 < c ?k>>3:c;n+=c;p-=c;k-=c<<3;
 
 	  s.bitb=b;s.bitk=k;
 	  z.avail_in=n;z.total_in+=p-z.next_in_index;z.next_in_index=p;
@@ -594,7 +599,7 @@ final class InfCodes{
     while(m>=258 && n>= 10);
 
     // not enough input or output--restore pointers and return
-    c=z.avail_in-n;c=(k>>3)<c?k>>3:c;n+=c;p-=c;k-=c<<3;
+    c=z.avail_in-n;c= k >> 3 < c ?k>>3:c;n+=c;p-=c;k-=c<<3;
 
     s.bitb=b;s.bitk=k;
     z.avail_in=n;z.total_in+=p-z.next_in_index;z.next_in_index=p;

@@ -120,8 +120,8 @@ class ChannelSession extends Channel{
 
     if(env!=null){
       for(Enumeration _env=env.keys() ; _env.hasMoreElements() ;) {
-        String name=(String)(_env.nextElement());
-        String value=(String)(env.get(name));
+        String name= (String) _env.nextElement();
+        String value= (String) env.get(name);
         request=new RequestEnv();
         ((RequestEnv)request).setEnv(name, value);
         request.request(session, this);

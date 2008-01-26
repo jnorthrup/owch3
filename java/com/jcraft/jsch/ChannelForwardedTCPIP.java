@@ -76,9 +76,7 @@ public class ChannelForwardedTCPIP extends Channel{
         new Thread(daemon).start();
       }
       else{
-        socket=(factory==null) ? 
-           Util.createSocket(target, lport, TIMEOUT) : 
-          factory.createSocket(target, lport);
+        socket= factory == null ? Util.createSocket(target, lport, TIMEOUT) : factory.createSocket(target, lport);
         socket.setTcpNoDelay(true);
         io.setInputStream(socket.getInputStream());
         io.setOutputStream(socket.getOutputStream());
@@ -143,15 +141,15 @@ public class ChannelForwardedTCPIP extends Channel{
 
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        Object[] foo=(Object[])(pool.elementAt(i));
+        Object[] foo= (Object[]) pool.elementAt(i);
         if(foo[0]!=session) continue;
         if(((Integer)foo[1]).intValue()!=port) continue;
         this.rport=port;
         this.target=(String)foo[2];
-        if(foo[3]==null || (foo[3] instanceof Object[])){ this.lport=-1; }
+        if(foo[3] == null || foo[3] instanceof Object[]){ this.lport=-1; }
         else{ this.lport=((Integer)foo[3]).intValue(); }
         if(foo.length>=5){
-          this.factory=((SocketFactory)foo[4]);
+            this.factory = (SocketFactory) foo[4];
         }
         break;
       }
@@ -164,7 +162,7 @@ public class ChannelForwardedTCPIP extends Channel{
   static Object[] getPort(Session session, int rport){
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        Object[] bar=(Object[])(pool.elementAt(i));
+        Object[] bar= (Object[]) pool.elementAt(i);
         if(bar[0]!=session) continue;
         if(((Integer)bar[1]).intValue()!=rport) continue;
         return bar;
@@ -177,7 +175,7 @@ public class ChannelForwardedTCPIP extends Channel{
     java.util.Vector foo=new java.util.Vector();
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        Object[] bar=(Object[])(pool.elementAt(i));
+        Object[] bar= (Object[]) pool.elementAt(i);
         if(bar[0]!=session) continue;
         if(bar[3]==null){ foo.addElement(bar[1]+":"+bar[2]+":"); }
         else{ foo.addElement(bar[1]+":"+bar[2]+":"+bar[3]); }
@@ -185,7 +183,7 @@ public class ChannelForwardedTCPIP extends Channel{
     }
     String[] bar=new String[foo.size()];
     for(int i=0; i<foo.size(); i++){
-      bar[i]=(String)(foo.elementAt(i));
+      bar[i]= (String) foo.elementAt(i);
     }
     return bar;
   }
@@ -196,8 +194,8 @@ public class ChannelForwardedTCPIP extends Channel{
         throw new JSchException("PortForwardingR: remote port "+port+" is already registered.");
       }
       Object[] foo=new Object[5];
-      foo[0]=session; foo[1]=new Integer(port);
-      foo[2]=target; foo[3]=new Integer(lport);
+      foo[0]=session; foo[1]= Integer.valueOf(port);
+      foo[2]=target; foo[3]= Integer.valueOf(lport);
       foo[4]=factory;
       pool.addElement(foo);
     }
@@ -208,7 +206,7 @@ public class ChannelForwardedTCPIP extends Channel{
         throw new JSchException("PortForwardingR: remote port "+port+" is already registered.");
       }
       Object[] foo=new Object[4];
-      foo[0]=session; foo[1]=new Integer(port);
+      foo[0]=session; foo[1]= Integer.valueOf(port);
       foo[2]=daemon; foo[3]=arg;
       pool.addElement(foo);
     }
@@ -220,7 +218,7 @@ public class ChannelForwardedTCPIP extends Channel{
     synchronized(pool){
       Object[] foo=null;
       for(int i=0; i<pool.size(); i++){
-        Object[] bar=(Object[])(pool.elementAt(i));
+        Object[] bar= (Object[]) pool.elementAt(i);
         if(bar[0]!=session) continue;
         if(((Integer)bar[1]).intValue()!=rport) continue;
         foo=bar;
@@ -257,7 +255,7 @@ public class ChannelForwardedTCPIP extends Channel{
     synchronized(pool){
       rport=new int[pool.size()];
       for(int i=0; i<pool.size(); i++){
-        Object[] bar=(Object[])(pool.elementAt(i));
+        Object[] bar= (Object[]) pool.elementAt(i);
         if(bar[0]==session) {
           rport[count++]=((Integer)bar[1]).intValue();
         }

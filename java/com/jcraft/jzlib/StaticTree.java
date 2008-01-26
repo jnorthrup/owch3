@@ -41,7 +41,7 @@ final class StaticTree{
   static final private int D_CODES=30;
   static final private int LITERALS=256;
   static final private int LENGTH_CODES=29;
-  static final private int L_CODES=(LITERALS+1+LENGTH_CODES);
+  static final private int L_CODES= LITERALS + 1 + LENGTH_CODES;
 
   // Bit length codes must not exceed MAX_BL_BITS bits
   static final int MAX_BL_BITS=7; 

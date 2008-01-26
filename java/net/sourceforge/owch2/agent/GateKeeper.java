@@ -20,7 +20,7 @@ public class GateKeeper extends AbstractAgent<String> {
 
         Map m = Env.getInstance().parseCommandLineArgs(args);
 
-        if (!(m.containsKey(Message.REPLYTO_KEY))) {
+        if (!m.containsKey(Message.REPLYTO_KEY)) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
                     "-name name\n" + "$Id: GateKeeper.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
         }

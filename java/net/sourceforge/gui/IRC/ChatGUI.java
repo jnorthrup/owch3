@@ -6,12 +6,13 @@ import net.sourceforge.owch2.kernel.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
+import java.util.*;
 
 public class ChatGUI extends JInternalFrame implements AgentVisitor {
     private JList UsersList = new JList(new ScrollingListModel());
-    private JToolBar EntryDoc = new JToolBar();
+    private Container EntryDoc = new JToolBar();
     private JList msgList = new JList(new ScrollingListModel());
-    private JTextField ValueText = new JTextField();
+    private Component ValueText = new JTextField();
     Location agentLocation;
     ChatAgent node;
 
@@ -81,7 +82,7 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
     }
 
     public void stopAgent() {
-        Message message = new Message();
+        Map message = new Message();
         message.put("JMSType", "Dissolve");
         message.put("JMSReplyTo", node.get("IRCManager"));
         message.put("JMSDestination", node.getJMSReplyTo());
@@ -103,7 +104,7 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
     }
 
     public String getApp_keys(int index) {
-        return new String();
+        return "";
     }
 
     public AbstractAgent getNode() {

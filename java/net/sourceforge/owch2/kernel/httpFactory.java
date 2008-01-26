@@ -1,8 +1,5 @@
 package net.sourceforge.owch2.kernel;
 
-import java.util.logging.*;
-
-
 /**
  * @author James Northrup
  * @version $Id: httpFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
@@ -27,7 +24,6 @@ public class httpFactory extends ListenerFactory {
             https = new httpServer(hostAddress, (int) port, threads);
         }
         catch (Exception e) {
-            if (false) Logger.getAnonymousLogger().info("httpServer init failure port " + port);
             return null;
         }
         for (int i = 0; i < https.getThreads(); i++) {

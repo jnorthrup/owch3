@@ -3,7 +3,6 @@ package net.sourceforge.owch2.kernel;
 import java.io.*;
 import static java.lang.Thread.*;
 import java.net.*;
-import java.util.logging.*;
 import java.util.zip.*;
 
 /**
@@ -59,12 +58,11 @@ public class PipeSocket {
         final InputStream istream = sock.getInputStream();
         final OutputStream ostream = sock.getOutputStream();
 
-        reader = (streamDesc.usingInflate) ? new InflaterInputStream(istream) : istream;
-        writer = (streamDesc.usingDeflate) ? new DeflaterOutputStream(ostream, new Deflater(java.util.zip.Deflater.FILTERED))
-                : ostream;
+        reader = streamDesc.usingInflate ? new InflaterInputStream(istream) : istream;
+        writer = streamDesc.usingDeflate ? new DeflaterOutputStream(ostream, new Deflater(Deflater.FILTERED)) : ostream;
 
         if (streamDesc.buffered) {
-            int bb = (streamDesc.bufbuf > 0) ? streamDesc.bufbuf : 32 * 1024;
+            int bb = streamDesc.bufbuf > 0 ? streamDesc.bufbuf : 32 * 1024;
             sock.setReceiveBufferSize(bb);
             sock.setSendBufferSize(bb);
             reader = new BufferedInputStream(reader, bb);
@@ -74,15 +72,11 @@ public class PipeSocket {
         return ret;
     }
 
-    ;
-
     public void spin() {
         tg = new ThreadGroup("TG:" + label);
         new PipeThread(uc, oi, co, false, "PTInput:" + label, this.cEnc); //
         new PipeThread(oc, ci, oo, false, "PTOutput:" + label, this.oEnc); //
     }
-
-    ;
 
     /**
      * worker thread for the PipeSocket.  symetrical.java has a bug which restricts socket closes to be all or
@@ -126,15 +120,10 @@ public class PipeSocket {
                         //data exists
                         //to be
                         //claimed
-                        if (false)
-                            Logger.getAnonymousLogger().info(label + " read has available bytes: " + avail);
                         actual = is.read(buf);
-                        if (false) Logger.getAnonymousLogger().info(label + " actual read: " + actual);
                         if (actual == -1) {
                             os.flush();
                             term = true;
-                            if (false)
-                                Logger.getAnonymousLogger().info(label + " input stream closed " + actual);
                             if (term) {
                                 os.close();
                                 //close something...
@@ -150,7 +139,6 @@ public class PipeSocket {
 
                             return;
                         }
-                        if (false) Logger.getAnonymousLogger().info(label + " output: " + actual);
                         os.write(buf, 0, actual);
                     }
                     //we avoid blocking in case we need to be
@@ -170,12 +158,9 @@ public class PipeSocket {
                     }
                 }
                 catch (InterruptedException e) {
-                    if (false) Logger.getAnonymousLogger().info(name + " closing: " + e.getMessage());
                     return;
                 }
                 catch (Exception e) {
-                    if (false)
-                        Logger.getAnonymousLogger().info(name + " Error - - closing: " + e.getMessage());
                     return;
                 }
             }

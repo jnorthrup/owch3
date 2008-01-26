@@ -7,6 +7,4 @@ public interface MetaPropertiesSource {
     void detach(MetaPropertiesFilter filter);
 }
 
-;
-
 

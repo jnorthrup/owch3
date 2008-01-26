@@ -10,13 +10,12 @@ import static net.sourceforge.owch2.kernel.ProtocolType.*;
 
 import java.net.*;
 import java.util.*;
-import java.util.logging.*;
 
 public class Deploy extends AbstractAgent {
     static int uniq = 0;
 
     public static void main(String[] args) throws Exception {
-        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
+        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         {
             final String[] ka = {"JMSReplyTo",};
 
@@ -27,14 +26,12 @@ public class Deploy extends AbstractAgent {
                         "$Id: Deploy.java,v 1.3 2005/06/03 18:27:46 grrrrr Exp $\n");
             }
         }
-        Deploy d = new Deploy(m);
+        AbstractAgent d = new Deploy(m);
         Thread t = new Thread();
         t.start();
         while (!d.killFlag) t.sleep(60 * 60 * 3);
 
     }
-
-    ;
 
     /*
     *  Client Constructor
@@ -42,7 +39,7 @@ public class Deploy extends AbstractAgent {
     *  Initializes communication
     */
 
-    public Deploy(Map<? extends Object, ? extends Object> map) {
+    public Deploy(Map<?, ?> map) {
         super(map);
     }
 
@@ -53,13 +50,9 @@ public class Deploy extends AbstractAgent {
      */
     public void handle_Deploy(MetaProperties n) {
         String _class = (String) n.get("Class");
-        if (false) Logger.getAnonymousLogger().info("Deplying::Class " + _class);
         String path = (String) n.get("Path");
-        if (false) Logger.getAnonymousLogger().info("Deplying::Path " + path);
         String parm = (String) n.get("Parameters");
-        if (false) Logger.getAnonymousLogger().info("Deplying::Parameters " + parm);
         String signature = (String) n.get("Signature");
-        if (false) Logger.getAnonymousLogger().info("Deplying::Signature " + signature);
         int i;
         java.util.List tokens;
         //we use a classloader based on our reletive origin..
@@ -71,7 +64,6 @@ public class Deploy extends AbstractAgent {
             String temp_str = tok_arr[i];
             tokens = new ArrayList();
             if (temp_str == null) {
-                if (false) Logger.getAnonymousLogger().info("Deploy tokenizing nullinating  " + i);
                 temp_str = "";
             }
             st = new StringTokenizer(temp_str);
@@ -79,8 +71,6 @@ public class Deploy extends AbstractAgent {
                 tokens.add(st.nextElement());
             }
             res_arr[i] = tokens.toArray();
-            if (false)
-                Logger.getAnonymousLogger().info("Deploy arr" + i + " found " + res_arr[i].length + " tokens");
         }
         URL[] path_arr = new URL[res_arr[0].length];
         Object[] parm_arr = new Object[res_arr[1].length];
@@ -115,9 +105,7 @@ public class Deploy extends AbstractAgent {
 
     public void handle_DeployNode(MetaProperties n) {
         String _class = (String) n.get("Class");
-        if (false) Logger.getAnonymousLogger().info("Deplying::Class " + _class);
         String path = (String) n.get("Path");
-        if (false) Logger.getAnonymousLogger().info("Deplying::Path " + path);
         int i;
         java.util.List tokens;
         //we use a classloader based on our reletive origin..
@@ -130,7 +118,6 @@ public class Deploy extends AbstractAgent {
             String temp_str = tok_arr[i];
             tokens = new ArrayList();
             if (temp_str == null) {
-                if (false) Logger.getAnonymousLogger().info("Deploy tokenizing nullinating  " + i);
                 temp_str = "";
             }
             st = new StringTokenizer(temp_str);
@@ -138,12 +125,11 @@ public class Deploy extends AbstractAgent {
                 tokens.add(st.nextElement());
             }
             res_arr[i] = tokens.toArray();
-            if (false)
-                Logger.getAnonymousLogger().info("Deploy arr" + i + " found " + res_arr[i].length + " tokens");
         }
         try {
             if (!n.containsKey("Singleton")) {
-                n.put("JMSReplyTo", n.getJMSReplyTo() + "." + uniq++ + "." + getJMSReplyTo());
+                n.put("JMSReplyTo", n.getJMSReplyTo() + "." + uniq + "." + getJMSReplyTo());
+                uniq++;
             } else {
                 n.put("JMSReplyTo", n.getJMSReplyTo());
 

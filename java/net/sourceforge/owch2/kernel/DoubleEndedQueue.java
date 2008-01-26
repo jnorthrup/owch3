@@ -1,6 +1,6 @@
 /**
  * A First-In-First-Out(FIFO) Queue of objects.
- * @version     1.12.2112.nc, 19 Sep 1996
+ * @version 1.12.2112.nc, 19 Sep 1996
  */
 
 package net.sourceforge.owch2.kernel;
@@ -38,7 +38,6 @@ public final class DoubleEndedQueue {
             }
             return td.getObject();
         }
-        ;
         return null;
     }
 
@@ -66,20 +65,15 @@ public final class DoubleEndedQueue {
             next = previous;
         }
 
-        ;
-
         DoubleEndedQueue.DoubleEndedQueueNode next = null;
 
         final Object getObject() {
             return object;
         }
 
-        ;
-
         Object object;
     }
 
-    ;
 }
 
 

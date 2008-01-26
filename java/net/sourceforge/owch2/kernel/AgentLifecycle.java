@@ -13,5 +13,5 @@ public enum AgentLifecycle {
     Updated,
     Update,
     Link,
-    Shutdown;
+    Shutdown
 }

@@ -5,7 +5,6 @@ import net.sourceforge.owch2.kernel.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.logging.*;
 
 /**
  * SocketProxy
@@ -29,7 +28,7 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     private PipeFactory pf = new PipeFactory();
 
     public static void main(String[] args) {
-        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
+        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         final String[] ka = {"JMSReplyTo", "SourcePort", "SourceHost", "AgentPort"};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
@@ -49,15 +48,13 @@ public class SocketProxy extends AbstractAgent implements Runnable {
         SocketProxy d = new SocketProxy(m);
     }
 
-    ;
-
     public int getSourcePort() {
         if (!srcPort_i.hasNext())
             srcPort_i = srcPort.iterator();
-        return (srcPort_i.next()).intValue();
+        return srcPort_i.next().intValue();
     }
 
-    public String getSourceHost() {
+    public Object getSourceHost() {
         if (!srcHost_i.hasNext())
             srcHost_i = srcHost.iterator();
         return srcHost_i.next();
@@ -76,16 +73,14 @@ public class SocketProxy extends AbstractAgent implements Runnable {
         StringTokenizer t = new StringTokenizer(m.get("SourcePort").toString());
 
         while (t.hasMoreTokens()) {
-            srcPort.add(Integer.decode(t.nextToken().toString()));
+            srcPort.add(Integer.decode(t.nextToken()));
         }
-        ;
 
         t = new StringTokenizer(m.get("SourceHost").toString());
 
         while (t.hasMoreTokens()) {
-            srcHost.add(t.nextToken().toString());
+            srcHost.add(t.nextToken());
         }
-        ;
         srcPort_i = srcPort.iterator();
         srcHost_i = srcHost.iterator();
 
@@ -99,8 +94,6 @@ public class SocketProxy extends AbstractAgent implements Runnable {
             e.printStackTrace();
         }
     }
-
-    ;
 
     public void spin() {
         Thread t = new Thread();
@@ -128,12 +121,8 @@ public class SocketProxy extends AbstractAgent implements Runnable {
                 ps.spin();
             }
             catch (InterruptedIOException e) {
-                if (false)
-                    Logger.getAnonymousLogger().info(getClass().getName() + "::interrupt " + e.getMessage());
             }
             catch (Exception e) {
-                if (false)
-                    Logger.getAnonymousLogger().info(getClass().getName() + "::run " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -142,8 +131,8 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     private StreamDesc sourceStreamDesc() {
         final String[] a = {"source", "both"};
         return new StreamDesc(
-                containsKey("Inflate") ? Arrays.asList(a).contains(get("Inflate")) : false,
-                containsKey("Deflate") ? Arrays.asList(a).contains(get("Deflate")) : false,
+                containsKey("Inflate") && Arrays.asList(a).contains(get("Inflate")),
+                containsKey("Deflate") && Arrays.asList(a).contains(get("Deflate")),
                 containsKey("ZipBuf") ? Integer.decode(get("ZipBuf").toString()).intValue() : 4096,
                 containsKey("Buffer") ? Integer.decode(get("Buffer").toString()).intValue() : 0);
     }
@@ -151,8 +140,8 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     private StreamDesc agentStreamDesc() {
         final String[] a = {"agent", "both"};
         return new StreamDesc(
-                containsKey("Inflate") ? Arrays.asList(a).contains(get("Inflate")) : false,
-                containsKey("Deflate") ? Arrays.asList(a).contains(get("Deflate")) : false,
+                containsKey("Inflate") && Arrays.asList(a).contains(get("Inflate")),
+                containsKey("Deflate") && Arrays.asList(a).contains(get("Deflate")),
                 containsKey("ZipBuf") ? Integer.decode(get("ZipBuf").toString()).intValue() : 4096,
                 containsKey("Buffer") ? Integer.decode(get("Buffer").toString()).intValue() : 0);
     }

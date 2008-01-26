@@ -1,7 +1,6 @@
 package net.sourceforge.owch2.agent;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,7 +20,7 @@ public class command {
         this.setName(name);
         this.setCode((char) code);
         setDescription(des);
-        getCodes().put(new Character((char) code), this);
+        getCodes().put(Character.valueOf((char) code), this);
         getNames().put(name, this);
     }
 

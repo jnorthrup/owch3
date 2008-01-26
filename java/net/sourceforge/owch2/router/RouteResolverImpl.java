@@ -8,8 +8,8 @@ import java.util.logging.*;
  * @version $Id: RouteResolverImpl.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
  */
 abstract public class RouteResolverImpl implements RouteResolver {
-    public static final String REPLYTO_KEY = "JMSReplyTo";
-    public static final String DESTINATION_KEY = "JMSDestination";
+    public static final Object REPLYTO_KEY = "JMSReplyTo";
+    public static final Object DESTINATION_KEY = "JMSDestination";
 
     public void send(Map<String, ?> item) {
         if (item.get(REPLYTO_KEY) == null) {

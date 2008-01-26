@@ -87,7 +87,7 @@ public class owchRouter implements Router {
         }
     }
 
-    private MetaProperties PrepareDelivery(Message n, final String serial) {
+    private MetaProperties PrepareDelivery(Message n, String serial) {
         n.put(MESSAGE_ID_KEY, serial);
 
         MetaProperties l = ProtocolType.owch.getLocation();
@@ -96,14 +96,14 @@ public class owchRouter implements Router {
         return outProx;
     }
 
-    public byte[] createByteBuffer(Message n) throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+    public byte[] createByteBuffer(MetaProperties n) throws IOException {
+        OutputStream os = new ByteArrayOutputStream();
         n.save(os);
         byte[] buf = os.toString().getBytes();
         return buf;
     }
 
-    private MetaProperties getProxy(Message n) {
+    private MetaProperties getProxy(Map n) {
         MetaProperties prox = (MetaProperties) proxies.get(n.get(DESTINATION_KEY));
         if (prox != null) {
             return prox;
@@ -112,7 +112,7 @@ public class owchRouter implements Router {
         return prox;
     }
 
-    private String createSerialNumber(Message n) {
-        return n.get(REPLYTO_KEY) + ":" + n.get(DESTINATION_KEY).toString() + ":" + n.get(TYPE_KEY).toString() + "[" + new Date() + "] " + ser++;
+    private String createSerialNumber(Map n) {
+        return n.get(REPLYTO_KEY) + ":" + n.get(DESTINATION_KEY).toString() + ":" + n.get(TYPE_KEY).toString() + "[" + new Date() + "] " + ser;
     }
 }

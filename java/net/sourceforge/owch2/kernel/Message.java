@@ -13,9 +13,9 @@ public class Message extends Location {
     public static final String DESTINATION_KEY = "JMSDestination";
     public static final String TYPE_KEY = "JMSType";
     public static final String MESSAGE_ID_KEY = "JMSMessageID";
-    public static final String PRIORITY_KEY = "Priority";
+    public static final Object PRIORITY_KEY = "Priority";
     protected static final String SOURCE_KEY = "Source";
-    protected static final String DEPLOY_KEY = "Deploy";
+    protected static final Object DEPLOY_KEY = "Deploy";
 
     public Message() {
     }

@@ -1,16 +1,10 @@
 package net.sourceforge.gui.IRC;
 
-import net.sourceforge.gui.ScrollingListModel;
-import net.sourceforge.nlp.Report;
-import net.sourceforge.nlp.SentenceParser;
-import net.sourceforge.nlp.Serializer;
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Location;
-import net.sourceforge.owch2.kernel.MetaProperties;
+import net.sourceforge.gui.*;
+import net.sourceforge.nlp.*;
+import net.sourceforge.owch2.kernel.*;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class IRCChannelAgent extends AbstractAgent {
     IRCChannelGUI gui;
@@ -19,7 +13,7 @@ public class IRCChannelAgent extends AbstractAgent {
     /**
      * sets up nlp stuff
      */
-    public IRCChannelAgent(IRCChannelGUI g, Location l) {
+    public IRCChannelAgent(IRCChannelGUI g, Map l) {
         super(l);
         try {
             sParser = new SentenceParser(getJMSReplyTo() + ".hist");
@@ -50,8 +44,6 @@ public class IRCChannelAgent extends AbstractAgent {
         super.handle_Dissolve(new Location(this));
     }
 
-    ;
-
 
     /**
      * THe nlp version of handlePrivMsg
@@ -67,25 +59,19 @@ public class IRCChannelAgent extends AbstractAgent {
         }
     }
 
-    ;
-
     /**
      * THe almost-chat version of handlePrivMsg
      */
     public void handle_IRC_PRIVMSG2(MetaProperties m) {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
-        String ret = (value.startsWith("\00ACTION") ?
-                ("* " + m.get("JMSReplyTo") + " " + value.substring(6).trim()) :
-                ("<" + m.get("JMSReplyTo") + "> " + value));
+        String ret = value.startsWith("\00ACTION") ? "* " + m.get("JMSReplyTo") + " " + value.substring(6).trim() : "<" + m.get("JMSReplyTo") + "> " + value;
         lm.addElement(ret);
         while (lm.getSize() > 1000) {
             lm.remove(0);
         }
         sParser.tokenize(value);
     }
-
-    ;
 
     public void handle_IRC_RPL_NAMREPLY(MetaProperties m) {
         StringTokenizer tk = new StringTokenizer(m.get("Value").toString());
@@ -97,14 +83,11 @@ public class IRCChannelAgent extends AbstractAgent {
 //        if (Env.logDebug) Env.log(50, "recvd names");
     }
 
-    ;
-
     public void handle_IRC_RPL_ENDOFNAMES(MetaProperties m) {
         gui.getUsersList().invalidate();
         gui.getUsersList().repaint();
     }
 
-    ;
 }
 
 

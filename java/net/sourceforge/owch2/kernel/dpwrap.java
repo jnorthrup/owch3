@@ -63,7 +63,7 @@ final class dpwrap {
             ds.send(p);
             return hot;
         } else {
-            if ((count % lifespan) == 0) {
+            if (count % lifespan == 0) {
                 ds = (DatagramSocket) listenerCache.getNextInLine().getServer();
                 ds.send(p);
                 return cold;

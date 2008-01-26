@@ -35,7 +35,7 @@ public class Domain extends Deploy {
     }
 
     public static void main(String[] args) throws Exception {
-        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
+        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         final String portString = "owch:Port";
         final String[] ka = {"JMSReplyTo", portString,};
 
@@ -53,12 +53,12 @@ public class Domain extends Deploy {
         static_spin(d);
     }
 
-    private static void static_spin(Domain d) throws InterruptedException {
+    private static void static_spin(AbstractAgent d) throws InterruptedException {
         while (!d.killFlag) sleep(60000);
     }
 
 
-    private static Domain static_init(Map<? extends Object, ? extends Object> m, final String portString) {
+    private static Domain static_init(Map<?, ?> m, Object portString) {
         Env.getInstance().setParentHost(true);
         final String s = m.get(portString).toString();
         final int port = Integer.parseInt(s);

@@ -45,7 +45,7 @@ final public class MessageFactory implements Runnable, DatagramPacketFilter, Str
         s = (String) n.get("JMSMessageID");
         if (s != null) {
 //            URLString uri = new URLString(n.getURI());
-            Message n2 = new Message();
+            MetaProperties n2 = new Message();
             URI uri = URI.create(n.getURI());
             n2.put("ACK", s);
             String h = uri.getHost();
@@ -68,13 +68,13 @@ final public class MessageFactory implements Runnable, DatagramPacketFilter, Str
      *
      * @param message something that should have a Message ID
      */
-    public final void routePacket(Message message) {
+    public final void routePacket(MetaProperties message) {
         if (!recognize(message, (String) message.get(Message.MESSAGE_ID_KEY))) {
             Env.getInstance().send(message);
         }
     }
 
-    public boolean recognize(MetaProperties n, String s) {
+    public boolean recognize(MetaProperties n, Object s) {
         boolean res = false;
         SoftReference<? extends String> ref;
         synchronized (recv) {
@@ -106,7 +106,7 @@ final public class MessageFactory implements Runnable, DatagramPacketFilter, Str
     }
 
     public void recv(DatagramPacket p) {
-        ByteArrayInputStream istream = new ByteArrayInputStream(p.getData());
+        InputStream istream = new ByteArrayInputStream(p.getData());
         try {
             recv(istream);
             istream.close();
@@ -133,7 +133,7 @@ final public class MessageFactory implements Runnable, DatagramPacketFilter, Str
         }
     }
 
-    public static MessageFactory getInstance() {
+    public static DatagramPacketFilter getInstance() {
         if (null == instance)
             instance = new MessageFactory();
 

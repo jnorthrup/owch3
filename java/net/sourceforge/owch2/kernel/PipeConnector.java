@@ -2,7 +2,6 @@ package net.sourceforge.owch2.kernel;
 
 import java.io.*;
 import java.net.*;
-import java.util.logging.*;
 
 /**
  * $Id: PipeConnector.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
@@ -44,7 +43,6 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
             }
         }
         catch (Exception e) {
-            if (false) Logger.getAnonymousLogger().info("ServerSocket creation Failure:" + e.getMessage());
         }
     }
 
@@ -53,11 +51,8 @@ public class PipeConnector extends TCPServerWrapper implements ListenerReference
         while (!Env.getInstance().shutdown) {
             try {
                 Socket s = accept();
-                if (false)
-                    Logger.getAnonymousLogger().info("debug: " + Thread.currentThread().getName() + " init");
             }
             catch (Exception e) {
-                if (false) Logger.getAnonymousLogger().info("PipeServer thread going down in flames");
             }
         }
     }

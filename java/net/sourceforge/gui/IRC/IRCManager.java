@@ -1,29 +1,29 @@
 package net.sourceforge.gui.IRC;
 
-import net.sourceforge.owch2.agent.IRC;
-import net.sourceforge.owch2.kernel.MetaProperties;
+import net.sourceforge.owch2.agent.*;
+import net.sourceforge.owch2.kernel.*;
+
+import java.awt.*;
+import java.util.*;
 
 public class IRCManager extends IRC {
     public void handle_IRC_JOIN(MetaProperties m) {
 
         if (m.get("JMSReplyTo").toString().equals(get("IRCNickname").toString())) {
             m.put("JMSReplyTo", getJMSReplyTo());
-            IRCChannelGUI cg = new IRCChannelGUI(m);
+            Component cg = new IRCChannelGUI(m);
             MainFrame.desktop.add(cg);
             cg.setVisible(true);
         }
     }
 
-    ;
-
     IRCVisitor MainFrame;
 
-    public IRCManager(IRCVisitor a, MetaProperties p) {
+    public IRCManager(IRCVisitor a, Map p) {
         super(p);
         MainFrame = a;
     }
 
-    ;
 }
 
 

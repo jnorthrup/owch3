@@ -39,7 +39,7 @@ public class Location<V>
         Location<String> l = new Location<String>();
         final int owchPort = Env.getInstance().getOwchPort();
         tstring += "//" + Env.getInstance().getHostname().trim() + ":" +
-                ((owchPort == 0) ? lr.getServer().getLocalPort() : owchPort);
+                (owchPort == 0 ? lr.getServer().getLocalPort() : owchPort);
         l.put("URL", tstring);
         return l;
     }

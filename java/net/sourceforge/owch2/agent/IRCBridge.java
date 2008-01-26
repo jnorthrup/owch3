@@ -3,12 +3,11 @@ package net.sourceforge.owch2.agent;
 import net.sourceforge.owch2.kernel.*;
 
 import java.util.*;
-import java.util.logging.*;
 
 public class IRCBridge extends AbstractAgent {
     String[] agents = {"", ""};
 
-    public IRCBridge(Map<? extends Object, ? extends Object> m) {
+    public IRCBridge(Map<?, ?> m) {
         super(m);
         super.relocate();
         final String aaaa = get("IRCAgents").toString();
@@ -16,10 +15,10 @@ public class IRCBridge extends AbstractAgent {
 
     }
 
-    public void setAgents(final String agentsIn) {
-        StringTokenizer st = new StringTokenizer(agentsIn);
+    public void setAgents(String agentsIn) {
+        Enumeration st = new StringTokenizer(agentsIn);
 
-        List<String> l = new LinkedList<String>();
+        Collection<String> l = new LinkedList<String>();
         while (st.hasMoreElements()) {
             String s = (String) st.nextElement();
             l.add(s);
@@ -45,8 +44,6 @@ public class IRCBridge extends AbstractAgent {
             repeatedMessage.put("IRCChannel", getJMSReplyTo());
             repeatedMessage.put("JMSDestination", agent);
             repeatedMessage.put("Value", finalValue);
-            if (false)
-                Logger.getAnonymousLogger().info(getJMSReplyTo() + ">>" + repeatedMessage.toString());
             send(repeatedMessage);
         }
     }

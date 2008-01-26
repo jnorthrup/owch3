@@ -63,13 +63,13 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
         getServer().close();
     }
 
-    private java.util.List _DatagramPacket_clients = new ArrayList();
+    private Collection _DatagramPacket_clients = new ArrayList();
 
     public void attach(DatagramPacketFilter filter) {
         _DatagramPacket_clients.add(filter);
     }
 
-    public void detach(DatagramPacketFilter filter) {
+    public void detach(Object filter) {
         _DatagramPacket_clients.remove(filter);
     }
 

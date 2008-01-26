@@ -5,13 +5,12 @@ import net.sourceforge.nlp.*;
 import net.sourceforge.owch2.kernel.*;
 
 import java.util.*;
-import java.util.logging.*;
 
 public class ChatAgent extends AbstractAgent {
     ChatGUI gui;
     private SentenceParser sParser;
 
-    public ChatAgent(ChatGUI g, Location l) {
+    public ChatAgent(ChatGUI g, Map l) {
         super(l);
         try {
             sParser = new SentenceParser(getJMSReplyTo() + ".hist");
@@ -25,7 +24,6 @@ public class ChatAgent extends AbstractAgent {
             catch (Exception e1) {
                 e1.printStackTrace();
             }
-            ;
         }
         gui = g;
     }
@@ -43,8 +41,6 @@ public class ChatAgent extends AbstractAgent {
         super.handle_Dissolve(new Location(this));
     }
 
-    ;
-
     public void handle_IRC_PRIVMSG(MetaProperties m) {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
@@ -54,25 +50,20 @@ public class ChatAgent extends AbstractAgent {
         while (lm.getSize() > 1000) {
             lm.remove(0);
         }
-        ;
 
 
     }
 
-    ;
-
     public void handle_IRC_PRIVMSG2(MetaProperties m) {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
-        String ret = (value.startsWith("\00ACTION") ? ("* " + m.get("JMSReplyTo") + " " + value.substring(6).trim()) : ("<" + m.get("JMSReplyTo") + "> " + value));
+        String ret = value.startsWith("\00ACTION") ? "* " + m.get("JMSReplyTo") + " " + value.substring(6).trim() : "<" + m.get("JMSReplyTo") + "> " + value;
         lm.addElement(ret);
         while (lm.getSize() > 1000) {
             lm.remove(0);
         }
         sParser.tokenize(value);
     }
-
-    ;
 
     public void handle_IRC_RPL_NAMREPLY(MetaProperties m) {
         StringTokenizer tk = new StringTokenizer(m.get("Value").toString());
@@ -81,18 +72,13 @@ public class ChatAgent extends AbstractAgent {
         while (tk.hasMoreTokens()) {
             lm.addElement(tk.nextToken()); //
         }
-        ;
-        if (false) Logger.getAnonymousLogger().info("recvd names");
     }
-
-    ;
 
     public void handle_IRC_RPL_ENDOFNAMES(MetaProperties m) {
         gui.getUsersList().invalidate();
         gui.getUsersList().repaint();
     }
 
-    ;
 }
 
 

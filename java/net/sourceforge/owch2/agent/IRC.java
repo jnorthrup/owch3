@@ -19,10 +19,10 @@ public class IRC extends AbstractAgent implements Runnable {
     private static final String IRCREPLYTO_KEY = "IRCReplyTo";
     private static final String IRCAGENT_KEY = "IRCAgent";
     public static final String IRCPRVMSG_TYPE = "PRIVMSG";
-    public static final String IRCCHANNEL_KEY = "IRCChannel";
+    public static final Object IRCCHANNEL_KEY = "IRCChannel";
     public static final String VALUE_KEY = "Value";
     public static final String MSG_TYPE = "MSG";
-    public static final String IRCHOST_KEY = "IRCHost";
+    public static final Object IRCHOST_KEY = "IRCHost";
 
 
     public IRC(Map m) {
@@ -52,7 +52,7 @@ public class IRC extends AbstractAgent implements Runnable {
 
 
     public static void main(String[] args) {
-        Map<? extends Object, ? extends Object> bootstrap = Env.getInstance().parseCommandLineArgs(args);
+        Map<?, ?> bootstrap = Env.getInstance().parseCommandLineArgs(args);
 
         final List requiredList = Arrays.asList(new Object[]{Message.REPLYTO_KEY, IRCHOST_KEY, "IRCNickname",});
         if (!bootstrap.keySet().containsAll(requiredList)) {
@@ -71,10 +71,8 @@ public class IRC extends AbstractAgent implements Runnable {
         IRC d = new IRC(bootstrap);
     }
 
-    ;
 
-
-    protected void removeLocationFromChannel(String channel, Location l) {
+    protected void removeLocationFromChannel(Object channel, Object l) {
         Collection<Location> s = (Collection<Location>) getChannels().get(channel);
         if (s == null) {
             return;
@@ -89,14 +87,14 @@ public class IRC extends AbstractAgent implements Runnable {
         String backto = m.get(Message.REPLYTO_KEY).toString();
 //an irc nick
         String response = backto + ", noted";
-        Message n = new Message(m);
+        MetaProperties n = new Message(m);
         n.put(Message.DESTINATION_KEY, getJMSReplyTo());
         n.put(Message.TYPE_KEY, MSG_TYPE);
         n.put(VALUE_KEY, response);
         handle_MSG(n);
     }
 
-    protected void addLocationToChannel(String channel, Location l) {
+    protected void addLocationToChannel(Object channel, Location l) {
         Collection<Location> s = (Collection<Location>) getChannels().get(channel);
         if (s == null) {
             s = new HashSet<Location>();
@@ -114,24 +112,20 @@ public class IRC extends AbstractAgent implements Runnable {
                 //        socket.setSendBufferSize(32);
                 setIs(new BufferedReader(new InputStreamReader(socket.getInputStream())));
                 setOs(new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true));
-                if (false) Logger.getAnonymousLogger().info("IRC::USER");
                 //if (E
 
                 MetaProperties l = owch.getLocation();
                 String out = "USER" + " owch " + " " + " owch " + " " + " owch " + " :" + l.getURI() +
                         "/" + getJMSReplyTo();
                 getOs().println(out);
-                if (false) Logger.getAnonymousLogger().info("IRC::connect string" + out);
                 handle_NICK(new Message(this));
                 String line;
                 while (!this.killFlag) {
                     //				if( getIs().ready())
                     line = getIs().readLine();
-                    if (false) Logger.getAnonymousLogger().info("IRC::" + line);
                     if (line.startsWith("PING")) {
                         String pong = "PONG" + line.substring(line.lastIndexOf(":"), line.length());
                         getOs().println(pong);
-                        if (false) Logger.getAnonymousLogger().info("IRC::" + pong);
                     } else if (line.startsWith("NOTICE")) {
                     } else {
                         try {
@@ -167,23 +161,18 @@ public class IRC extends AbstractAgent implements Runnable {
     }
 
     public void handle_QUIT(MetaProperties m) {
-        getOs().println(("QUIT" + m.get(VALUE_KEY)));
+        getOs().println("QUIT" + m.get(VALUE_KEY));
     }
 
     public void handle_MSG(MetaProperties m) {
         try {
-            String out = (IRCPRVMSG_TYPE + (m.containsKey(IRCCHANNEL_KEY) ? m.get(IRCCHANNEL_KEY).toString() :
-                    m.get(Message.DESTINATION_KEY).toString()) + " :" + m.get(VALUE_KEY));
-            getOs().println((out));
-            if (false) Logger.getAnonymousLogger().info("IRC<<" + out);
-            if (false) Logger.getAnonymousLogger().info("debug:" + m.toString());
+            String out = IRCPRVMSG_TYPE + (m.containsKey(IRCCHANNEL_KEY) ? m.get(IRCCHANNEL_KEY).toString() : m.get(Message.DESTINATION_KEY).toString()) + " :" + m.get(VALUE_KEY);
+            getOs().println(out);
         }
         catch (Exception e) {
             handle_Dissolve(new Message(this));
         }
     }
-
-    ;
 
     public void handle_NICK(MetaProperties m) {
         String nick;
@@ -195,8 +184,6 @@ public class IRC extends AbstractAgent implements Runnable {
         getOs().println("NICK" + nick);
     }
 
-    ;
-
     /**
      * 376 end of motd
      */
@@ -206,8 +193,6 @@ public class IRC extends AbstractAgent implements Runnable {
         }
     }
 
-    ;
-
     public void handle_IRC_INVITE(MetaProperties m) {
         if (!containsKey("NoInvite")) {
             handle_JOIN(m);
@@ -216,14 +201,13 @@ public class IRC extends AbstractAgent implements Runnable {
 
     public void handle_JOIN(MetaProperties m) {
         String t = "flood";
-        String chans = (m.containsKey("IRCJoin") ? m.get("IRCJoin").toString() : m.get(VALUE_KEY).toString());
+        String chans = m.containsKey("IRCJoin") ? m.get("IRCJoin").toString() : m.get(VALUE_KEY).toString();
         StringTokenizer s = new StringTokenizer(chans);
         while (s.hasMoreTokens()) {
-            t = s.nextToken().toString();
+            t = s.nextToken();
             String out = "JOIN" + (t.startsWith("#") ? "" : "#") + t;
             getOs().println(out);
         }
-        ;
     }
 
     public void handle_IRC_PRIVMSG(MetaProperties p) {
@@ -240,8 +224,6 @@ public class IRC extends AbstractAgent implements Runnable {
         send(n);
     }
 
-    ;
-
     /**
      * 433 nickname invalid
      */
@@ -254,13 +236,10 @@ public class IRC extends AbstractAgent implements Runnable {
             t = get("IRCNickname").toString();
             put("IRCBasename", t);
         }
-        ;
-        t = t + nickname_ctr;
+        t += nickname_ctr;
         put("IRCNickname", t);
         handle_NICK(new Message(this));
     }
-
-    ;
 
     private Map channels = new HashMap();
 
@@ -273,8 +252,6 @@ public class IRC extends AbstractAgent implements Runnable {
         }
     }
 
-    ;
-
     public void handle_AGENT_JOIN(MetaProperties m) {
         Location l = new Location(m);
         StringTokenizer t = new StringTokenizer(m.get(VALUE_KEY).toString());
@@ -283,8 +260,6 @@ public class IRC extends AbstractAgent implements Runnable {
             addLocationToChannel(token, l);
         }
     }
-
-    ;
 
     /**
      * Generated by Together on May 2, 2002
@@ -295,7 +270,7 @@ public class IRC extends AbstractAgent implements Runnable {
             Iterator<Location> i = c.iterator();
             while (i.hasNext()) {
                 Location l = i.next();
-                Message n = new Message(m);
+                MetaProperties n = new Message(m);
                 n.put(Message.DESTINATION_KEY, l.getJMSReplyTo());
                 send(n);
             }
@@ -310,10 +285,9 @@ public class IRC extends AbstractAgent implements Runnable {
      * @param messageIn  -  to be filled with values
      * @param prefix     - modifies JMSType
      */
-    private void parseLine(final String sourceLine, Message messageIn, final String prefix) throws NoSuchElementException {
+    private void parseLine(String sourceLine, Map messageIn, String prefix) throws NoSuchElementException {
         StringTokenizer tokenizer;
         String IRCDestination, IRCChannel, JMSDestination = getJMSReplyTo();
-        if (false) messageIn.put("Source", sourceLine);
         tokenizer = new StringTokenizer(sourceLine, ":", false);
         String cmd = tokenizer.nextToken(),
                 value = tokenizer.nextToken("\0").substring(1);
@@ -331,7 +305,7 @@ public class IRC extends AbstractAgent implements Runnable {
         if (JMSType.equals(IRCPRVMSG_TYPE)) {
             {
                 IRCDestination = parameters;
-                JMSDestination = (IRCDestination.equals(get("IRCNickName"))) ? get(Message.REPLYTO_KEY).toString() : IRCDestination;
+                JMSDestination = IRCDestination.equals(get("IRCNickName")) ? get(Message.REPLYTO_KEY).toString() : IRCDestination;
                 messageIn.put("IRCDestination", IRCDestination.trim());
             }
             messageIn.put(Message.DESTINATION_KEY, JMSDestination);
@@ -350,10 +324,11 @@ public class IRC extends AbstractAgent implements Runnable {
      * Generated by Together on May 5, 2002
      */
     private static final String RFCConversion(String JMSType) {
-        if (RFCTags.containsKey(JMSType)) {
-            JMSType = (RFCTags.get(JMSType).toString());
+        String JMSType1 = JMSType;
+        if (RFCTags.containsKey(JMSType1)) {
+            JMSType1 = RFCTags.get(JMSType1).toString();
         }
-        return JMSType;
+        return JMSType1;
     }
 
     /**

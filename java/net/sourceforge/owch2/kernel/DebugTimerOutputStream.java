@@ -11,11 +11,9 @@ public class DebugTimerOutputStream extends PrintStream {
     private static long time;
     private static long diff;
 
-    DebugTimerOutputStream(PrintStream os) {
+    DebugTimerOutputStream(OutputStream os) {
         super(os);
     }
-
-    ;
 
     public void println(String s) {
         time = System.currentTimeMillis();
@@ -24,9 +22,6 @@ public class DebugTimerOutputStream extends PrintStream {
         benchmark = time;
     }
 
-    ;
 }
-
-;
 
 

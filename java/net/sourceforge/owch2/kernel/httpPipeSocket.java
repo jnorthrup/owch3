@@ -12,10 +12,10 @@ import java.util.logging.*;
  * @version $Id: httpPipeSocket.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
  */
 public class httpPipeSocket extends PipeSocket {
-    protected static final String REQUEST_KEY = "Request";
-    protected static final String METHOD_TYPE_GET = "GET";
+    protected static final Object REQUEST_KEY = "Request";
+    protected static final Object METHOD_TYPE_GET = "GET";
     protected static final String RESOURCE_KEY = "Resource";
-    protected static final String METHOD_KEY = "Method";
+    protected static final Object METHOD_KEY = "Method";
 
     /**
      * pass in the requesting web socket, a MetaAgent with an URL defining the serving host/port, and a request stolen from a

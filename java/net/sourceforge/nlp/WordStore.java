@@ -1,8 +1,7 @@
 package net.sourceforge.nlp;
 
 import java.io.*;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class WordStore extends VerbKnowledge {
     private Map<String, Occurence> wordMap = new TreeMap<String, Occurence>();
@@ -21,7 +20,7 @@ public class WordStore extends VerbKnowledge {
 
     public void read(String InputObjResource) throws FileNotFoundException, IOException, ClassNotFoundException {
 
-        ObjectInputStream is = new ObjectInputStream(new FileInputStream(InputObjResource));
+        ObjectInput is = new ObjectInputStream(new FileInputStream(InputObjResource));
 
         Object[] w = (Object[])
                 is.readObject();
@@ -37,12 +36,12 @@ public class WordStore extends VerbKnowledge {
 
     public void write(String argv) {
         try {
-            ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(argv));
+            ObjectOutput os = new ObjectOutputStream(new FileOutputStream(argv));
 
             Object[] w = new Object[]{
-                metaClause,
-                clauseVerb,
-                wordMap
+                    metaClause,
+                    clauseVerb,
+                    wordMap
             };
 
             os.writeObject(w);

@@ -41,7 +41,7 @@ public class PCTScanner extends AbstractAgent {
             while (!killFlag) {
                 Socket socket = serverSocket.accept();
                 InputStream inputStream = socket.getInputStream();
-                DataInputStream stream = new DataInputStream(inputStream);
+                DataInput stream = new DataInputStream(inputStream);
                 while (!socket.isInputShutdown()) {
                     String packet;
                     packet = stream.readLine();
@@ -66,24 +66,23 @@ public class PCTScanner extends AbstractAgent {
                     } catch (StringIndexOutOfBoundsException e) {
                         //no data    e.printStackTrace();  //To change body of catch statement use Options | File Templates.
                     }
-                    new PCTMessage(command.getCodes().get(new Character(type)), arg, flags, serialNo, data);
-                    Message message = new Message();
+                    new PCTMessage(command.getCodes().get(Character.valueOf(type)), arg, flags, serialNo, data);
+                    MetaProperties message = new Message();
                     Object value = get(Message.DESTINATION_KEY);
                     if (null != value)
                         message.put(Message.DESTINATION_KEY, String.valueOf(value));
                     Map<Character, command> cmd_type = command.getCodes();
-                    command cmd = cmd_type.get(new Character(type));
+                    command cmd = cmd_type.get(Character.valueOf(type));
                     //   if ("PCT_KEEP_ALIVE".equals(cmd.getName())) {
                     socket.getOutputStream().write(packet.getBytes()); //echo KEEPALIVES
                     //     continue;
                     //}
                     message.put("JMSType", cmd.getName());
-                    message.put("PCTMessage.arg", new Character(arg));
-                    message.put("PCTMessage.flags", new Character(flags));
+                    message.put("PCTMessage.arg", Character.valueOf(arg));
+                    message.put("PCTMessage.flags", Character.valueOf(flags));
                     message.put("PCTMessage.serial", serialNo);
                     message.put("PCTMessage.data", data);
                     send(message);
-                    if (false) message.save(System.out);
                 }
             }
         } catch (IOException e) {
@@ -93,7 +92,7 @@ public class PCTScanner extends AbstractAgent {
     }
 
     public static void main(String[] args) throws Exception {
-        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
+        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         final String[] ka;
         ka = new String[]{"JMSReplyTo", "JMSDestination", "AgentPort", "AgentHost"};
 

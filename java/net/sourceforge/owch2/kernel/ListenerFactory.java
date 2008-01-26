@@ -3,7 +3,6 @@ package net.sourceforge.owch2.kernel;
 import java.net.*;
 import java.util.concurrent.*;
 
-
 /*
 *
 * ListenerFactory
@@ -58,7 +57,7 @@ abstract public class ListenerFactory {
     }
 
     public void setThreads(Integer threads) {
-        this.threads = threads;
+        this.threads = threads.intValue();
     }
 
     public void setSocketCount(int socketCount) {

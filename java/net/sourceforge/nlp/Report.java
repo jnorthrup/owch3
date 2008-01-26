@@ -15,7 +15,6 @@ public class Report {
         return text + "=" + occ.getCount();
     }
 
-    ;
 }
 
 

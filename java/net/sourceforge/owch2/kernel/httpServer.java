@@ -7,7 +7,6 @@ import java.io.*;
 import java.net.*;
 import java.text.*;
 import java.util.*;
-import java.util.logging.*;
 
 /**
  * Http server daemon used for sending files and routing agent notifications.
@@ -48,7 +47,6 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
             }
         }
         catch (Exception e) {
-            if (false) Logger.getAnonymousLogger().info("httpServer creation Failure");
         }
     }
 
@@ -58,8 +56,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
      */
     public MetaProperties getRequest(Socket s) {
         String line = "";
-        if (false) Logger.getAnonymousLogger().info("httpServer.getRequest");
-        Message n = new Message();
+        MetaProperties n = new Message();
         try {
             DataInputStream ins = new DataInputStream(s.getInputStream());
 
@@ -68,9 +65,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
             n.put("Request", line);
         }
         catch (Exception e) {
-            if (false) Logger.getAnonymousLogger().info("had a DynServer Snag, retry");
         }
-        if (false) Logger.getAnonymousLogger().info("returning " + n.toString());
         return n;
     }
 
@@ -78,6 +73,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
      * default action of an agent host is to just send a file.
      */
     public void sendFile(Socket s, String file) {
+        String file1 = file;
         /**
          * errors would send... HTTP/1.1 404 Not Found Date: Sun, 08 Apr 2001 21:31:24 GMT
          * Server: Apache/1.3.12 (Unix) mod_perl/1.24 Connection: close Content-Type: text/html; charset=iso-8859-1
@@ -85,22 +81,22 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
         try {
             boolean found = true;
             byte[] pref = null;
-            if (file.startsWith("/")) {
-                file = file.substring(1);
+            if (file1.startsWith("/")) {
+                file1 = file1.substring(1);
             }
             FileInputStream is = null;
             File fd = null;
             try {
-                fd = new File(file);
-                is = new FileInputStream(file);
+                fd = new File(file1);
+                is = new FileInputStream(file1);
             }
             catch (Exception e) {
                 found = false;
-                pref = MessageFormat.format("HTTP/1.1 404 {0}\nConnection: close\n\n<!DOCTYPE HTML PUBLIC -//IETF//DTD HTML 2.0//EN><HTML><HEAD><TITLE>404 Not Found</TITLE></HEAD><BODY><H1>{1}</H1>The requested URL {2} was not found on this server.<P></BODY></HTML>", e.getMessage(), e.getMessage(), file).getBytes();
+                pref = MessageFormat.format("HTTP/1.1 404 {0}\nConnection: close\n\n<!DOCTYPE HTML PUBLIC -//IETF//DTD HTML 2.0//EN><HTML><HEAD><TITLE>404 Not Found</TITLE></HEAD><BODY><H1>{1}</H1>The requested URL {2} was not found on this server.<P></BODY></HTML>", e.getMessage(), e.getMessage(), file1).getBytes();
             }
             if (pref == null) {
                 FileInputStream i = (FileInputStream) is;
-                String p = "HTTP/1.1 200 OK\n" + "Content-Type: " + getContentType(file) + "\n" + "Last-Modified: " +
+                String p = "HTTP/1.1 200 OK\n" + "Content-Type: " + getContentType(file1) + "\n" + "Last-Modified: " +
                         new SimpleDateFormat().format(new Date(fd.lastModified())) + "\n" + "Content-Length: " +
                         fd.length() + "\n\n";
                 pref = p.getBytes();
@@ -121,18 +117,13 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
                         break;
                     }
                     os.write(buf, 0, actual);
-                    if (false)
-                        Logger.getAnonymousLogger().info("httpd " + file + " sent " + actual + " bytes");
                 }
             }
         }
         catch (Exception e) {
-            if (false)
-                Logger.getAnonymousLogger().info("httpd " + file + " connection exception " + e.getMessage());
         }
         finally {
             try {
-                if (false) Logger.getAnonymousLogger().info("httpd " + file + " connection closing");
                 s.close();
             }
             catch (Exception e) {
@@ -151,9 +142,9 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
         while (st.hasMoreTokens()) {
             list.add(st.nextToken());
         }
-        n.put("Method", list.get(0).toString().intern());
-        n.put(GateKeeper.RESOURCE_KEY, list.get(1).toString());
-        n.put("Protocol", list.get(2).toString());
+        n.put("Method", list.get(0).intern());
+        n.put(GateKeeper.RESOURCE_KEY, list.get(1));
+        n.put("Protocol", list.get(2));
     }
 
     /**
@@ -175,16 +166,12 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
             URL url = null;
             ArrayList list = new ArrayList();
             try {
-                if (false)
-                    Logger.getAnonymousLogger().info("debug: " + Thread.currentThread().getName() + " init");
                 Socket s = accept();
                 MetaProperties n = getRequest(s);
                 parseRequest(n);
                 dispatchRequest(s, n);
             }
             catch (Exception e) {
-                if (false)
-                    Logger.getAnonymousLogger().info("httpServer thread going down in flames on : " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -194,17 +181,18 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
      * used by the httpServer and anything else that wants mime types froma  file name.
      */
     static final public String getContentType(String resource) {
-        int li = resource.lastIndexOf(".");
+        String resource1 = resource;
+        int li = resource1.lastIndexOf(".");
         if (li == -1) {
             return "application/octet-stream";
         }
-        resource = resource.substring(li + 1, resource.length());
-        resource = resource.toLowerCase().trim();
-        resource = mimetypes.get(resource);
-        if (resource == null) {
+        resource1 = resource1.substring(li + 1, resource1.length());
+        resource1 = resource1.toLowerCase().trim();
+        resource1 = mimetypes.get(resource1);
+        if (resource1 == null) {
             return "application/octet-stream";
         }
-        return resource;
+        return resource1;
     }
 
     static {
@@ -335,5 +323,4 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
         mimetypes.put("zip", "application/zip");
     }
 
-    ;
 }

@@ -6,7 +6,6 @@ import java.io.*;
 import static java.lang.Thread.*;
 import java.net.*;
 import java.util.*;
-import java.util.logging.*;
 
 public class SocksProxy extends AbstractAgent implements Runnable {
     private ServerSocket ss;
@@ -25,7 +24,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
     };
 
     public static void main(String[] args) {
-        Map<? extends Object, ? extends Object> m = Env.getInstance().parseCommandLineArgs(args);
+        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         if (!(m.containsKey("JMSReplyTo") && m.containsKey("SocksHost") && m.containsKey("SourcePort") &&
                 m.containsKey("SourceHost") && m.containsKey("AgentPort"))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "SocketProxy Agent usage:\n\n" +
@@ -76,10 +75,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
         catch (Exception e) {
             e.printStackTrace();
         }
-        ;
     }
-
-    ;
 
     PipeFactory pf = new PipeFactory();
     private int socksPort = 1080;
@@ -114,13 +110,9 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                 byte[] resp = new byte[2];
                 socks.getInputStream().read();
                 if (!(resp[0] == 5 && resp[1] == 0)) {
-                    if (false)
-                        Logger.getAnonymousLogger().info(this.getClass().getName() +
-                                " Socks proxy failures returned other than socks5 Auth0; aborting  ");
                     inbound.close();
                     return;
                 }
-                ;
                 this.send_request(socks);
                 if (this.handle_response(socks)) {
                     ps.connectTarget(socks);
@@ -128,12 +120,8 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                 }
             }
             catch (InterruptedIOException e) {
-                if (false)
-                    Logger.getAnonymousLogger().info(getClass().getName() + "::interrupt " + e.getMessage());
             }
             catch (Exception e) {
-                if (false)
-                    Logger.getAnonymousLogger().info(getClass().getName() + "::run " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -185,9 +173,6 @@ public class SocksProxy extends AbstractAgent implements Runnable {
             os.write(sport);
         }
         catch (Exception e) {
-            if (false)
-                Logger.getAnonymousLogger().info(this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
-                        "/" + e.getMessage());
         }
     }
 
@@ -241,15 +226,9 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                     BND_ADDR[] = new byte[BND_ADDR_LEN];
             is.read(BND_ADDR);
             short BND_PORT = is.readShort();
-            if (false)
-                Logger.getAnonymousLogger().info(this.getClass().getName() + "::Connect request returned " + " VER:" + (int) VER + " REP:" +
-                        errs[REP] + " ATYP:" + (int) ATYP + " " + new String(BND_ADDR) + " BND_PORT:" + BND_PORT);
-            return (REP == 0);
+            return REP == 0;
         }
         catch (Exception e) {
-            if (false)
-                Logger.getAnonymousLogger().info(this.getClass().getName() + "::handle_socks_reply threw " + e.getClass().getName() +
-                        "/" + e.getMessage());
             return false;
         }
     }

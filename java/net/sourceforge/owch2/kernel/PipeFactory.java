@@ -1,7 +1,6 @@
 package net.sourceforge.owch2.kernel;
 
 import java.util.concurrent.*;
-import java.util.logging.*;
 
 
 /**
@@ -29,7 +28,6 @@ public class PipeFactory extends ListenerFactory {
             executorService.submit(pipeConnector);
         }
         catch (Exception e) {
-            if (false) Logger.getAnonymousLogger().info("PipeConnector init failure port " + port);
             return null;
         }
 

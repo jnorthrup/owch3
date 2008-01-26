@@ -113,9 +113,9 @@ public class Env {
      */
     public Map<String, String> parseCommandLineArgs(String[] arguments) {
         try {
-            Message bootMessage = new Message();
+            MetaProperties bootMessage = new Message();
             //harsh but effective, asume everything is key value pairs.
-            for (int i = 0; i < (arguments.length - arguments.length % 2); i += 2) {
+            for (int i = 0; i < arguments.length - arguments.length % 2; i += 2) {
 
                 String argument;
                 argument = arguments[i];
@@ -171,10 +171,10 @@ public class Env {
                     }
                 }
                 if (protoToken.equals("HostThreads")) {
-                    setHostThreads(Integer.decode(valueString));
+                    setHostThreads(Integer.decode(valueString).intValue());
                 }
                 if (protoToken.equals("SocketCount")) {
-                    setSocketCount(Integer.decode(valueString));
+                    setSocketCount(Integer.decode(valueString).intValue());
                 }
                 if (protoToken.equals("ParentURL")) {
                     Location location = (Location) getParentNode();
@@ -184,7 +184,7 @@ public class Env {
                 }
 
                 if (protoToken.equals("config")) {
-                    StringTokenizer streamTokenizer = new StringTokenizer(valueString);
+                    Enumeration streamTokenizer = new StringTokenizer(valueString);
 
                     while (streamTokenizer.hasMoreElements()) {
                         String tempString = (String) streamTokenizer.nextElement();
@@ -225,7 +225,6 @@ public class Env {
             }
             s += "\t" + ptype.toString();
         }
-        ;
         s += "\n\n\t -- Each protocol allows the following configurable syntax: \n";
         for (ProtocolParam param : ProtocolParam.values()) {
             s += "[-<proto>:" + param.name() + "]\t-\t" + param.getDescription() + "\n";
@@ -242,7 +241,7 @@ public class Env {
     public void sethttpRegistry(HttpRegistry h) {
     }
 
-    public Format getFormat(String name) {
+    public Format getFormat(Object name) {
         return getFormatCache().get(name);
     }
 
@@ -356,7 +355,7 @@ public class Env {
                     siteLocalAddress = inetAddr;
                 }
                 if (!inetAddr.isAnyLocalAddress() && !inetAddr.isLinkLocalAddress() && !inetAddr.isLoopbackAddress() && !inetAddr.isMulticastAddress() && !inetAddr.isSiteLocalAddress())
-                    return (inetAddr);
+                    return inetAddr;
             }
         }
         return siteLocalAddress;

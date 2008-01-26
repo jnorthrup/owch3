@@ -25,7 +25,7 @@ public enum ProtocolType {
     Null(NullRouter.class);
 
     private Class<? extends Router> routerClass;
-//    private Class<? extends ListenerReference> listenerReference;
+    //    private Class<? extends ListenerReference> listenerReference;
     private Number defaultPort = null;
 
 
@@ -56,7 +56,7 @@ public enum ProtocolType {
     static private Map<ProtocolType, Router> routerMap = new EnumMap<ProtocolType, Router>(ProtocolType.class);
 
 
-    static private Map<ProtocolType, ListenerCache> listenerCaches = new EnumMap<ProtocolType, ListenerCache>(ProtocolType .class);
+    static private Map<ProtocolType, ListenerCache> listenerCaches = new EnumMap<ProtocolType, ListenerCache>(ProtocolType.class);
 
 
     public ListenerCache ListenerCacheInstance() {
@@ -69,7 +69,7 @@ public enum ProtocolType {
         return listenerCacheInstance;
     }
 
-    static private Map<ProtocolType, ListenerFactory> listenerFactorys = new EnumMap<ProtocolType, ListenerFactory>(ProtocolType .class);
+    static private Map<ProtocolType, ListenerFactory> listenerFactorys = new EnumMap<ProtocolType, ListenerFactory>(ProtocolType.class);
     private Class<? extends ListenerFactory> ListenerFactoryClass;
 
 
@@ -84,7 +84,7 @@ public enum ProtocolType {
                 lfInstance.setHostAddress(hostAddress);
                 lfInstance.setPort(defaultPort.intValue());
                 lfInstance.setThreads(hostThreads);
-                lfInstance.setSocketCount(socketCount);
+                lfInstance.setSocketCount(socketCount.intValue());
             } catch (InstantiationException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
@@ -103,8 +103,7 @@ public enum ProtocolType {
         this.routerClass = routerClass;
     }
 
-    ProtocolType(Class<? extends Router> routerClass, /*Class<? extends ListenerReference>listenerReference, */Integer defaultPort)
-    {
+    ProtocolType(Class<? extends Router> routerClass, /*Class<? extends ListenerReference>listenerReference, */Number defaultPort) {
         this(routerClass);
 //        this.listenerReference = listenerReference;
         this.defaultPort = defaultPort;
@@ -143,7 +142,7 @@ public enum ProtocolType {
         return null;
     }
 
-    public void setListenerFactoryClass(Class<?extends ListenerFactory> listenerFactoryClass) {
+    public void setListenerFactoryClass(Class<? extends ListenerFactory> listenerFactoryClass) {
 
         ListenerFactoryClass = listenerFactoryClass;
     }
@@ -152,7 +151,7 @@ public enum ProtocolType {
         this.threads = threads;
     }
 
-    public void setDefaultPort(Integer defaultPort) {
+    public void setDefaultPort(Number defaultPort) {
         this.defaultPort = defaultPort;
     }
 

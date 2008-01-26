@@ -43,7 +43,7 @@ public class ListenerCache implements Runnable {
 
 
     public void put(ListenerReference l) {
-        cache.put(new Integer(l.getServer().getLocalPort()), l);
+        cache.put(Integer.valueOf(l.getServer().getLocalPort()), l);
         if (l.getExpiration() < lowscore) {
             resetExpire();
         }
@@ -51,7 +51,7 @@ public class ListenerCache implements Runnable {
     }
 
     public ListenerReference remove(int port) {
-        ListenerReference l = (ListenerReference) cache.remove(new Integer(port));
+        ListenerReference l = (ListenerReference) cache.remove(Integer.valueOf(port));
         if (l == nextInLine) {
             resetExpire();
         }

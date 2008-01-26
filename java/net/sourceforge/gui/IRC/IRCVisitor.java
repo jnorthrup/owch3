@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.*;
-import java.util.logging.*;
 
 public class IRCVisitor extends JFrame implements AgentVisitor {
     public TextPanel IRCHostText = new TextPanel("IRCHostname"),
@@ -33,8 +32,6 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
     public IRCVisitor() {
         initGUI();
     }
-
-    ;
 
     public void initGUI() {
         ParentURLText.setColumns(24);
@@ -95,8 +92,6 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
         setVisible(true);
     }
 
-    ;
-
     public String[] getApp_keys() {
         return app_keys;
     }
@@ -144,13 +139,9 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
                 l.put(getApp_keys(i), s);
             }
         }
-        ;
         AgentDescriptor.setEnabled(false);
-        if (false) Logger.getAnonymousLogger().info(l.toString());
         setNode(new IRCManager(this, l));
     }
-
-    ;
 
     public Object get(String key) {
 

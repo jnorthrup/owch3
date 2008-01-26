@@ -6,7 +6,6 @@ import java.io.*;
 import static java.lang.Thread.*;
 import java.net.*;
 import java.util.*;
-import java.util.logging.*;
 
 /**
  * owchDispatch owch passes udp datagrams.  each of these datagrams was at one time a MetaProperties.  dpwrap is created from
@@ -34,20 +33,16 @@ public final class owchDispatch implements Runnable {
         }
         ht.put(serr, dpw);
         try {
-            if (false)
-                Logger.getAnonymousLogger().info("debug: ht.put(serr,p)");
             dpw.fire();
         }
         catch (IOException e) {
         }
-        ;
     }
 
     /**
      * remove packet from queue based on messageID
      */
-    void remove(String serr) {
-        if (false) Logger.getAnonymousLogger().info("debug: remove " + serr.toString());
+    void remove(Object serr) {
         tenacious.remove(serr);
         pending.remove(serr);
     }
@@ -68,7 +63,6 @@ public final class owchDispatch implements Runnable {
                 sleep(1800);
             }
             catch (InterruptedException ex) {
-                if (false) Logger.getAnonymousLogger().info("debug: owchDispatch.run() e " + ex);
             }
             Enumeration en;
             en = pending.keys();
@@ -95,15 +89,12 @@ public final class owchDispatch implements Runnable {
                     BehaviorState st = dpw.fire();
 
                     if (st != frozen)
-                        if (false)
-                            Logger.getAnonymousLogger().info("debug: owchDispatch.run() send " + st.toString() + " " + serr);
                     if (st == dead) {
                         remove(serr);
                     }
                 }
             }
             catch (IOException ex) {
-                if (false) Logger.getAnonymousLogger().info("debug: owchDispatch.run() e " + ex);
             }
         }
     }

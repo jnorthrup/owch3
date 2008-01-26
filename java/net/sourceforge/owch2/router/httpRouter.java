@@ -50,7 +50,7 @@ public class httpRouter implements Router {
 
 
     public void send(Map<String, ?> item) {
-        Message n = new Message(item);
+        MetaProperties n = new Message(item);
         if (n.getJMSReplyTo() == null) {
             return;
         }

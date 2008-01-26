@@ -4,10 +4,10 @@ import java.io.*;
 import java.net.*;
 
 /**
- * $Id: PipeConnector.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * $Id$
  *
  * @author James Northrup
- * @version $Id: PipeConnector.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class PipeConnector extends TCPServerWrapper implements ListenerReference, Runnable {
     int threads;

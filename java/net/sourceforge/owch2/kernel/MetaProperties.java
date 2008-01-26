@@ -7,7 +7,7 @@ import java.util.*;
  * Acts like a Properties Class, with plug-in serilization;
  *
  * @author James Northrup
- * @version $Id: MetaProperties.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 
 public interface MetaProperties<V>

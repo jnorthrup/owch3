@@ -35,10 +35,10 @@ public class IRCChannelAgent extends AbstractAgent {
      * this tells our (potentially clone) agent to stop re-registering.  it will cease to spin.
      */
     public void handle_Dissolve(MetaProperties n) {
-        n.put("JMSDestination", get("IRCManager"));
+        n.put(Message.DESTINATION_KEY, get("IRCManager"));
         n.put("JMSType", "PART");
         n.put("Value", getJMSReplyTo());
-        n.put("JMSReplyTo", getJMSReplyTo());
+        n.put(Message.REPLYTO_KEY, getJMSReplyTo());
         send(n);
         sParser.write(getJMSReplyTo() + ".hist");
         super.handle_Dissolve(new Location(this));
@@ -65,7 +65,7 @@ public class IRCChannelAgent extends AbstractAgent {
     public void handle_IRC_PRIVMSG2(MetaProperties m) {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
-        String ret = value.startsWith("\00ACTION") ? "* " + m.get("JMSReplyTo") + " " + value.substring(6).trim() : "<" + m.get("JMSReplyTo") + "> " + value;
+        String ret = value.startsWith("\00ACTION") ? "* " + m.get(Message.REPLYTO_KEY) + " " + value.substring(6).trim() : "<" + m.get(Message.REPLYTO_KEY) + "> " + value;
         lm.addElement(ret);
         while (lm.getSize() > 1000) {
             lm.remove(0);

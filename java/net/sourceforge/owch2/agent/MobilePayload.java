@@ -23,9 +23,9 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     public MobilePayload(Map<?, ?> m) {
         super(m);
         if (containsKey("Source")) {
-            init((String) get("JMSReplyTo"), (String) get("Source"), (String) get("Resource"));
+            init((String) get(Message.REPLYTO_KEY), (String) get("Source"), (String) get("Resource"));
         } else {
-            init((String) get("JMSReplyTo"), (String) get("Resource"));
+            init((String) get(Message.REPLYTO_KEY), (String) get("Resource"));
         }
     }
 
@@ -35,7 +35,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public MobilePayload(String name, String url, String resource) {
-        put("JMSReplyTo", name);
+        put(Message.REPLYTO_KEY, name);
         put("Resource", resource);
         remove("Source");
         init(name, url, resource);
@@ -43,11 +43,11 @@ public class MobilePayload extends AbstractAgent implements Runnable {
 
     public static void main(String[] args) {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        if (!(m.containsKey("JMSReplyTo") && m.containsKey("Resource"))) {
+        if (!(m.containsKey(Message.REPLYTO_KEY) && m.containsKey("Resource"))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "MobilePayload Agent usage:\n\n" + "-name name\n" +
                     "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n" +
                     "-Source 'file' -- the file \n" + "[-Content-Type 'application/msword']\n" + "[-Clone 'host1[ ..hostn]']\n" +
-                    "[-Deploy 'host1[ ..hostn]']\n" + "$Id: MobilePayload.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
+                    "[-Deploy 'host1[ ..hostn]']\n" + "$Id$\n");
         }
         new MobilePayload(m);
     }
@@ -101,7 +101,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     public void handle_Dissolve(MetaProperties n) {
         thread.interrupt();
         MetaProperties n2 = new Message();
-        n2.put("JMSDestination", "GateKeeper");
+        n2.put(Message.DESTINATION_KEY, "GateKeeper");
         n2.put("JMSType", "UnRegister");
         n2.put("URLSpec", get("Resource").toString());
         send(n2);
@@ -127,7 +127,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
 */
 
     public void init(String name, String file) {
-        put("JMSReplyTo", name);
+        put(Message.REPLYTO_KEY, name);
         put("Resource", file);
         inductFile(file);
     }
@@ -150,10 +150,10 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         try {
             URL u = new URL(url);
             URLConnection uc = u.openConnection();
-            for (int i = 0; i < nice_headers.length; i++) {
-                String hdr = uc.getHeaderField(nice_headers[i]);
+            for (String nice_header : nice_headers) {
+                String hdr = uc.getHeaderField(nice_header);
                 if (hdr != null) {
-                    nice.put(nice_headers[i], get(nice_headers[i]));
+                    nice.put(nice_header, get(nice_header));
                 }
             }
             InputStream is = uc.getInputStream();
@@ -209,7 +209,6 @@ public class MobilePayload extends AbstractAgent implements Runnable {
      * sets the IM HERE interval for our periodic re-registration tasks.
      */
     public void setInterval(long ival) {
-        Thread.yield();
         interval = ival;
     }
 
@@ -219,11 +218,11 @@ public class MobilePayload extends AbstractAgent implements Runnable {
 
         MetaProperties localHttpLocation = ProtocolType.Http.getLocation();
         Location location = new Location(localHttpLocation);
-        location.put("JMSReplyTo", getJMSReplyTo());
+        location.put(Message.REPLYTO_KEY, getJMSReplyTo());
 
         Env.getInstance().getHttpRegistry().registerItem(resource, location);
         MetaProperties n2 = new Message();
-        n2.put("JMSDestination", "GateKeeper");
+        n2.put(Message.DESTINATION_KEY, "GateKeeper");
         n2.put("JMSType", "Register");
         n2.put("URLSpec", resource);
         n2.put("URLFwd", location.getURI());

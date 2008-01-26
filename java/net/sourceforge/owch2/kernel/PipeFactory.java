@@ -5,7 +5,7 @@ import java.util.concurrent.*;
 
 /**
  * @author James Northrup
- * @version $Id: PipeFactory.java,v 1.4 2005/06/04 02:26:24 grrrrr Exp $
+ * @version $Id$
  */
 public class PipeFactory extends ListenerFactory {
     /**

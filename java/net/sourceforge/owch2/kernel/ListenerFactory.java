@@ -11,7 +11,7 @@ import java.util.concurrent.*;
 
 /**
  * @author James Northrup
- * @version $Id: ListenerFactory.java,v 1.4 2005/06/04 02:26:24 grrrrr Exp $
+ * @version $Id$
  */
 abstract public class ListenerFactory {
     protected InetAddress hostAddress;
@@ -56,7 +56,7 @@ abstract public class ListenerFactory {
         this.port = port;
     }
 
-    public void setThreads(Integer threads) {
+    public void setThreads(Number threads) {
         this.threads = threads.intValue();
     }
 

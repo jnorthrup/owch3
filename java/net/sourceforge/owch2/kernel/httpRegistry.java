@@ -19,7 +19,7 @@ import java.util.concurrent.*;
  * I like the simple algorithm, but it's pretty obvious how to specialize this for a more regexy kind of registration.
  *
  * @author James Northrup
- * @version $Id: HttpRegistry.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class HttpRegistry {
     private NavigableMap<String, MetaAgent> registeredResources = new ConcurrentSkipListMap<String, MetaAgent>();
@@ -33,7 +33,7 @@ public class HttpRegistry {
 
     }
 
-    public void unregisterItem(String item) {
+    public void unregisterItem(Object item) {
         registeredResources.remove(item);
     }
 
@@ -69,9 +69,9 @@ public class HttpRegistry {
             if (ipc.routerInstance().hasPath(lname)) {
                 httpdSockets.put(socket.toString(), socket);
                 notification.put("_Socket", socket.toString());
-                notification.put("JMSDestination", lname);
+                notification.put(Message.DESTINATION_KEY, lname);
                 notification.put("JMSType", "httpd");
-                notification.put("JMSReplyTo", "nobody"); //apparently we *MUST* give ourselves a name..
+                notification.put(Message.REPLYTO_KEY, "nobody"); //apparently we *MUST* give ourselves a name..
                 Env.getInstance().send(notification);
                 return true;
             }

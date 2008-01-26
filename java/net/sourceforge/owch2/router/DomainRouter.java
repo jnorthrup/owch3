@@ -1,15 +1,14 @@
 package net.sourceforge.owch2.router;
 
+import static net.sourceforge.owch2.agent.Domain.*;
 import net.sourceforge.owch2.kernel.*;
 import static net.sourceforge.owch2.kernel.Message.*;
-import net.sourceforge.owch2.agent.*;
-import static net.sourceforge.owch2.agent.Domain.*;
 
 import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: domainRouter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
+ * @version $Id$
  */
 public class domainRouter implements Router {
     private Map elements = new TreeMap();
@@ -23,22 +22,25 @@ public class domainRouter implements Router {
     }
 
     public boolean pathExists(Map<String, ?> item) {
-        return true;  //To change body of implemented methods use File | Settings | File Templates.
+        if (!item.containsKey(DOMAIN_GATEWAY_KEY))
+            return false;  //To change body of implemented methods use File | Settings | File Templates.
+        addPath(item);
+        return true;
     }
 
     public Set getPool() {
         return null;
     }
 
-    public boolean addElement(Map item) {
+    public boolean addPath(Map item) {
         if (item.containsKey(DOMAIN_GATEWAY_KEY)) {
             try {
                 MetaProperties mp = new Location();
-                mp.put("JMSReplyTo", item.get("JMSReplyTo").toString()); //looks
+                mp.put(Message.REPLYTO_KEY, item.get(Message.REPLYTO_KEY)); //looks
                 // like joe@joedomain
-                mp.put(DOMAIN_GATEWAY_KEY, item.get(DOMAIN_GATEWAY_KEY).toString()); //looks
+                mp.put(DOMAIN_GATEWAY_KEY, item.get(DOMAIN_GATEWAY_KEY)); //looks
                 // like "joedomain"
-                elements.put(item.get("JMSReplyTo"), mp);
+                elements.put(item.get(Message.REPLYTO_KEY), mp);
                 return true;
             }
             catch (Exception e) //null ptr exceptions are hoped for..
@@ -50,11 +52,13 @@ public class domainRouter implements Router {
     }
 
     /**
-     * This adds domain context to the REPLYTO before sending a message to a new domain with an opaque address and a
-     * @param message
+     * This adds domain context to the REPLYTO before sending a message to a new
+     * domain with an opaque address
+     *
+     * @param message msg
      */
     public void send(Map message) {
-        Map domain = (Map) elements.get(message.get("JMSDestination")); //looks
+        Map domain = (Map) elements.get(message.get(Message.DESTINATION_KEY)); //looks
         // like joe@joedomain
 
         String dest = (String) domain.get(Message.REPLYTO_KEY); //looks like "bob"
@@ -73,7 +77,4 @@ public class domainRouter implements Router {
     public boolean hasPath(String key) {
         return elements.containsKey(key);
     }
-
 }
-
-

@@ -7,20 +7,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.*;
+import java.util.*;
 
 public class IRCVisitor extends JFrame implements AgentVisitor {
     public TextPanel IRCHostText = new TextPanel("IRCHostname"),
             IRCPortText = new TextPanel("IRCPort"),
             IRCJoinText = new TextPanel("Channels"),
-            JMSReplyToText = new TextPanel("JMSReplyTo"),
+            JMSReplyToText = new TextPanel(Message.REPLYTO_KEY),
             IRCNicknameText = new TextPanel("IRCNickname"),
             ParentURLText = new TextPanel("ParentURL");
 
-    private JToolBar agentToolbar = new JToolBar(),
+    private Container agentToolbar = new JToolBar(),
             channelBar = new JToolBar();
-    private JCheckBox connectCheck = new JCheckBox();
+    private AbstractButton connectCheck = new JCheckBox();
 
-    JDesktopPane desktop = new JDesktopPane();
+    Container desktop = new JDesktopPane();
 
     private JInternalFrame AgentDescriptor = new JInternalFrame();
     private JTabbedPane agentTabs = new JTabbedPane();
@@ -105,12 +106,12 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
             "IRCPort",
             "IRCNickname",
             "IRCJoin",
-            "JMSReplyTo",
+            Message.REPLYTO_KEY,
             "ParentURL",
     };
 
-    public void connectCheckActionPerformed(ActionEvent e) {
-        final boolean flag = ((JCheckBox) e.getSource()).isSelected();
+    public void connectCheckActionPerformed(EventObject e) {
+        final boolean flag = ((AbstractButton) e.getSource()).isSelected();
         if (flag) {
             startAgent();
         } else {

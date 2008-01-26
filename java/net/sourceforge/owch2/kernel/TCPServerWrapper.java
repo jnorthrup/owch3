@@ -11,7 +11,7 @@ import java.net.*;
 
 /**
  * @author James Northrup
- * @version $Id: TCPServerWrapper.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class TCPServerWrapper implements ServerWrapper {
     ServerSocket s;

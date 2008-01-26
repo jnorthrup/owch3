@@ -12,7 +12,7 @@ import java.util.*;
  * Http server daemon used for sending files and routing agent notifications.
  *
  * @author James Northrup
- * @version $Id: httpServer.java,v 1.4 2005/06/04 02:26:24 grrrrr Exp $
+ * @version $Id$
  */
 public class httpServer extends TCPServerWrapper implements ListenerReference, Runnable {
     int threads;
@@ -54,7 +54,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
     /**
      * called only on a new socket
      */
-    public MetaProperties getRequest(Socket s) {
+    public static MetaProperties getRequest(Socket s) {
         String line = "";
         MetaProperties n = new Message();
         try {
@@ -72,7 +72,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
     /**
      * default action of an agent host is to just send a file.
      */
-    public void sendFile(Socket s, String file) {
+    public static void sendFile(Socket s, String file) {
         String file1 = file;
         /**
          * errors would send... HTTP/1.1 404 Not Found Date: Sun, 08 Apr 2001 21:31:24 GMT
@@ -134,7 +134,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
     /**
      * this cuts the first line of the request into parts of the Request Message so its easier to use
      */
-    public void parseRequest(MetaProperties n) {
+    public static void parseRequest(MetaProperties n) {
         String line = n.get("Request").toString();
         StringTokenizer st = new StringTokenizer(line);
         List<String> list = new ArrayList<String>();
@@ -151,7 +151,7 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
      * this is written to be over-ridden by the GateKeeper who looks at registered URL specs.  by default
      * it just sends a file it can find
      */
-    public void dispatchRequest(Socket s, MetaProperties n) {
+    public static void dispatchRequest(Socket s, MetaProperties n) {
 
         if (!Env.getInstance().getHttpRegistry().dispatchRequest(s, n)) {
             sendFile(s, (String) n.get(GateKeeper.RESOURCE_KEY));

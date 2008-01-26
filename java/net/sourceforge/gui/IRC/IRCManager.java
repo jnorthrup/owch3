@@ -7,10 +7,10 @@ import java.awt.*;
 import java.util.*;
 
 public class IRCManager extends IRC {
-    public void handle_IRC_JOIN(MetaProperties m) {
+    public void handle_IRC_JOIN(MetaProperties<String> m) {
 
-        if (m.get("JMSReplyTo").toString().equals(get("IRCNickname").toString())) {
-            m.put("JMSReplyTo", getJMSReplyTo());
+        if (m.get(Message.REPLYTO_KEY).equals(get("IRCNickname").toString())) {
+            m.put(Message.REPLYTO_KEY, getJMSReplyTo());
             Component cg = new IRCChannelGUI(m);
             MainFrame.desktop.add(cg);
             cg.setVisible(true);
@@ -19,7 +19,7 @@ public class IRCManager extends IRC {
 
     IRCVisitor MainFrame;
 
-    public IRCManager(IRCVisitor a, Map p) {
+    public IRCManager(IRCVisitor a, Map<? extends String, ? extends Object> p) {
         super(p);
         MainFrame = a;
     }

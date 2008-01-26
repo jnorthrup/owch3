@@ -22,7 +22,7 @@ public class GateKeeper extends AbstractAgent<String> {
 
         if (!m.containsKey(Message.REPLYTO_KEY)) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
-                    "-name name\n" + "$Id: GateKeeper.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
+                    "-name name\n" + "$Id$\n");
         }
         Thread t = new Thread();
         t.start();
@@ -46,7 +46,7 @@ public class GateKeeper extends AbstractAgent<String> {
      * @param notificationIn
      */
     public void handle_UnRegister(MetaProperties notificationIn) {
-        String item = (String) notificationIn.get("URLSpec");
+        Object item = (String) notificationIn.get("URLSpec");
         notificationIn.put("URL", notificationIn.get("URLFwd"));
         httpRegistry.unregisterItem(item);
 

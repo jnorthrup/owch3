@@ -9,14 +9,11 @@
 package net.sourceforge.owch2.kernel;
 
 public class StreamDesc {
-    protected boolean usingInflate = false
-    ,
-    usingDeflate = false
-    ,
-    buffered = false;
-    protected int zbuf = 0
-    ,
-    bufbuf = 0;
+    protected boolean usingInflate = false,
+            usingDeflate = false,
+            buffered = false;
+    protected int zbuf = 0,
+            bufbuf = 0;
 
     public StreamDesc() {
     }

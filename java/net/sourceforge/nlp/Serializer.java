@@ -3467,8 +3467,7 @@ public class Serializer extends VerbKnowledge {
         };
 
 
-        for (int i = 0; i < verbtoc.length; i++) {
-            String line = verbtoc[i];
+        for (String line : verbtoc) {
             StringTokenizer st = new StringTokenizer(line);
             String verb = st.nextToken(" ,:");
 

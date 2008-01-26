@@ -17,7 +17,7 @@ import java.util.logging.*;
  * other nodes in the namespace.
  *
  * @author James Northrup
- * @version $Id: AbstractAgent.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Agent {
     protected static final String MOBILEHOST_KEY = "Host";
@@ -25,12 +25,12 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     protected static final String DEPLOYNODE_TYPE = DeployNode.toString();
     protected static final String UNLINK_TYPE = UnLink.toString();
-    protected static final String CLONE_KEY = Clone.toString();
+    protected static final Object CLONE_KEY = Clone.toString();
     protected static final String UPDATED_TYPE = Updated.toString();
     protected static final String UPDATE_TYPE = Update.toString();
     protected static final String LINK_TYPE = Link.toString();
 
-    protected boolean killFlag = false;
+    public boolean killFlag = false;
     boolean virgin;
 //    LinkRegistry acl = null;
 
@@ -191,16 +191,16 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
                 ProtocolType.owch.routerInstance(),
                 ProtocolType.Http.routerInstance(),
         };
-        for (int i = 0; i < r.length; i++) {
+        for (Router aR : r) {
             try {
-                r[i].remove(getJMSReplyTo());
+                aR.remove(getJMSReplyTo());
             }
             catch (Exception e) {
             }
         }
     }
 
-    public void handle_Link(MetaProperties p) {
+    public void handle_Link(MetaAgent p) {
         String dest = p.getJMSReplyTo();
         MetaProperties n = new Message();
         n.put(TYPE_KEY, UPDATE_TYPE);
@@ -215,7 +215,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param p JMSReplyTo
      */
-    public void handle_Update(MetaProperties p) {
+    public void handle_Update(MetaAgent p) {
         String dest = p.getJMSReplyTo();
         MetaProperties n = new Message();
         n.put(TYPE_KEY, UPDATED_TYPE);
@@ -229,7 +229,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param m node(s) to link to
      */
-    public void handle_Unlink(MetaProperties m) {
+    public void handle_Unlink(MetaAgent m) {
         String lk = m.getJMSReplyTo();
         if (lk == null) {
 

@@ -9,13 +9,13 @@ import java.util.*;
  * This converts (injects) network data into a factory that produces Messages.
  *
  * @author James Northrup
- * @version $Id: MessageFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 final public class MessageFactory implements Runnable, DatagramPacketFilter, StreamFilter {
     private final Set<? extends SoftReference<? extends String>> recv = new HashSet<SoftReference<? extends String>>();
     private ReferenceQueue q = new ReferenceQueue();
     private DatagramSocket ds;
-    private static MessageFactory instance;
+    private static DatagramPacketFilter instance = new MessageFactory();
 
     public final void recv(InputStream reader) {
         try {
@@ -134,9 +134,6 @@ final public class MessageFactory implements Runnable, DatagramPacketFilter, Str
     }
 
     public static DatagramPacketFilter getInstance() {
-        if (null == instance)
-            instance = new MessageFactory();
-
         return instance;
     }
 

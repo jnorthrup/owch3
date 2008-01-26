@@ -6,7 +6,7 @@ import java.util.*;
  * this class came about by accident one day and seemed to fit..  null is all-seeing all forgiving and 100% black hole.
  *
  * @author James Northrup
- * @version $Id: NullRouter.java,v 1.1 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class NullRouter implements Router {
     public boolean hasPath(String key) {

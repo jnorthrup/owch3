@@ -12,7 +12,7 @@ package net.sourceforge.owch2.kernel;
  * to handle agent info as opaque addresses
  *
  * @author James Northrup
- * @version $Id: MetaAgent.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public interface MetaAgent {
     public String getJMSReplyTo();

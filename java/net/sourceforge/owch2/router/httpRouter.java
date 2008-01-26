@@ -11,7 +11,7 @@ import java.util.*;
  * this is an alternate to an owch router.   needs testing.
  *
  * @author James Northrup
- * @version $Id: httpRouter.java,v 1.2 2005/06/03 18:27:48 grrrrr Exp $
+ * @version $Id$
  */
 public class httpRouter implements Router {
     static long ser = 0;
@@ -54,7 +54,7 @@ public class httpRouter implements Router {
         if (n.getJMSReplyTo() == null) {
             return;
         }
-//        String serr = n.get(Message.REPLYTO_KEY) + ":" + n.get("JMSDestination").toString() + ":" + n.get("JMSType").toString() +                "[" + d.toString() + "] " + ser++;
+//        String serr = n.get(Message.REPLYTO_KEY) + ":" + n.get(Message.DESTINATION_KEY).toString() + ":" + n.get("JMSType").toString() +                "[" + d.toString() + "] " + ser++;
 
         Location location = ProtocolType.Http.getLocation();
         n.put(URI_KEY, location.getURI());

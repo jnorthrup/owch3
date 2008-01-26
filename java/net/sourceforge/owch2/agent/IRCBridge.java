@@ -29,20 +29,20 @@ public class IRCBridge extends AbstractAgent {
 
     public void handle_IRC_PRIVMSG(MetaProperties m) {
         final String ircAgent = m.get("IRCAgent").toString(),
-                ircNickName = m.get("JMSReplyTo").toString(),
+                ircNickName = m.get(Message.REPLYTO_KEY).toString(),
                 preliminaryValue = m.get("Value").toString(),
                 finalValue = "<" + ircNickName + "@" + ircAgent + "> " + preliminaryValue;
         String agent;
         Message repeatedMessage;
 
-        for (int i = 0; i < agents.length; i++) {
-            agent = agents[i];
+        for (String agent1 : agents) {
+            agent = agent1;
             if (ircAgent.equals(agent))
                 continue;
             repeatedMessage = new Message(m);
             repeatedMessage.put("JMSType", "MSG");
             repeatedMessage.put("IRCChannel", getJMSReplyTo());
-            repeatedMessage.put("JMSDestination", agent);
+            repeatedMessage.put(Message.DESTINATION_KEY, agent);
             repeatedMessage.put("Value", finalValue);
             send(repeatedMessage);
         }
@@ -50,7 +50,7 @@ public class IRCBridge extends AbstractAgent {
 
     public static void main(String[] args) {
         Map m = Env.getInstance().parseCommandLineArgs(args);
-        final String[] ka = {"JMSReplyTo", "IRCAgents",};
+        final String[] ka = {Message.REPLYTO_KEY, "IRCAgents",};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
@@ -58,7 +58,7 @@ public class IRCBridge extends AbstractAgent {
                     "-name (String)name --(channel name e.g. #python)\n" +
                     "-IRCAgents (String)'agent1[ agent..n]'\n" +
                     "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: IRCBridge.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
+                    "$Id$\n");
         }
         IRCBridge d = new IRCBridge(m);
     }

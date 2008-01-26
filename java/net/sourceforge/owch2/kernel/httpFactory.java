@@ -2,7 +2,7 @@ package net.sourceforge.owch2.kernel;
 
 /**
  * @author James Northrup
- * @version $Id: httpFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class httpFactory extends ListenerFactory {
     /**
@@ -13,8 +13,7 @@ public class httpFactory extends ListenerFactory {
 
     public MetaProperties getLocation() {
 
-        Location location = ProtocolType.Http.getLocation();
-        return location;
+        return ProtocolType.Http.getLocation();
     }
 
     public ListenerReference create() {
@@ -34,10 +33,9 @@ public class httpFactory extends ListenerFactory {
         return https;
     }
 
-    private static httpFactory instance;
+    private static httpFactory instance = new httpFactory();
 
     public static httpFactory getInstance() {
-        if (instance == null) instance = new httpFactory();
         return instance;
     }
 }

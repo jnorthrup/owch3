@@ -4,7 +4,7 @@ package net.sourceforge.owch2.kernel;
  * ListenerReference
  *
  * @author James Northrup
- * @version $Id: ListenerReference.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public interface ListenerReference {
     public void expire();

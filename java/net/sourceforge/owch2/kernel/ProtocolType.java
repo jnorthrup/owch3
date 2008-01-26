@@ -11,7 +11,7 @@ import java.util.*;
  * This class operates to hold a registry of protocols in the systems, and assigns routers and default port numbers as needed by design.
  *
  * @author James Northrup
- * @version $Id: ProtocolType.java,v 1.2 2005/06/04 02:26:24 grrrrr Exp $
+ * @version $Id$
  * @copyright All Rights Reserved Glamdring Inc.
  */
 

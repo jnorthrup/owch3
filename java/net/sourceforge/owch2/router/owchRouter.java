@@ -11,7 +11,7 @@ import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: owchRouter.java,v 1.2 2005/06/03 18:27:48 grrrrr Exp $
+ * @version $Id$
  */
 public class owchRouter implements Router {
     static long ser = 0;
@@ -87,7 +87,7 @@ public class owchRouter implements Router {
         }
     }
 
-    private MetaProperties PrepareDelivery(Message n, String serial) {
+    private MetaProperties PrepareDelivery(Map n, String serial) {
         n.put(MESSAGE_ID_KEY, serial);
 
         MetaProperties l = ProtocolType.owch.getLocation();
@@ -96,7 +96,7 @@ public class owchRouter implements Router {
         return outProx;
     }
 
-    public byte[] createByteBuffer(MetaProperties n) throws IOException {
+    public static byte[] createByteBuffer(MetaProperties n) throws IOException {
         OutputStream os = new ByteArrayOutputStream();
         n.save(os);
         byte[] buf = os.toString().getBytes();
@@ -112,7 +112,7 @@ public class owchRouter implements Router {
         return prox;
     }
 
-    private String createSerialNumber(Map n) {
+    private static String createSerialNumber(Map n) {
         return n.get(REPLYTO_KEY) + ":" + n.get(DESTINATION_KEY).toString() + ":" + n.get(TYPE_KEY).toString() + "[" + new Date() + "] " + ser;
     }
 }

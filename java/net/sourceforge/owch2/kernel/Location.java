@@ -8,7 +8,7 @@ import java.util.*;
  * contains the most recently known network address of a listener, and it's clones.
  *
  * @author James Northrup
- * @version $Id: Location.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class Location<V>
         extends TreeMap<String, V>
@@ -57,8 +57,10 @@ public class Location<V>
     /**
      * Save properties to an OutputStream.
      */
-    public synchronized void save(OutputStream writer) throws IOException {
-        Env.getInstance().getFormat("RFC822").write(writer, this);
+    public void save(OutputStream writer) throws IOException {
+        synchronized (this) {
+            Env.getInstance().getFormat("RFC822").write(writer, this);
+        }
     }
 
 

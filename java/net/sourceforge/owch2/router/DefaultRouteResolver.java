@@ -6,7 +6,7 @@ import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: DefaultRouteResolver.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class DefaultRouteResolver extends RouteResolverImpl {
     private static Collection<Router> inbound;

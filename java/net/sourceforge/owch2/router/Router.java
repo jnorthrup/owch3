@@ -4,7 +4,7 @@ import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: Router.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public interface Router {
     public void remove(String key);

@@ -37,14 +37,14 @@ public class Domain extends Deploy {
     public static void main(String[] args) throws Exception {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         final String portString = "owch:Port";
-        final String[] ka = {"JMSReplyTo", portString,};
+        final String[] ka = {Message.REPLYTO_KEY, portString,};
 
-        if (!m.keySet().containsAll(Arrays.asList(ka))) {
+        if (m.isEmpty() || !m.keySet().containsAll(Arrays.asList(ka))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
                     "Domain Agent usage:\n\n" +
                     "-JMSReplyTo (String)name\n" +
                     "-owch:Port (int)port\n" +
-                    "$Id: Domain.java,v 1.3 2005/06/03 18:27:46 grrrrr Exp $\n");
+                    "$Id$\n");
         }
 
         Domain d = static_init(m, portString);

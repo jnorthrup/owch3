@@ -12,7 +12,7 @@ import java.util.*;
  * MetaProperties.save(ByteArrayOutputStream).  dpwrap is held in a cache keyed by MessageID.
  *
  * @author James Northrup
- * @version $Id: owchDispatch.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 
 public final class owchDispatch implements Runnable {
@@ -21,7 +21,7 @@ public final class owchDispatch implements Runnable {
     Hashtable pending = new Hashtable(2, 1.0f);
     Hashtable tenacious = new Hashtable(2, 1.0f);
 
-    private static owchDispatch instance;
+    private static owchDispatch instance = new owchDispatch();
 
     public void handleDatagram(String serr, DatagramPacket p, boolean priority) {
         dpwrap dpw = new dpwrap(p);
@@ -89,9 +89,9 @@ public final class owchDispatch implements Runnable {
                     BehaviorState st = dpw.fire();
 
                     if (st != frozen)
-                    if (st == dead) {
-                        remove(serr);
-                    }
+                        if (st == dead) {
+                            remove(serr);
+                        }
                 }
             }
             catch (IOException ex) {
@@ -101,7 +101,6 @@ public final class owchDispatch implements Runnable {
 
 
     public static owchDispatch getInstance() {
-        if (instance == null) instance = new owchDispatch();
         return instance;
     }
 }

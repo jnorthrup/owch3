@@ -5,7 +5,7 @@ import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: RFC822Format.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class RFC822Format implements Format {
     public RFC822Format() {

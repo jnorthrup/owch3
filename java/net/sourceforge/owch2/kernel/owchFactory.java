@@ -7,7 +7,7 @@ import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: owchFactory.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public final class owchFactory extends ListenerFactory {
     private static owchFactory instance;

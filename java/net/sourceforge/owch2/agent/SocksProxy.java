@@ -25,13 +25,13 @@ public class SocksProxy extends AbstractAgent implements Runnable {
 
     public static void main(String[] args) {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        if (!(m.containsKey("JMSReplyTo") && m.containsKey("SocksHost") && m.containsKey("SourcePort") &&
+        if (!(m.containsKey(Message.REPLYTO_KEY) && m.containsKey("SocksHost") && m.containsKey("SourcePort") &&
                 m.containsKey("SourceHost") && m.containsKey("AgentPort"))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "SocketProxy Agent usage:\n\n" +
                     "-name       (String)name\n" + "-SourceHost (String)hostname/IP\n" + "-SocksHost (String)hostname/IP\n" +
                     "-SourcePort (int)port\n" + "-AgentPort  (int)port\n" +
                     "[-SocksPort (int)port]\n" + "[-Clone 'host1[ ..hostn]']\n" + "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: SocksProxy.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
+                    "$Id$\n");
         }
         SocketProxy d = new SocketProxy(m);
         Thread t = new Thread();
@@ -104,11 +104,10 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                         0 //,2
                 };
                 byte ver = 5, napp = (byte) app.length;
-                socks.getOutputStream().write(
-                        new byte[]{ver, napp});
+                socks.getOutputStream().write(new byte[]{ver, napp});
                 socks.getOutputStream().write(app);
                 byte[] resp = new byte[2];
-                socks.getInputStream().read();
+                int i = socks.getInputStream().read(resp);
                 if (!(resp[0] == 5 && resp[1] == 0)) {
                     inbound.close();
                     return;
@@ -217,14 +216,14 @@ public class SocksProxy extends AbstractAgent implements Runnable {
      * authentication, integrity and/or confidentiality, the replies are
      * encapsulated in the method-dependent encapsulation.
      */
-    public boolean handle_response(Socket socks) {
+    public static boolean handle_response(Socket socks) {
         try {
             DataInputStream is = new DataInputStream(socks.getInputStream());
             //  |VER | REP |  RSV  | ATYP | BND.ADDR | BND.PORT |
             byte VER = (byte) is.read(), REP = (byte) is.read(), RSV = (byte) is.read(), ATYP = (byte) is.read(),
                     BND_ADDR_LEN = (byte) is.read(),
                     BND_ADDR[] = new byte[BND_ADDR_LEN];
-            is.read(BND_ADDR);
+            int i = is.read(BND_ADDR);
             short BND_PORT = is.readShort();
             return REP == 0;
         }

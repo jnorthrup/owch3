@@ -9,7 +9,7 @@
 package net.sourceforge.gui;
 
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.*;
 import java.awt.*;
 
 

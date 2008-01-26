@@ -9,7 +9,7 @@ import java.util.*;
  * owchListener.java
  *
  * @author James Northrup
- * @version $Id: owchListener.java,v 1.4 2005/06/04 02:26:24 grrrrr Exp $
+ * @version $Id$
  */
 public class owchListener extends UDPServerWrapper implements Runnable, ListenerReference,
         DatagramPacketSource {

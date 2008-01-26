@@ -16,7 +16,7 @@ import java.util.*;
  * <p/>
  * lists of ports and hosts are tried in order specified.
  *
- * @version $Id: SocketProxy.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class SocketProxy extends AbstractAgent implements Runnable {
     private Collection<Integer> srcPort = new ArrayList<Integer>();
@@ -29,7 +29,7 @@ public class SocketProxy extends AbstractAgent implements Runnable {
 
     public static void main(String[] args) {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        final String[] ka = {"JMSReplyTo", "SourcePort", "SourceHost", "AgentPort"};
+        final String[] ka = {Message.REPLYTO_KEY, "SourcePort", "SourceHost", "AgentPort"};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
@@ -43,7 +43,7 @@ public class SocketProxy extends AbstractAgent implements Runnable {
                     "[-ZipBuf (int)<128+]]\n" +
                     "[-Clone 'host1[ ..hostn]']\n" +
                     "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: SocketProxy.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
+                    "$Id$\n");
         }
         SocketProxy d = new SocketProxy(m);
     }

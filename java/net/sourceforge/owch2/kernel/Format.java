@@ -5,7 +5,7 @@ import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: Format.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public interface Format {
     void read(InputStream reader, Map map) throws IOException;

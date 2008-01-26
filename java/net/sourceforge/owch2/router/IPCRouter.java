@@ -7,7 +7,7 @@ import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: ipcRouter.java,v 1.1 2005/06/01 06:43:12 grrrrr Exp $
+ * @version $Id$
  */
 public class ipcRouter implements Router {
     private Map<String, Map> paths = new WeakHashMap<String, Map>();
@@ -22,12 +22,12 @@ public class ipcRouter implements Router {
     public void send(Map<String, ?> message) {
 //        if (Env.getInstance().logDebug)
 //            Env.getInstance().log(500, getClass().getName() + " sending message to" + getDestination(message));
-        Agent node = (Agent) paths.get(getDestination(message));
+        MetaPropertiesFilter node = (MetaPropertiesFilter) paths.get(getDestination(message));
         node.recv(new Message(message));
     }
 
     public String getDestination(Map<String, ?> item) {
-        return String.valueOf(item.get("JMSDestination")); //
+        return String.valueOf(item.get(Message.DESTINATION_KEY)); //
     }
 
     public boolean pathExists(Map<String, ?> message) {
@@ -55,13 +55,13 @@ public class ipcRouter implements Router {
         if (agentProxy instanceof Agent) {
             //check for a previous element of same name...
             // dissolve it..
-            AbstractAgent n = (AbstractAgent) paths.get("JMSReplyTo");
+            AbstractAgent n = (AbstractAgent) paths.get(Message.REPLYTO_KEY);
             if (n != null) {
                 n.handle_Dissolve(null);
             }
-            paths.put((String) agentProxy.get("JMSReplyTo"), agentProxy);
+            paths.put((String) agentProxy.get(Message.REPLYTO_KEY), agentProxy);
 
-            Logger.getAnonymousLogger().finest(" adding agentProxy " + agentProxy.get("JMSReplyTo"));
+            Logger.getAnonymousLogger().finest(" adding agentProxy " + agentProxy.get(Message.REPLYTO_KEY));
             return true;
         }
         return false;

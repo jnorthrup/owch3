@@ -8,7 +8,7 @@ import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: DefaultRouter.java,v 1.1 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class DefaultRouter implements Router {
     public Set getPool() {

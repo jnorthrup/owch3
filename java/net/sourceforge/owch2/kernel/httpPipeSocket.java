@@ -6,10 +6,10 @@ import java.util.logging.*;
 
 /**
  * GateKeeper opens a httpPipeSocket to send data ussually in one
- * direction. $Id: httpPipeSocket.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * direction. $Id$
  *
  * @author James Northrup
- * @version $Id: httpPipeSocket.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class httpPipeSocket extends PipeSocket {
     protected static final Object REQUEST_KEY = "Request";

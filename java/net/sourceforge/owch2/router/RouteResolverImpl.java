@@ -5,7 +5,7 @@ import java.util.logging.*;
 
 /**
  * @author James Northrup
- * @version $Id: RouteResolverImpl.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 abstract public class RouteResolverImpl implements RouteResolver {
     public static final Object REPLYTO_KEY = "JMSReplyTo";
@@ -42,7 +42,7 @@ abstract public class RouteResolverImpl implements RouteResolver {
 
     public void remove(String key) {
         for (Router r : getInbound())
-            r.remove((String) key);
+            r.remove(key);
 
     }
 }

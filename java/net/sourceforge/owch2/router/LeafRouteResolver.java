@@ -6,7 +6,7 @@ import java.util.*;
 
 /**
  * @author James Northrup
- * @version $Id: LeafRouteResolver.java,v 1.2 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class LeafRouteResolver extends RouteResolverImpl {
     public Collection getOutbound() {

@@ -94,7 +94,7 @@ public class PCTScanner extends AbstractAgent {
     public static void main(String[] args) throws Exception {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         final String[] ka;
-        ka = new String[]{"JMSReplyTo", "JMSDestination", "AgentPort", "AgentHost"};
+        ka = new String[]{Message.REPLYTO_KEY, Message.DESTINATION_KEY, "AgentPort", "AgentHost"};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
@@ -102,7 +102,7 @@ public class PCTScanner extends AbstractAgent {
                     "-name     (String)name\n" +
                     "-AgentPort   (int)port\n" +
                     "-JMSDestination  (String) The destination agent name\n" +
-                    "$Id: PCTScanner.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
+                    "$Id$\n");
 
         }
         PCTScanner d;

@@ -4,7 +4,7 @@ import java.io.*;
 
 /**
  * @author James Northrup
- * @version $Id: DebugTimerOutputStream.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class DebugTimerOutputStream extends PrintStream {
     private static long benchmark = System.currentTimeMillis();

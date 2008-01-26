@@ -17,19 +17,19 @@ public class Deploy extends AbstractAgent {
     public static void main(String[] args) throws Exception {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         {
-            final String[] ka = {"JMSReplyTo",};
+            final String[] ka = {Message.REPLYTO_KEY,};
 
             if (!m.keySet().containsAll(Arrays.asList(ka))) {
                 Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
                         "Deploy Agent usage:\n\n" +
                         "-name name\n" +
-                        "$Id: Deploy.java,v 1.3 2005/06/03 18:27:46 grrrrr Exp $\n");
+                        "$Id$\n");
             }
         }
         AbstractAgent d = new Deploy(m);
         Thread t = new Thread();
         t.start();
-        while (!d.killFlag) t.sleep(60 * 60 * 3);
+        while (!d.killFlag) t.sleep(1000 * 60 * 3);
 
     }
 
@@ -128,10 +128,10 @@ public class Deploy extends AbstractAgent {
         }
         try {
             if (!n.containsKey("Singleton")) {
-                n.put("JMSReplyTo", n.getJMSReplyTo() + "." + uniq + "." + getJMSReplyTo());
+                n.put(Message.REPLYTO_KEY, n.getJMSReplyTo() + "." + uniq + "." + getJMSReplyTo());
                 uniq++;
             } else {
-                n.put("JMSReplyTo", n.getJMSReplyTo());
+                n.put(Message.REPLYTO_KEY, n.getJMSReplyTo());
 
             }
             //path is URL's, gotta do a loop to instantiate URL's...

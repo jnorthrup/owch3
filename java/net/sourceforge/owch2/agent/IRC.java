@@ -44,7 +44,7 @@ public class IRC extends AbstractAgent implements Runnable {
 
     private int getIRCPort() {
         if (this.containsKey("IRCPort")) {
-            return Integer.decode((String) get("IRCPort")).intValue();
+            return Integer.decode((String) get("IRCPort"));
         } else {
             return DEFAULT_IRC_PORT;
         }
@@ -66,7 +66,7 @@ public class IRC extends AbstractAgent implements Runnable {
                     "[-Persist t]\n" +
                     "[-Clone 'host1[ ..hostn]']\n" +
                     "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id: IRC.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $\n");
+                    "$Id$\n");
         }
         IRC d = new IRC(bootstrap);
     }
@@ -129,7 +129,7 @@ public class IRC extends AbstractAgent implements Runnable {
                     } else if (line.startsWith("NOTICE")) {
                     } else {
                         try {
-                            Message n = new Message();
+                            MetaProperties n = new Message();
                             String prefix = "IRC_";
                             parseLine(line, n, prefix);
                             send(n);
@@ -211,7 +211,7 @@ public class IRC extends AbstractAgent implements Runnable {
     }
 
     public void handle_IRC_PRIVMSG(MetaProperties p) {
-        Message n = new Message(p);
+        MetaProperties n = new Message(p);
         String prefix = "";
         parseLine(p.get(VALUE_KEY).toString().substring(1), n, prefix);
         String dest = n.get(Message.DESTINATION_KEY).toString();
@@ -244,7 +244,7 @@ public class IRC extends AbstractAgent implements Runnable {
     private Map channels = new HashMap();
 
     public void handle_AGENT_REMOVE(MetaProperties m) {
-        Location l = new Location(m);
+        Object l = new Location(m);
         StringTokenizer t = new StringTokenizer(m.get(VALUE_KEY).toString());
         while (t.hasMoreTokens()) {
             String token = t.nextToken();

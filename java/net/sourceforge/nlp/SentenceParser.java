@@ -1,9 +1,6 @@
 package net.sourceforge.nlp;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class SentenceParser extends WordStore {
     public SentenceParser(String InputObjResource) throws Exception {

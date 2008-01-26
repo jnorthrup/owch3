@@ -9,7 +9,7 @@ import java.util.zip.*;
  * GateKeeper opens a PipeSocket to send data ussually in one direction.
  *
  * @author James Northrup
- * @version $Id: PipeSocket.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public class PipeSocket {
     //for GET method the inner socket OutputStream will close
@@ -51,7 +51,7 @@ public class PipeSocket {
         oEnc = out;
     }
 
-    public Object[] prepareStream(Socket sock, StreamDesc streamDesc) throws SocketException, IOException {
+    public static Object[] prepareStream(Socket sock, StreamDesc streamDesc) throws SocketException, IOException {
         InputStream reader;
         OutputStream writer;
         sock.setSoTimeout(200);

@@ -17,7 +17,7 @@ import java.util.concurrent.*;
  * This is the backbone of routing and traffic for AbstractAgents to pass MetaProperties through various communication routers and gateways.
  *
  * @author James Northrup
- * @version $Id: Env.java,v 1.4 2005/06/04 02:26:23 grrrrr Exp $
+ * @version $Id$
  * @see AbstractAgent
  */
 public class Env {
@@ -206,7 +206,7 @@ public class Env {
     }
 
 
-    public void cmdLineHelp(String t) {
+    public static void cmdLineHelp(String t) {
         String s = "**********" + "***owch kernel Env (global) cmdline options" + "***********\n" +
                 "All cmdline params are of the pairs form -key 'Value'\n\n " +
                 "valid environmental cmdline options are typically:\n" +
@@ -230,7 +230,7 @@ public class Env {
             s += "[-<proto>:" + param.name() + "]\t-\t" + param.getDescription() + "\n";
         }
 
-        s = s + "\n\n\tthis Edition of the parser: $Id: Env.java,v 1.4 2005/06/04 02:26:23 grrrrr Exp $\n\n\n" +
+        s = s + "\n\n\tthis Edition of the parser: $Id$\n\n\n" +
                 "**********" + "*** Agent Env cmdline specification:" + "***********\n" + t;
         System.out.println(s);
 
@@ -293,7 +293,7 @@ public class Env {
         if (parentNode == null) {
             Location<String> l = new Location<String>();
             l.put("Created", "env.getDomain()");
-            l.put("JMSReplyTo", "default");
+            l.put(Message.REPLYTO_KEY, "default");
             l.put("URL", "owch://" + getHostAddress().getCanonicalHostName() + ":2112/");
             parentNode = l;
         }
@@ -342,7 +342,7 @@ public class Env {
         return hostAddress;
     }
 
-    private InetAddress getExternalAddress(NetworkInterface hostInterface) {
+    private static InetAddress getExternalAddress(NetworkInterface hostInterface) {
         InetAddress siteLocalAddress;
         siteLocalAddress = null;
         Enumeration<InetAddress> inetAddresses;
@@ -384,8 +384,11 @@ public class Env {
     }
 
     public static Env getInstance() {
-        if (null == instance) instance = new Env();
-        return instance;
+        synchronized (Env.class) {
+            if (null == instance)
+                instance = new Env();
+            return instance;
+        }
     }
 
     public int getHttpPort() {

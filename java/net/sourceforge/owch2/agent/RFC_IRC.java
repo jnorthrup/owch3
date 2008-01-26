@@ -1,7 +1,7 @@
 package net.sourceforge.owch2.agent;
 
 /**
- * @version $Id: RFC_IRC.java,v 1.1 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  * @Author James Northrup
  * @copyright All Rights Reserved Glamdring Inc.
  */
@@ -143,8 +143,7 @@ enum RFC_IRC {
     RPL_ENDOFUSERS(394, ":End of users"),
     RPL_USERS(393, ":<username> <ttyline> <hostname>"),
     RPL_ENDOFWHOIS(318, "<nick> :End of WHOIS list"),
-    ERR_NICKCOLLISION(436, "<nick> :Nickname collision KILL from <user>@<host>")
-    ;
+    ERR_NICKCOLLISION(436, "<nick> :Nickname collision KILL from <user>@<host>");
 
     short code;
     private String format;

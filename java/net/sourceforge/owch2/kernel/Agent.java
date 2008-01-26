@@ -8,7 +8,7 @@ package net.sourceforge.owch2.kernel;
  * other agents in the namespace.
  *
  * @author James Northrup
- * @version $Id: Agent.java,v 1.3 2005/06/03 18:27:47 grrrrr Exp $
+ * @version $Id$
  */
 public interface Agent<V> extends MetaAgent, MetaPropertiesFilter {
     String RESOURCE_KEY = "Resource";

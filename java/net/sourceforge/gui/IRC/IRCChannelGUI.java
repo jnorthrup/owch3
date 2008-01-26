@@ -19,8 +19,8 @@ public class IRCChannelGUI extends JInternalFrame implements AgentVisitor {
 
     public IRCChannelGUI(MetaProperties JoinMsg) {
         agentLocation = new Location(JoinMsg);
-        agentLocation.put("IRCManager", agentLocation.get("JMSReplyTo"));
-        agentLocation.put("JMSReplyTo", agentLocation.get("Value"));
+        agentLocation.put("IRCManager", agentLocation.get(Message.REPLYTO_KEY));
+        agentLocation.put(Message.REPLYTO_KEY, agentLocation.get("Value"));
         initGUI();
         startAgent();
     }
@@ -85,8 +85,8 @@ public class IRCChannelGUI extends JInternalFrame implements AgentVisitor {
     public void stopAgent() {
         Map message = new Message();
         message.put("JMSType", "Dissolve");
-        message.put("JMSReplyTo", node.get("IRCManager"));
-        message.put("JMSDestination", node.getJMSReplyTo());
+        message.put(Message.REPLYTO_KEY, node.get("IRCManager"));
+        message.put(Message.DESTINATION_KEY, node.getJMSReplyTo());
         getInstance().send(message);
     }
 

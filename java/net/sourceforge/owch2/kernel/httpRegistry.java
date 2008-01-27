@@ -1,6 +1,6 @@
 package net.sourceforge.owch2.kernel;
 
-import static net.sourceforge.owch2.kernel.ProtocolType.*;
+import static net.sourceforge.owch2.protocol.Transport.*;
 
 import java.net.*;
 import java.util.*;
@@ -64,9 +64,9 @@ public class HttpRegistry {
         notification.put("Proxy-Request", notification.get("Request"));
 
         if (registrant != null) {
-            String lname = registrant.getJMSReplyTo();
+            MetaAgent lname = registrant ;
 
-            if (ipc.routerInstance().hasPath(lname)) {
+            if (ipc.hasPath(lname)) {
                 httpdSockets.put(socket.toString(), socket);
                 notification.put("_Socket", socket.toString());
                 notification.put(Message.DESTINATION_KEY, lname);

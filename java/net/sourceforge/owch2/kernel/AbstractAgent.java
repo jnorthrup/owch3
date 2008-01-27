@@ -2,7 +2,7 @@ package net.sourceforge.owch2.kernel;
 
 import static net.sourceforge.owch2.kernel.AgentLifecycle.*;
 import static net.sourceforge.owch2.kernel.Message.*;
-import net.sourceforge.owch2.router.*;
+import net.sourceforge.owch2.protocol.*;
 
 import static java.lang.Thread.*;
 import java.lang.reflect.*;
@@ -147,7 +147,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
             //for later optimizations.... switch(  valueOf(msgType)) ... is enabled.
 
             getClass().getMethod("handle_" + msgType, cls_m).invoke(this,
-                    new Object[]{notificationIn});
+                    notificationIn);
 
         }
         catch (InvocationTargetException e) {
@@ -165,7 +165,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     public AbstractAgent(Map proto) {
         super(proto);
-        ProtocolType.ipc.routerInstance().pathExists(this);
+        Transport.ipc.pathExists(this);
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }
@@ -173,7 +173,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     public void init(Map<String, ? extends V> proto) {
         putAll(proto);
-        ProtocolType.ipc.routerInstance().pathExists(this);
+        Transport.ipc.pathExists(this);
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }
@@ -187,9 +187,9 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
         killFlag = true;
         //UnLink("default");
         Router r[] = {
-                ProtocolType.ipc.routerInstance(),
-                ProtocolType.owch.routerInstance(),
-                ProtocolType.Http.routerInstance(),
+                Transport.ipc,
+                Transport.owch,
+                Transport.http,
         };
         for (Router aR : r) {
             try {
@@ -267,15 +267,15 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
         if (host == null) {
             host = Env.getInstance().getHostname();
         }
-        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + ProtocolType);
+        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Transport);
 
-        MetaProperties response = (MetaProperties) ProtocolType.Http.getLocation().clone();
+        MetaProperties response = (MetaProperties) Transport.http.getLocation();
         response.putAll(this);
         response.put(TYPE_KEY, DEPLOYNODE_TYPE);
         response.put(CLASSTYPE_KEY, getClass().getName());
         response.put(REPLYTO_KEY, getJMSReplyTo());
 
-        response.put(SOURCE_KEY, ProtocolType.Http.getLocation().getURI() + get(RESOURCE_KEY));
+        response.put(SOURCE_KEY, Transport.http.getLocation().getURI() + get(RESOURCE_KEY));
 
         response.put(DESTINATION_KEY, host);
         send(response);
@@ -285,14 +285,14 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     public void clone_state1(String host) {
 
-        MetaProperties response = (MetaProperties) ProtocolType.Http.getLocation().clone();
+        MetaProperties response = (MetaProperties) Transport.http.getLocation().clone();
         response.putAll(this);
         response.put(TYPE_KEY, DEPLOYNODE_TYPE);
         response.put(CLASSTYPE_KEY, getClass().getName());
         response.put(REPLYTO_KEY, getJMSReplyTo());
-        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + ProtocolType);
+        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Transport);
 
-        response.put(SOURCE_KEY, ProtocolType.Http.getLocation().getURI() + get(RESOURCE_KEY));
+        response.put(SOURCE_KEY, Transport.http.getLocation().getURI() + get(RESOURCE_KEY));
         //resource remains constant in this incarnation
         //n2.put( "Resource",get("Resource"));//produces 3 Strings
         response.put(DESTINATION_KEY, host);

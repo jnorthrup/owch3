@@ -4,13 +4,15 @@ import java.util.*;
 
 /**
  * A Message passed from agent to agent.  Contains a minimum amount of Reply and destination information.
+ * <p/>
+ * the default format is rfc822 which has lots of reuse potential
  *
  * @author James Northrup
  * @version $Id$
  */
 public class Message extends Location {
-    public static final String REPLYTO_KEY = Message.REPLYTO_KEY;
-    public static final String DESTINATION_KEY = Message.DESTINATION_KEY;
+    public static final String REPLYTO_KEY = "JMSReplyTo";
+    public static final String DESTINATION_KEY = "JMSDestination";
     public static final String TYPE_KEY = "JMSType";
     public static final String MESSAGE_ID_KEY = "JMSMessageID";
     public static final Object PRIORITY_KEY = "Priority";
@@ -21,11 +23,10 @@ public class Message extends Location {
     }
 
     /**
-     * Copy C'tor
+     * putall ctor
      */
-    public Message(Map p) {
-        super(p);
+    public Message(Map rfc822) {
+        super(rfc822);
     }
-
 }
 

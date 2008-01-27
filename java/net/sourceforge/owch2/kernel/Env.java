@@ -1,6 +1,6 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.router.*;
+import net.sourceforge.owch2.protocol.*;
 
 import java.io.*;
 import java.net.*;
@@ -27,8 +27,8 @@ public class Env {
     private int httpPort = 0;
     private int hostThreads = 2;
     private int socketCount = 2;
-    private String domainName = null;
-    private Map<ProtocolType, Router> routerCache = new HashMap<ProtocolType, Router>(13);
+    private String domainName = "default";
+    private Map<Transport, Router> routerCache = new HashMap<Transport, Router>(13);
     private Map<String, Format> formatCache;
 
 
@@ -37,8 +37,7 @@ public class Env {
      */
     MetaAgent parentNode = null;
 
-
-    private RouteResolver routeResolver = new LeafRouteResolver();
+//    private PathResolver pathResolver = new LeafPathResolver();
 
     private InetAddress hostAddress;
     private NetworkInterface hostInterface;
@@ -77,11 +76,11 @@ public class Env {
     }
 
     public void send(Map<String, ?> item) {
-        routeResolver.send(item); //
+        pathResolver.send(item); //
     }
 
     public void unRoute(String key) {
-        routeResolver.remove(key); //
+        pathResolver.remove(key); //
     }
 
     public HttpRegistry getHttpRegistry() {
@@ -130,21 +129,23 @@ public class Env {
                 }
                 if (protoToken.equals("name")) {
                     protoToken = Message.REPLYTO_KEY;
+                    continue;
                 }
 
                 //intercept a few Env specific keywords...
                 if (protoToken.equals("HostAddress")) {
                     setHostAddress(InetAddress.getByName(valueString));
+                    continue;
                 }
                 if (protoToken.equals("HostInterface")) {
                     setHostInterface(NetworkInterface.getByName(valueString));
-
+                    continue;
                 }
 
                 String[] strings = protoToken.split(":", 2);
                 if (strings.length == 2) {
                     try {
-                        ProtocolType ptype = ProtocolType.valueOf(protoToken);
+                        Transport ptype = Transport.valueOf(protoToken);
                         String attrToken = strings[1];
 
                         ProtocolParam param = ProtocolParam.valueOf(attrToken);
@@ -157,10 +158,10 @@ public class Env {
                                 ptype.setHostInterface(NetworkInterface.getByName(valueString));
                                 break;
                             case Port:
-                                ptype.setDefaultPort(Integer.valueOf(valueString));
+                                ptype.setPort(Short.valueOf(valueString));
                                 break;
                             case Sockets:
-                                ptype.setSocketCount(Integer.valueOf(valueString));
+                                ptype.setSockets(Integer.valueOf(valueString));
                                 break;
                             case Threads:
                                 ptype.setThreads(Integer.valueOf(valueString));
@@ -172,9 +173,11 @@ public class Env {
                 }
                 if (protoToken.equals("HostThreads")) {
                     setHostThreads(Integer.decode(valueString).intValue());
+                    continue;
                 }
                 if (protoToken.equals("SocketCount")) {
                     setSocketCount(Integer.decode(valueString).intValue());
+                    continue;
                 }
                 if (protoToken.equals("ParentURL")) {
                     Location location = (Location) getParentNode();
@@ -219,8 +222,8 @@ public class Env {
                 "-debugLevel  - controls how much scroll is displayed\n";
         s += "-ParentURL   - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n";
         s += "this edition of the Agent Hosting Platform comes with the folowing configurable protocols: \n";
-        for (ProtocolType ptype : ProtocolType.values()) {
-            if (ptype.getDefaultPort() == null) {
+        for (Transport ptype : Transport.values()) {
+            if (ptype.getPort() == null) {
                 continue;
             }
             s += "\t" + ptype.toString();
@@ -305,12 +308,12 @@ public class Env {
         domainName = dName;
     }
 
-    public RouteResolver getRouteHunter() {
-        return routeResolver;
+    public PathResolver getRouteHunter() {
+        return pathResolver;
     }
 
-    public void setRouteHunter(RouteResolver r) {
-        routeResolver = r;
+    public void setRouteHunter(PathResolver r) {
+        pathResolver = r;
     }
 
 

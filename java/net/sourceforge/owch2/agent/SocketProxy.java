@@ -25,7 +25,6 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     private Iterator<String> srcHost_i;
     String AgentPort;
     private ServerSocket ss;
-    private PipeFactory pf = new PipeFactory();
 
     public static void main(String[] args) {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
@@ -65,8 +64,8 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     }
 
     /**
-     * this has the effect of taking over the command of the Http
-     * service on the agent host and handling messages to marshal Http registrations
+     * this has the effect of taking over the command of the http
+     * service on the agent host and handling messages to marshal http registrations
      */
     public SocketProxy(Map m) {
         super(m);

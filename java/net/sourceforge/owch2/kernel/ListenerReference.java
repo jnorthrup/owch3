@@ -1,5 +1,7 @@
 package net.sourceforge.owch2.kernel;
 
+import net.sourceforge.owch2.protocol.*;
+
 /**
  * ListenerReference
  *
@@ -11,7 +13,7 @@ public interface ListenerReference {
 
     public ServerWrapper getServer();
 
-    public ProtocolType getProtocol(); //used in the process of creating the URL
+    public Transport getProtocol(); //used in the process of creating the URL
 
     public int getThreads(); //0==Parent Server Default
 

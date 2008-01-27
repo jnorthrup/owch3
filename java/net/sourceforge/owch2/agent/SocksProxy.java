@@ -77,7 +77,6 @@ public class SocksProxy extends AbstractAgent implements Runnable {
         }
     }
 
-    PipeFactory pf = new PipeFactory();
     private int socksPort = 1080;
 
     /**

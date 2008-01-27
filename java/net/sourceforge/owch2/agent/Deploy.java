@@ -6,7 +6,7 @@
 package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
-import static net.sourceforge.owch2.kernel.ProtocolType.*;
+import static net.sourceforge.owch2.protocol.Transport.*;
 
 import java.net.*;
 import java.util.*;
@@ -143,8 +143,8 @@ public class Deploy extends AbstractAgent {
             Object metaAgent = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
             //use our Message as a bootstrap of parms
             if (metaAgent instanceof MetaAgent) {
-                owch.routerInstance().remove(((MetaAgent) metaAgent).getJMSReplyTo());
-                ipc.routerInstance().pathExists((Map) metaAgent);
+                owch.remove(((MetaAgent) metaAgent).getJMSReplyTo());
+                ipc.pathExists((Map) metaAgent);
             }
             return;
         }

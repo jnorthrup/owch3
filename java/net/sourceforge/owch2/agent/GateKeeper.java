@@ -53,8 +53,8 @@ public class GateKeeper extends AbstractAgent<String> {
     }
 
     /**
-     * this has the effect of taking over the command of the Http
-     * service on the agent host and handling messages to marshal Http registrations
+     * this has the effect of taking over the command of the http
+     * service on the agent host and handling messages to marshal http registrations
      *
      * @param params bootStrap stuff
      */

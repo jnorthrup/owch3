@@ -1,8 +1,7 @@
 package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
-import static net.sourceforge.owch2.kernel.ProtocolType.*;
-import net.sourceforge.owch2.router.*;
+import static net.sourceforge.owch2.protocol.Transport.*;
 
 import static java.lang.Thread.*;
 import java.util.*;
@@ -24,10 +23,10 @@ public class Domain extends Deploy {
         //Kickstarts the protocols by requesting thier locations.
 
         owch.getLocation();
-        Http.getLocation();
+        http.getLocation();
         Env env = Env.getInstance();
         env.setParentHost(true);
-        env.setRouteHunter(new DefaultRouteResolver());
+        env.setRouteHunter(new DefaultPathResolver());
     }
 
     public final boolean isParent() {
@@ -35,22 +34,26 @@ public class Domain extends Deploy {
     }
 
     public static void main(String[] args) throws Exception {
-        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        final String portString = "owch:Port";
-        final String[] ka = {Message.REPLYTO_KEY, portString,};
+        Map<String, ?> m = Env.getInstance().parseCommandLineArgs(args);
 
-        if (m.isEmpty() || !m.keySet().containsAll(Arrays.asList(ka))) {
-            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
-                    "Domain Agent usage:\n\n" +
-                    "-JMSReplyTo (String)name\n" +
-                    "-owch:Port (int)port\n" +
-                    "$Id$\n");
+        List<String> stringList = Arrays.asList(Message.REPLYTO_KEY, "owch:Port");
+        Collection<String> objects = new LinkedList<String>(m.keySet());
+        boolean b = objects.containsAll(stringList);
+        boolean empty = m.isEmpty();
+        if (!empty && b) {
+
+            Domain d = static_init(m, "owch:Port");
+            static_spin(d);
+
+        } else {
+            Env.getInstance().cmdLineHelp(
+                    "\n\n******************** cmdline syntax error\n" +
+                            "Domain Agent usage:\n\n" +
+                            "-JMSReplyTo (String)name\n" +
+                            "-owch:Port (int)port\n" +
+                            "$Id$\n");
         }
 
-        Domain d = static_init(m, portString);
-
-
-        static_spin(d);
     }
 
     private static void static_spin(AbstractAgent d) throws InterruptedException {

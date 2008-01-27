@@ -1,6 +1,8 @@
 package net.sourceforge.owch2.kernel;
 
 
+import net.sourceforge.owch2.protocol.*;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -42,8 +44,8 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
         }
     }
 
-    public ProtocolType getProtocol() {
-        return ProtocolType.owch;
+    public Transport getProtocol() {
+        return Transport.owch;
     }
 
 

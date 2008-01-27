@@ -6,6 +6,7 @@
 package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
+import net.sourceforge.owch2.protocol.*;
 
 import java.io.*;
 import java.net.*;
@@ -181,7 +182,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public void inductStream(InputStream is) {
-        ProtocolType.ipc.routerInstance().pathExists(this);
+        Transport.ipc.pathExists(this);
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] buf = new byte[16384];
@@ -216,7 +217,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         linkTo(null);
         String resource = get("Resource").toString();
 
-        MetaProperties localHttpLocation = ProtocolType.Http.getLocation();
+        MetaProperties localHttpLocation = Transport.http.getLocation();
         Location location = new Location(localHttpLocation);
         location.put(Message.REPLYTO_KEY, getJMSReplyTo());
 

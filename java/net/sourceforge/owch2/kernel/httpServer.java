@@ -1,7 +1,8 @@
 package net.sourceforge.owch2.kernel;
 
 import net.sourceforge.owch2.agent.*;
-import static net.sourceforge.owch2.kernel.ProtocolType.*;
+import net.sourceforge.owch2.protocol.*;
+import static net.sourceforge.owch2.protocol.Transport.*;
 
 import java.io.*;
 import java.net.*;
@@ -9,7 +10,7 @@ import java.text.*;
 import java.util.*;
 
 /**
- * Http server daemon used for sending files and routing agent notifications.
+ * http server daemon used for sending files and routing agent notifications.
  *
  * @author James Northrup
  * @version $Id$
@@ -18,8 +19,8 @@ public class httpServer extends TCPServerWrapper implements ListenerReference, R
     int threads;
     private final static Map<String, String> mimetypes = new HashMap<String, String>();
 
-    public ProtocolType getProtocol() {
-        return Http;
+    public Transport getProtocol() {
+        return http;
     }
 
     public long getExpiration() {

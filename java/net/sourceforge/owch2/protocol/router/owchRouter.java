@@ -1,11 +1,7 @@
 package net.sourceforge.owch2.protocol.router;
 
-import net.sourceforge.owch2.kernel.*;
-import net.sourceforge.owch2.protocol.*;
-
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.*;
+import net.sourceforge.owch2.kernel.EventDescriptor;
+import net.sourceforge.owch2.protocol.Transport;
 
 /**
  * Glamdring Incorporated Enterprises.  All rights reserved.
@@ -14,7 +10,10 @@ import java.util.logging.*;
  * Time: 6:12:57 AM
  */
 public class owchRouter extends AbstractRouterImpl {
-    private static final Transport OWCH = Transport.owch;
+
+    public owchRouter(Transport transport) {
+        super(transport);
+    }
 
     /**
      * this router is "sticky".
@@ -30,60 +29,6 @@ public class owchRouter extends AbstractRouterImpl {
     public boolean hasPath(EventDescriptor eventDescriptor) {
         return false;
     }
-
-    public Future<Receipt> send(final EventDescriptor... async) throws Exception {
-        final Callable<Receipt> callable = new Callable<Receipt>() {
-            public int seq;
-
-            public Receipt call() throws Exception {
-
-                for (EventDescriptor event : async) {
-                    if (event.containsKey(EventDescriptor.MESSAGE_ID_KEY)) {
-
-                        //we think it's inbound...
-                        Logger.getAnonymousLogger().finest("recpt: " + event.get(EventDescriptor.MESSAGE_ID_KEY));
-
-                        for (InboundLifeCycle inboundLifeCycle : OWCH.()) {
-                            Callable callable = OWCH.getInboundEventAgendaTask(inboundLifeCycle, event);
-                            if (null != callable) {
-                                final Future<Receipt> recieptFuture = Reactor.submit(callable);
-                                final Receipt receipt = recieptFuture.get(3, TimeUnit.MINUTES);
-                                OWCH.addReceipt(receipt);
-                            }
-                        }
-                    } else {
-                        for (OutboundLifecycle s : OutboundLifecycle.values()) {
-
-
-                        }
-                    }
-                }
-
-                final Date date = new Date();
-
-                return new Receipt() {
-
-                    public Transport getTransport() {
-                        return null;  //Todo: verify for a purpose
-                    }
-
-                    public Date getTimestamp() {
-                        return date;
-                    }
-
-                    public Iterator<EventDescriptor> iterator() {
-                        return Arrays.asList(async).iterator();
-
-                    }
-                };
-            }
-
-
-        };
-        return Reactor.submit(callable);
-    }
-
-
 }
 
 

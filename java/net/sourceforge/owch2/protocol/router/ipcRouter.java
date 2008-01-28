@@ -38,12 +38,12 @@ public class ipcRouter implements Router {
      * @return
      * @throws Exception
      */
-    public Future<Reciept> send(final EventDescriptor... async) throws Exception {
-        final Callable<Reciept> sender = new Callable<Reciept>() {
+    public Future<Receipt> send(final EventDescriptor... async) throws Exception {
+        final Callable<Receipt> sender = new Callable<Receipt>() {
 
-            public Reciept call() throws Exception {
+            public Receipt call() throws Exception {
 
-                return new Reciept() {
+                return new Receipt() {
                     public Transport getTransport() {
                         return ipc;
                     }
@@ -60,5 +60,9 @@ public class ipcRouter implements Router {
 
     public URI remove(String jmsReplyTo) {
         return (URI) localAgents.remove(jmsReplyTo).getValue(EventDescriptor.URI_KEY);
+    }
+
+    public ConcurrentHashMap<String, Agent> getLocalAgents() {
+        return localAgents;
     }
 }

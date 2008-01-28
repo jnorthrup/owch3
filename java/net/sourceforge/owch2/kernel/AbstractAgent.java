@@ -24,14 +24,15 @@ import java.util.logging.*;
 public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Agent {
     protected static final String MOBILEHOST_KEY = "Host";
     protected static final String DEFAULT_LINK_NAME = "default";
-
     protected static final String DEPLOYNODE_TYPE = DeployNode.toString();
     protected static final String UNLINK_TYPE = UnLink.toString();
     protected static final String CLONE_KEY = Clone.toString();
     protected static final String UPDATED_TYPE = Updated.toString();
     protected static final String UPDATE_TYPE = Update.toString();
     protected static final String LINK_TYPE = Link.toString();
-
+    /**
+     * agent specific old-style thread spinning would use this to stop spinning...
+     */
     public boolean killFlag = false;
     boolean virgin;
 //    LinkRegistry acl = null;
@@ -167,7 +168,8 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     public AbstractAgent(Map proto) {
         super(proto);
-        Transport.ipc.getPathMap().put(getJMSReplyTo(), this);
+        final ipcRouter ipcRouter = (ipcRouter) Transport.ipc.getRouter();
+        ipcRouter.getLocalAgents().put(getJMSReplyTo(), this);
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }
@@ -187,21 +189,16 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      */
     public void handle_Dissolve(EventDescriptor n) {
         killFlag = true;
-        //UnLink("default");
-        Router r[] = {
-                Transport.ipc,
-                Transport.owch,
-                http,
-        };
-        for (Router aR : r) {
-            try {
-                aR.remove(getJMSReplyTo());
-            }
-            catch (Exception e) {
-            }
-        }
+
     }
 
+    /**
+     * link does not necessarily imply a workflow state-- Link establishes routing updates to/from the destination.
+     * <p/>
+     * Link will therefore provide the most direct route when possible, removing application-level routing hops.
+     *
+     * @param p the link initiation
+     */
     public void handle_Link(EventDescriptor p) {
         String dest = p.getJMSReplyTo();
         EventDescriptor n = new EventDescriptor();
@@ -213,7 +210,19 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
 
     /**
-     * Sends an update to another AbstractAgent
+     * Sends an update to another AbstractAgent.  this serves to improve lazy routing accuracy.
+     * <p/>
+     * a great number of features derive from competitiver updates for multiple nodes with 1 name
+     * <p/>
+     * <h3>for aggregates nodes sharing an "Alias, Cloning, or load/distance balancing  </h3>
+     * <ul><li>asynchronous agent job queues: agents update more frequently as thier idles cycles increase so that they can be the chosen designated resource as the most recent update.
+     * <li> facilitates the ability to deploy and clone without additional design specialization
+     * </ul>
+     * <p/>
+     * <h3>for singletons and the dynamics of each agent whether alone or en masse</h3>
+     * <ul>
+     * <li> facilitates the ability to relocate a singleton agent and reroute messages held up during relocation
+     * <li> can cycle or coexist addresses for multihoming, multiprotocol, and and port load-balancing
      *
      * @param p JMSReplyTo
      */
@@ -227,9 +236,10 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
     }
 
     /**
-     * Sends a Link notification other node(s) intended to establish direct socket communication.
+     * this halts updates between the participants.  Agent relocation does not benefit from unlink.
+     * queueing will await the next successful update to deliver the backlog that occurs while in transit.
      *
-     * @param m node(s) to link to
+     * @param m node(s) to unlink to
      */
     public void handle_Unlink(EventDescriptor m) {
         String lk = m.getJMSReplyTo();

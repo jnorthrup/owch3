@@ -10,7 +10,7 @@ import java.util.*;
  * Date: Jan 26, 2008
  * Time: 3:15:45 PM
  */
-public interface Reciept extends Iterable<EventDescriptor> {
+public interface Receipt extends Iterable<EventDescriptor> {
     Transport getTransport();
 
     Iterator<EventDescriptor> iterator();

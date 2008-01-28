@@ -1,5 +1,6 @@
 package net.sourceforge.owch2.kernel;
 
+import java.io.*;
 import java.net.*;
 import java.util.*;
 
@@ -55,5 +56,9 @@ public class EventDescriptor extends HashMap<String, Object> {
 
     public String getDestination() {
         return (String) get(DESTINATION_KEY);
+    }
+
+    public void save(OutputStream os) {
+
     }
 }

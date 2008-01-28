@@ -3,7 +3,9 @@ package net.sourceforge.owch2.protocol.router;
 import net.sourceforge.owch2.kernel.*;
 import net.sourceforge.owch2.protocol.*;
 
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.*;
 
 /**
  * Glamdring Incorporated Enterprises.  All rights reserved.
@@ -12,6 +14,7 @@ import java.util.concurrent.*;
  * Time: 6:12:57 AM
  */
 public class owchRouter extends AbstractRouterImpl {
+    private static final Transport OWCH = Transport.owch;
 
     /**
      * this router is "sticky".
@@ -25,12 +28,61 @@ public class owchRouter extends AbstractRouterImpl {
      */
     @Override
     public boolean hasPath(EventDescriptor eventDescriptor) {
+        return false;
     }
 
-    @Override
-    public Future<Reciept> send(EventDescriptor... async) {
-        super.send(async);    //Todo: verify for a purpose
+    public Future<Receipt> send(final EventDescriptor... async) throws Exception {
+        final Callable<Receipt> callable = new Callable<Receipt>() {
+            public int seq;
+
+            public Receipt call() throws Exception {
+
+                for (EventDescriptor event : async) {
+                    if (event.containsKey(EventDescriptor.MESSAGE_ID_KEY)) {
+
+                        //we think it's inbound...
+                        Logger.getAnonymousLogger().finest("recpt: " + event.get(EventDescriptor.MESSAGE_ID_KEY));
+                        for (InboundLifeCycle inboundLifeCycle : InboundLifeCycle.values()) {
+                            Callable callable = OWCH.getEventAgendaTask(inboundLifeCycle, event);
+                            if (null != callable) {
+                                final Future<Receipt> recieptFuture = Reactor.submit(callable);
+                                final Receipt receipt = recieptFuture.get(3, TimeUnit.MINUTES);
+                                OWCH.addReceipt(receipt);
+                            }
+                        }
+                    } else {
+                        for (OutboundLifecycle s : OutboundLifecycle.values()) {
+
+
+                        }
+                    }
+                }
+
+                final Date date = new Date();
+
+                return new Receipt() {
+
+                    public Transport getTransport() {
+                        return null;  //Todo: verify for a purpose
+                    }
+
+                    public Date getTimestamp() {
+                        return date;
+                    }
+
+                    public Iterator<EventDescriptor> iterator() {
+                        return Arrays.asList(async).iterator();
+
+                    }
+                };
+            }
+
+
+        };
+        return Reactor.submit(callable);
     }
+
+
 }
 
 

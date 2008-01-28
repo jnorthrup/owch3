@@ -183,7 +183,10 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public void inductStream(InputStream is) {
-        Transport.ipc.getPathMap().put(getJMSReplyTo(), new EventDescriptor() {
+        throw new Error("under rennovation");
+        /*    Transport.ipc.getPathMap().put(
+                getJMSReplyTo(),
+                new EventDescriptor() {
         });
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -205,7 +208,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             return;
-        }
+        }*/
     }
 
     /**

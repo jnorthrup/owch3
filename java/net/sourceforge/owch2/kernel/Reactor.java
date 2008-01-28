@@ -5,6 +5,7 @@ import net.sourceforge.owch2.protocol.*;
 import java.io.*;
 import java.nio.channels.*;
 import static java.nio.channels.SelectionKey.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -57,7 +58,6 @@ public enum Reactor {
     }
 
     private static void staticInit() {
-
         threadPool.execute(new Runnable() {
             public void run() {
                 int i = 0;
@@ -96,7 +96,7 @@ public enum Reactor {
 
 
     static ThreadPoolExecutor threadPool;
-
+    static Timer timer = new Timer();
 
     private int op;
 
@@ -121,6 +121,11 @@ public enum Reactor {
     public static ThreadPoolExecutor getThreadPool() {
         return threadPool;
     }
+
+    public static Future<Receipt> submit(Callable<Receipt> callable) {
+        return getThreadPool().submit(callable);
+    }
+
 }
 
 

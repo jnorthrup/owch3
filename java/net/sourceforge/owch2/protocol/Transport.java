@@ -5,6 +5,7 @@ import net.sourceforge.owch2.protocol.router.*;
 
 import java.net.*;
 import java.nio.channels.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -35,6 +36,7 @@ public enum Transport implements Router {
     Integer sockets;
     Integer threads;
 
+    private Map<Enum, EventTask> eventAgenda = new IdentityHashMap<Enum, EventTask>(InboundLifeCycle.values().length + OutboundLifecycle.values().length);
 
     Transport() {
         this.init();
@@ -122,7 +124,7 @@ public enum Transport implements Router {
         return router.hasPath(location);
     }
 
-    public Future<Reciept> send(EventDescriptor... async) throws Exception {
+    public Future<Receipt> send(EventDescriptor... async) throws Exception {
         return router.send(async);
     }
 
@@ -160,5 +162,14 @@ public enum Transport implements Router {
 
     public boolean hasPath(String destination) {
         return getPathMap().containsKey(destination);
+    }
+
+    public Callable getEventAgendaTask(InboundLifeCycle inboundLifeCycle, EventDescriptor event) {
+        EventTask task = eventAgenda.get(inboundLifeCycle);
+        return task.getCallable(event);
+    }
+
+    public void addReceipt(Receipt receipt) {
+
     }
 }

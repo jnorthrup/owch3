@@ -10,7 +10,7 @@ public class ChatAgent extends AbstractAgent {
     ChatGUI gui;
     private SentenceParser sParser;
 
-    public ChatAgent(ChatGUI g, Map l) {
+    public ChatAgent(ChatGUI g, Map<? extends String, ? extends Object> l) {
         super(l);
         try {
             sParser = new SentenceParser(getJMSReplyTo() + ".hist");

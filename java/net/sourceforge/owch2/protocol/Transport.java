@@ -16,7 +16,32 @@ import java.util.concurrent.*;
  * @copyright All Rights Reserved Glamdring Inc.
  */
 public enum Transport implements Router {
-    ipc,
+    ipc {
+        public void init() {
+            super.init();
+            this.outboundEventAgenda.put(OutboundLifecycle.route, new EventTask() {
+                Callable getCallable(final EventDescriptor event) {
+                    return new Callable() {
+                        public Object call() throws Exception {
+                            return ((ipcRouter) router).getLocalAgents().containsKey(event.getDestination());
+                        }
+                    };
+                }
+            });
+            this.inboundEventAgenda.put(InboundLifeCycle.route, new EventTask() {
+                Callable getCallable(final EventDescriptor event) {
+                    return new Callable() {
+                        public Object call() throws Exception {
+                            ipcRouter r = (ipcRouter) router;
+                            final Agent agent = r.getLocalAgents().get(event.getDestination());
+                            agent.recv(event);
+                            return true;
+                        }
+                    };
+                }
+            });
+        }
+    },
     owch,
     http,
     Domain,
@@ -36,9 +61,13 @@ public enum Transport implements Router {
     Integer sockets;
     Integer threads;
 
-    private Map<Enum, EventTask> eventAgenda = new IdentityHashMap<Enum, EventTask>(InboundLifeCycle.values().length + OutboundLifecycle.values().length);
+    public static Map<OutboundLifecycle, EventTask> outboundEventAgenda;
+    private Map<InboundLifeCycle, EventTask> inboundEventAgenda;
+    private Map<InboundLifeCycle, EventTask> outboundEventAgenda;
 
     Transport() {
+        inboundEventAgenda = new EnumMap<InboundLifeCycle, EventTask>(InboundLifeCycle.class);
+        outboundEventAgenda = new EnumMap<InboundLifeCycle, EventTask>(InboundLifeCycle.class);
         this.init();
     }
 
@@ -82,7 +111,7 @@ public enum Transport implements Router {
             System.out.println(uri.toASCIIString());
             return uri;
         } catch (URISyntaxException e) {
-            e.printStackTrace();  //ToDo: change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
         return null;
@@ -164,8 +193,8 @@ public enum Transport implements Router {
         return getPathMap().containsKey(destination);
     }
 
-    public Callable getEventAgendaTask(InboundLifeCycle inboundLifeCycle, EventDescriptor event) {
-        EventTask task = eventAgenda.get(inboundLifeCycle);
+    public Callable getInboundEventAgendaTask(InboundLifeCycle inboundLifeCycle, EventDescriptor event) {
+        EventTask task = inboundEventAgenda.get(inboundLifeCycle);
         return task.getCallable(event);
     }
 

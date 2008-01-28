@@ -42,8 +42,9 @@ public class owchRouter extends AbstractRouterImpl {
 
                         //we think it's inbound...
                         Logger.getAnonymousLogger().finest("recpt: " + event.get(EventDescriptor.MESSAGE_ID_KEY));
-                        for (InboundLifeCycle inboundLifeCycle : InboundLifeCycle.values()) {
-                            Callable callable = OWCH.getEventAgendaTask(inboundLifeCycle, event);
+
+                        for (InboundLifeCycle inboundLifeCycle : OWCH.()) {
+                            Callable callable = OWCH.getInboundEventAgendaTask(inboundLifeCycle, event);
                             if (null != callable) {
                                 final Future<Receipt> recieptFuture = Reactor.submit(callable);
                                 final Receipt receipt = recieptFuture.get(3, TimeUnit.MINUTES);

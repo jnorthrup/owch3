@@ -67,10 +67,10 @@ public class PCTScanner extends AbstractAgent {
                         //no data    e.printStackTrace();  //To change body of catch statement use Options | File Templates.
                     }
                     new PCTMessage(command.getCodes().get(Character.valueOf(type)), arg, flags, serialNo, data);
-                    MetaProperties message = new Message();
-                    Object value = get(Message.DESTINATION_KEY);
+                    EventDescriptor message = new EventDescriptor();
+                    Object value = get(EventDescriptor.DESTINATION_KEY);
                     if (null != value)
-                        message.put(Message.DESTINATION_KEY, String.valueOf(value));
+                        message.put(EventDescriptor.DESTINATION_KEY, String.valueOf(value));
                     Map<Character, command> cmd_type = command.getCodes();
                     command cmd = cmd_type.get(Character.valueOf(type));
                     //   if ("PCT_KEEP_ALIVE".equals(cmd.getName())) {
@@ -94,7 +94,7 @@ public class PCTScanner extends AbstractAgent {
     public static void main(String[] args) throws Exception {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         final String[] ka;
-        ka = new String[]{Message.REPLYTO_KEY, Message.DESTINATION_KEY, "AgentPort", "AgentHost"};
+        ka = new String[]{EventDescriptor.REPLYTO_KEY, EventDescriptor.DESTINATION_KEY, "AgentPort", "AgentHost"};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +

@@ -6,7 +6,6 @@
 package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
-import static net.sourceforge.owch2.protocol.Transport.*;
 
 import java.net.*;
 import java.util.*;
@@ -17,7 +16,7 @@ public class Deploy extends AbstractAgent {
     public static void main(String[] args) throws Exception {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
         {
-            final String[] ka = {Message.REPLYTO_KEY,};
+            final String[] ka = {EventDescriptor.REPLYTO_KEY,};
 
             if (!m.keySet().containsAll(Arrays.asList(ka))) {
                 Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
@@ -44,11 +43,11 @@ public class Deploy extends AbstractAgent {
     }
 
     /**
-     * <B>Message:</B> Deploy Fields:<UL> <LI>Class - class to be constructed
+     * <B>EventDescriptor:</B> Deploy Fields:<UL> <LI>Class - class to be constructed
      * <LI>Path  - Array of URL Strings for Classpath, or "default" for native classloader
      * <LI> Parameters  -  array of normalized Strings to pass into our  new object
      */
-    public void handle_Deploy(MetaProperties n) {
+    public void handle_Deploy(EventDescriptor n) {
         String _class = (String) n.get("Class");
         String path = (String) n.get("Path");
         String parm = (String) n.get("Parameters");
@@ -103,7 +102,7 @@ public class Deploy extends AbstractAgent {
         }
     }
 
-    public void handle_DeployNode(MetaProperties n) {
+    public void handle_DeployNode(EventDescriptor n) {
         String _class = (String) n.get("Class");
         String path = (String) n.get("Path");
         int i;
@@ -128,10 +127,10 @@ public class Deploy extends AbstractAgent {
         }
         try {
             if (!n.containsKey("Singleton")) {
-                n.put(Message.REPLYTO_KEY, n.getJMSReplyTo() + "." + uniq + "." + getJMSReplyTo());
+                n.put(EventDescriptor.REPLYTO_KEY, n.getJMSReplyTo() + "." + uniq + "." + getJMSReplyTo());
                 uniq++;
             } else {
-                n.put(Message.REPLYTO_KEY, n.getJMSReplyTo());
+                n.put(EventDescriptor.REPLYTO_KEY, n.getJMSReplyTo());
 
             }
             //path is URL's, gotta do a loop to instantiate URL's...
@@ -140,11 +139,12 @@ public class Deploy extends AbstractAgent {
             }
 
             /* this creates a new Object */
-            Object metaAgent = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
-            //use our Message as a bootstrap of parms
-            if (metaAgent instanceof MetaAgent) {
-                owch.remove(((MetaAgent) metaAgent).getJMSReplyTo());
-                ipc.pathExists((Map) metaAgent);
+            Object Location = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
+            //use our EventDescriptor as a bootstrap of parms
+            if (Location instanceof EventDescriptor) {
+                throw new Error("return to fix this...");
+//                owch.remove(((EventDescriptor) EventDescriptor).getJMSReplyTo());
+//                ipc.hasPath((Map) EventDescriptor);
             }
             return;
         }

@@ -1,6 +1,7 @@
 package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
+import net.sourceforge.owch2.protocol.*;
 import static net.sourceforge.owch2.protocol.Transport.*;
 
 import static java.lang.Thread.*;
@@ -22,11 +23,19 @@ public class Domain extends Deploy {
 
         //Kickstarts the protocols by requesting thier locations.
 
-        owch.getLocation();
-        http.getLocation();
+        owch.getURI();
+        http.getURI();
         Env env = Env.getInstance();
         env.setParentHost(true);
-        env.setRouteHunter(new DefaultPathResolver());
+
+        Env.setInboundTransports(
+                new Transport[]{
+                        owch, ipc, Null
+                }
+        );
+        Env.setOutboundTransports(new Transport[]{
+                ipc, owch, Null
+        });
     }
 
     public final boolean isParent() {
@@ -36,7 +45,7 @@ public class Domain extends Deploy {
     public static void main(String[] args) throws Exception {
         Map<String, ?> m = Env.getInstance().parseCommandLineArgs(args);
 
-        List<String> stringList = Arrays.asList(Message.REPLYTO_KEY, "owch:Port");
+        List<String> stringList = Arrays.asList(EventDescriptor.REPLYTO_KEY, "owch:Port");
         Collection<String> objects = new LinkedList<String>(m.keySet());
         boolean b = objects.containsAll(stringList);
         boolean empty = m.isEmpty();
@@ -46,14 +55,13 @@ public class Domain extends Deploy {
             static_spin(d);
 
         } else {
-            Env.getInstance().cmdLineHelp(
+            Env.cmdLineHelp(
                     "\n\n******************** cmdline syntax error\n" +
                             "Domain Agent usage:\n\n" +
                             "-JMSReplyTo (String)name\n" +
                             "-owch:Port (int)port\n" +
                             "$Id$\n");
         }
-
     }
 
     private static void static_spin(AbstractAgent d) throws InterruptedException {
@@ -67,7 +75,6 @@ public class Domain extends Deploy {
         final int port = Integer.parseInt(s);
         Env.getInstance().setOwchPort(port);
 
-        Domain d = new Domain(m);
-        return d;
+        return new Domain(m);
     }
 }

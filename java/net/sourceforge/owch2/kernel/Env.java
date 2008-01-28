@@ -1,6 +1,7 @@
 package net.sourceforge.owch2.kernel;
 
 import net.sourceforge.owch2.protocol.*;
+import net.sourceforge.owch2.protocol.router.*;
 
 import java.io.*;
 import java.net.*;
@@ -8,20 +9,33 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * Env class: mobile agent host environment;
+ * Mobile Agent Hosting Environment. This class acts as a hub for realtime messages
+ * passing among several namespaces and transports.
  * <p/>
- * <P>intent: the master object factory
+ * This also acts as the central network-stack kernel to unify the interfaces and routing of the various transports
+ * that messages are destined for.
  * <p/>
- * <P>Summary: This holds quite a few package-local and global variables and accessors.
+ * Workflow design is facilitated by decoupling the URI and URL endpoints from the
+ * agent identifiers (labeled <B>"JMSReplyTo"</B>).  Agents are semantically named with short human-readable ID's in order to
+ * facilitate generic service names living among cloned, replicated, and mobile agents, who will
+ * always communicate via the nearest agent hop named "default" initially to locate direct transport locations to
+ * send to.
  * <p/>
- * This is the backbone of routing and traffic for AbstractAgents to pass MetaProperties through various communication routers and gateways.
+ * "default" Agent routing is bootstrapped into an agent host and all traffic of unknown destination path will
+ * forward to the agent named "default", typically a  domain object.
+ * <p/>
+ * Owch messages are intended to use multiple, transport specific fields, not solely any single syntax or
+ * URI convention.
+ * <p/>
+ * the defacto delivery model is non-escaped, non multiline RFC822 with no serialization facilities in order to
+ * keep the scope and the footprint simple. that said, some amount of REST and SMTP rfc822 usage may test this resolve.
  *
  * @author James Northrup
  * @version $Id$
  * @see AbstractAgent
  */
 public class Env {
-    public boolean shutdown = false;
+    volatile public boolean shutdown = false;
     private boolean parentFlag = false;
     private int owchPort = 0;
     private int httpPort = 0;
@@ -33,9 +47,9 @@ public class Env {
 
 
     /**
-     * returns a MetaProperties suitable for parent routing.
+     * returns a EventDescriptor suitable for parent routing.
      */
-    MetaAgent parentNode = null;
+    EventDescriptor parentNode = null;
 
 //    private PathResolver pathResolver = new LeafPathResolver();
 
@@ -45,7 +59,9 @@ public class Env {
     private static Env instance;
     private int pipePort;
     public static Map<String, Socket> httpdSockets = new ConcurrentHashMap<String, Socket>();
-    private HttpRegistry httpRegistry;
+    private httpRegistry httpRegistry;
+    private static Transport[] inboundTransports;
+    private static Transport[] outboundTransports;
 
     private Env() {
     }
@@ -75,16 +91,20 @@ public class Env {
         socketCount = t;
     }
 
-    public void send(Map<String, ?> item) {
-        pathResolver.send(item); //
-    }
-
-    public void unRoute(String key) {
-        pathResolver.remove(key); //
-    }
-
-    public HttpRegistry getHttpRegistry() {
+    public httpRegistry getHttpRegistry() {
         return httpRegistry;
+    }
+
+    public void send(EventDescriptor notification) {
+
+    }
+
+    public static void setInboundTransports(Transport[] inboundTransport) {
+        inboundTransports = inboundTransport;
+    }
+
+    public static void setOutboundTransports(Transport[] outboundTransport) {
+        outboundTransports = outboundTransport;
     }
 
     enum ProtocolParam {
@@ -110,9 +130,9 @@ public class Env {
      * @param arguments usu. the commandline args or the source args for a clone instance
      * @return the props from the commandline
      */
-    public Map<String, String> parseCommandLineArgs(String[] arguments) {
+    public EventDescriptor parseCommandLineArgs(String[] arguments) {
         try {
-            MetaProperties bootMessage = new Message();
+            EventDescriptor bootMessage = new EventDescriptor();
             //harsh but effective, asume everything is key value pairs.
             for (int i = 0; i < arguments.length - arguments.length % 2; i += 2) {
 
@@ -128,7 +148,7 @@ public class Env {
                     throw new RuntimeException("requested help");
                 }
                 if (protoToken.equals("name")) {
-                    protoToken = Message.REPLYTO_KEY;
+                    protoToken = EventDescriptor.REPLYTO_KEY;
                     continue;
                 }
 
@@ -145,26 +165,26 @@ public class Env {
                 String[] strings = protoToken.split(":", 2);
                 if (strings.length == 2) {
                     try {
-                        Transport ptype = Transport.valueOf(protoToken);
+                        Transport transport = Transport.valueOf(protoToken);
                         String attrToken = strings[1];
 
                         ProtocolParam param = ProtocolParam.valueOf(attrToken);
 
                         switch (param) {
                             case HostAddress:
-                                ptype.setHostAddress(InetAddress.getByName(valueString));
+                                transport.setHostAddress(InetAddress.getByName(valueString));
                                 break;
                             case HostInterface:
-                                ptype.setHostInterface(NetworkInterface.getByName(valueString));
+                                transport.setHostInterface(NetworkInterface.getByName(valueString));
                                 break;
                             case Port:
-                                ptype.setPort(Short.valueOf(valueString));
+                                transport.setPort(Short.valueOf(valueString));
                                 break;
                             case Sockets:
-                                ptype.setSockets(Integer.valueOf(valueString));
+                                transport.setSockets(Integer.valueOf(valueString));
                                 break;
                             case Threads:
-                                ptype.setThreads(Integer.valueOf(valueString));
+                                transport.setThreads(Integer.valueOf(valueString));
                                 break;
                         }
                     }
@@ -180,9 +200,9 @@ public class Env {
                     continue;
                 }
                 if (protoToken.equals("ParentURL")) {
-                    Location location = (Location) getParentNode();
-                    location.put("URL", valueString);
-                    setParentNode(location);
+                    EventDescriptor EventDescriptor = (EventDescriptor) getParentNode();
+                    EventDescriptor.put("URL", valueString);
+                    setParentNode(EventDescriptor);
                     continue;
                 }
 
@@ -192,7 +212,8 @@ public class Env {
                     while (streamTokenizer.hasMoreElements()) {
                         String tempString = (String) streamTokenizer.nextElement();
                         InputStream fileInputStream = new FileInputStream(tempString);
-                        bootMessage.load(fileInputStream);
+//                        bootMessage.load(fileInputStream);
+                        throw new UnsupportedClassVersionError();
                     }
                     continue;
                 }
@@ -223,7 +244,7 @@ public class Env {
         s += "-ParentURL   - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n";
         s += "this edition of the Agent Hosting Platform comes with the folowing configurable protocols: \n";
         for (Transport ptype : Transport.values()) {
-            if (ptype.getPort() == null) {
+            if (ptype.getPort() == -1) {
                 continue;
             }
             s += "\t" + ptype.toString();
@@ -241,7 +262,7 @@ public class Env {
     }
 
 
-    public void sethttpRegistry(HttpRegistry h) {
+    public void sethttpRegistry(httpRegistry h) {
     }
 
     public Format getFormat(Object name) {
@@ -260,7 +281,7 @@ public class Env {
         return formatCache;
     }
 
-    public String getDefaultURI() {
+    public URI getDefaultURI() {
         if (!isParentHost()) {
             return getParentNode().getURI();
         } else {
@@ -278,7 +299,7 @@ public class Env {
         parentFlag = flag;
     }
 
-    public void setParentNode(MetaAgent l) {
+    public void setParentNode(EventDescriptor l) {
         parentNode = l;
     }
 
@@ -292,11 +313,11 @@ public class Env {
     }
 
 
-    public MetaAgent getParentNode() {
+    public EventDescriptor getParentNode() {
         if (parentNode == null) {
-            Location<String> l = new Location<String>();
+            EventDescriptor l = new EventDescriptor();
             l.put("Created", "env.getDomain()");
-            l.put(Message.REPLYTO_KEY, "default");
+            l.put(EventDescriptor.REPLYTO_KEY, "default");
             l.put("URL", "owch://" + getHostAddress().getCanonicalHostName() + ":2112/");
             parentNode = l;
         }
@@ -307,15 +328,6 @@ public class Env {
     public void setDomainName(String dName) {
         domainName = dName;
     }
-
-    public PathResolver getRouteHunter() {
-        return pathResolver;
-    }
-
-    public void setRouteHunter(PathResolver r) {
-        pathResolver = r;
-    }
-
 
     public InetAddress getHostAddress() {
         if (null == hostAddress) {

@@ -7,20 +7,19 @@ import static net.sourceforge.owch2.kernel.Env.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.util.*;
 
 public class IRCChannelGUI extends JInternalFrame implements AgentVisitor {
     private JList UsersList = new JList(new ScrollingListModel());
     private Container EntryDoc = new JToolBar();
     private JList msgList = new JList(new ScrollingListModel());
     private Component ValueText = new JTextField();
-    Location agentLocation;
+    EventDescriptor agentLocation;
     IRCChannelAgent node;
 
-    public IRCChannelGUI(MetaProperties JoinMsg) {
-        agentLocation = new Location(JoinMsg);
-        agentLocation.put("IRCManager", agentLocation.get(Message.REPLYTO_KEY));
-        agentLocation.put(Message.REPLYTO_KEY, agentLocation.get("Value"));
+    public IRCChannelGUI(EventDescriptor JoinMsg) {
+        agentLocation = new EventDescriptor(JoinMsg);
+        agentLocation.put("IRCManager", agentLocation.get(EventDescriptor.REPLYTO_KEY));
+        agentLocation.put(EventDescriptor.REPLYTO_KEY, agentLocation.get("Value"));
         initGUI();
         startAgent();
     }
@@ -83,11 +82,11 @@ public class IRCChannelGUI extends JInternalFrame implements AgentVisitor {
     }
 
     public void stopAgent() {
-        Map message = new Message();
+        EventDescriptor message = new EventDescriptor();
         message.put("JMSType", "Dissolve");
-        message.put(Message.REPLYTO_KEY, node.get("IRCManager"));
-        message.put(Message.DESTINATION_KEY, node.getJMSReplyTo());
-        getInstance().send(message);
+        message.put(EventDescriptor.REPLYTO_KEY, node.get("IRCManager"));
+        message.put(EventDescriptor.DESTINATION_KEY, node.getJMSReplyTo());
+        getInstance().send((EventDescriptor) message);
     }
 
     public void startAgent() {

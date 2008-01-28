@@ -7,10 +7,10 @@ import java.awt.*;
 import java.util.*;
 
 public class IRCManager extends IRC {
-    public void handle_IRC_JOIN(MetaProperties<String> m) {
+    public void handle_IRC_JOIN(EventDescriptor m) {
 
-        if (m.get(Message.REPLYTO_KEY).equals(get("IRCNickname").toString())) {
-            m.put(Message.REPLYTO_KEY, getJMSReplyTo());
+        if (m.get(EventDescriptor.REPLYTO_KEY).equals(get("IRCNickname").toString())) {
+            m.put(EventDescriptor.REPLYTO_KEY, getJMSReplyTo());
             Component cg = new IRCChannelGUI(m);
             MainFrame.desktop.add(cg);
             cg.setVisible(true);

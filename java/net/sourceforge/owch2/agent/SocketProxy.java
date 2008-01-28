@@ -28,7 +28,7 @@ public class SocketProxy extends AbstractAgent implements Runnable {
 
     public static void main(String[] args) {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        final String[] ka = {Message.REPLYTO_KEY, "SourcePort", "SourceHost", "AgentPort"};
+        final String[] ka = {EventDescriptor.REPLYTO_KEY, "SourcePort", "SourceHost", "AgentPort"};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +

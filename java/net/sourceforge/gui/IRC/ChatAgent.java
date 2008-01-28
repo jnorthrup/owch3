@@ -31,17 +31,17 @@ public class ChatAgent extends AbstractAgent {
     /**
      * this tells our (potentially clone) agent to stop re-registering.  it will cease to spin.
      */
-    public void handle_Dissolve(MetaProperties n) {
-        n.put(Message.DESTINATION_KEY, get("IRCManager"));
+    public void handle_Dissolve(EventDescriptor n) {
+        n.put(EventDescriptor.DESTINATION_KEY, get("IRCManager"));
         n.put("JMSType", "PART");
         n.put("Value", getJMSReplyTo());
-        n.put(Message.REPLYTO_KEY, getJMSReplyTo());
+        n.put(EventDescriptor.REPLYTO_KEY, getJMSReplyTo());
         send(n);
         sParser.write(getJMSReplyTo() + ".hist");
-        super.handle_Dissolve(new Location(this));
+        super.handle_Dissolve(new EventDescriptor(this));
     }
 
-    public void handle_IRC_PRIVMSG(MetaProperties m) {
+    public void handle_IRC_PRIVMSG(EventDescriptor m) {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
         List<Report> l = sParser.tokenize(value);
@@ -54,10 +54,10 @@ public class ChatAgent extends AbstractAgent {
 
     }
 
-    public void handle_IRC_PRIVMSG2(MetaProperties m) {
+    public void handle_IRC_PRIVMSG2(EventDescriptor m) {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
-        String ret = value.startsWith("\00ACTION") ? "* " + m.get(Message.REPLYTO_KEY) + " " + value.substring(6).trim() : "<" + m.get(Message.REPLYTO_KEY) + "> " + value;
+        String ret = value.startsWith("\00ACTION") ? "* " + m.get(EventDescriptor.REPLYTO_KEY) + " " + value.substring(6).trim() : "<" + m.get(EventDescriptor.REPLYTO_KEY) + "> " + value;
         lm.addElement(ret);
         while (lm.getSize() > 1000) {
             lm.remove(0);
@@ -65,7 +65,7 @@ public class ChatAgent extends AbstractAgent {
         sParser.tokenize(value);
     }
 
-    public void handle_IRC_RPL_NAMREPLY(MetaProperties m) {
+    public void handle_IRC_RPL_NAMREPLY(EventDescriptor m) {
         StringTokenizer tk = new StringTokenizer(m.get("Value").toString());
         ScrollingListModel lm = (ScrollingListModel) gui.getUsersList().getModel();
 
@@ -74,7 +74,7 @@ public class ChatAgent extends AbstractAgent {
         }
     }
 
-    public void handle_IRC_RPL_ENDOFNAMES(MetaProperties m) {
+    public void handle_IRC_RPL_ENDOFNAMES(EventDescriptor m) {
         gui.getUsersList().invalidate();
         gui.getUsersList().repaint();
     }

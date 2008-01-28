@@ -54,7 +54,7 @@ public class IRC extends AbstractAgent implements Runnable {
     public static void main(String[] args) {
         Map<?, ?> bootstrap = Env.getInstance().parseCommandLineArgs(args);
 
-        final List requiredList = Arrays.asList(new Object[]{Message.REPLYTO_KEY, IRCHOST_KEY, "IRCNickname",});
+        final List requiredList = Arrays.asList(new Object[]{EventDescriptor.REPLYTO_KEY, IRCHOST_KEY, "IRCNickname",});
         if (!bootstrap.keySet().containsAll(requiredList)) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
                     "IRC Agent usage:\n\n" +
@@ -73,33 +73,33 @@ public class IRC extends AbstractAgent implements Runnable {
 
 
     protected void removeLocationFromChannel(Object channel, Object l) {
-        Collection<Location> s = (Collection<Location>) getChannels().get(channel);
-        if (s == null) {
+        Collection<EventDescriptor> ses = (Collection<EventDescriptor>) getChannels().get(channel);
+        if (ses == null) {
             return;
         }
-        s.remove(l);
-        if (s.isEmpty()) {
+        ses.remove(l);
+        if (ses.isEmpty()) {
             getChannels().remove(channel);
         }
     }
 
-    private void acknowledgePublicMsg(MetaProperties m) {
-        String backto = m.get(Message.REPLYTO_KEY).toString();
+    private void acknowledgePublicMsg(EventDescriptor m) {
+        String backto = m.get(EventDescriptor.REPLYTO_KEY).toString();
 //an irc nick
         String response = backto + ", noted";
-        MetaProperties n = new Message(m);
-        n.put(Message.DESTINATION_KEY, getJMSReplyTo());
-        n.put(Message.TYPE_KEY, MSG_TYPE);
+        EventDescriptor n = new EventDescriptor(m);
+        n.put(EventDescriptor.DESTINATION_KEY, getJMSReplyTo());
+        n.put(EventDescriptor.TYPE_KEY, MSG_TYPE);
         n.put(VALUE_KEY, response);
         handle_MSG(n);
     }
 
-    protected void addLocationToChannel(Object channel, Location l) {
-        Collection<Location> s = (Collection<Location>) getChannels().get(channel);
-        if (s == null) {
-            s = new HashSet<Location>();
+    protected void addLocationToChannel(Object channel, EventDescriptor l) {
+        Collection<EventDescriptor> ses = (Collection<EventDescriptor>) getChannels().get(channel);
+        if (ses == null) {
+            ses = new HashSet<EventDescriptor>();
         }
-        s.add(l);
+        ses.add(l);
     }
 
     public void run() {
@@ -114,11 +114,11 @@ public class IRC extends AbstractAgent implements Runnable {
                 setOs(new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true));
                 //if (E
 
-                MetaProperties l = owch.getLocation();
+                EventDescriptor l = new EventDescriptor(owch.getURI());
                 String out = "USER" + " owch " + " " + " owch " + " " + " owch " + " :" + l.getURI() +
                         "/" + getJMSReplyTo();
                 getOs().println(out);
-                handle_NICK(new Message(this));
+                handle_NICK(new EventDescriptor(this));
                 String line;
                 while (!this.killFlag) {
                     //				if( getIs().ready())
@@ -129,7 +129,7 @@ public class IRC extends AbstractAgent implements Runnable {
                     } else if (line.startsWith("NOTICE")) {
                     } else {
                         try {
-                            MetaProperties n = new Message();
+                            EventDescriptor n = new EventDescriptor();
                             String prefix = "IRC_";
                             parseLine(line, n, prefix);
                             send(n);
@@ -146,35 +146,35 @@ public class IRC extends AbstractAgent implements Runnable {
 
     }
 
-    public void handle_Dissolve(MetaProperties m) {
+    public void handle_Dissolve(EventDescriptor m) {
         super.handle_Dissolve(m);
         try {
-            m.put(VALUE_KEY, "Dissolve Message from" + m.getJMSReplyTo());
+            m.put(VALUE_KEY, "Dissolve EventDescriptor from" + m.getJMSReplyTo());
             socket.close();
         }
         catch (Exception e) {
         }
     }
 
-    public void handle_PART(MetaProperties m) {
+    public void handle_PART(EventDescriptor m) {
         getOs().println("PART" + m.get(VALUE_KEY));
     }
 
-    public void handle_QUIT(MetaProperties m) {
+    public void handle_QUIT(EventDescriptor m) {
         getOs().println("QUIT" + m.get(VALUE_KEY));
     }
 
-    public void handle_MSG(MetaProperties m) {
+    public void handle_MSG(EventDescriptor m) {
         try {
-            String out = IRCPRVMSG_TYPE + (m.containsKey(IRCCHANNEL_KEY) ? m.get(IRCCHANNEL_KEY).toString() : m.get(Message.DESTINATION_KEY).toString()) + " :" + m.get(VALUE_KEY);
+            String out = IRCPRVMSG_TYPE + (m.containsKey(IRCCHANNEL_KEY) ? m.get(IRCCHANNEL_KEY).toString() : m.get(EventDescriptor.DESTINATION_KEY).toString()) + " :" + m.get(VALUE_KEY);
             getOs().println(out);
         }
         catch (Exception e) {
-            handle_Dissolve(new Message(this));
+            handle_Dissolve(new EventDescriptor(this));
         }
     }
 
-    public void handle_NICK(MetaProperties m) {
+    public void handle_NICK(EventDescriptor m) {
         String nick;
         if (m.containsKey(VALUE_KEY)) {
             nick = m.get(VALUE_KEY).toString();
@@ -187,19 +187,19 @@ public class IRC extends AbstractAgent implements Runnable {
     /**
      * 376 end of motd
      */
-    public void handle_IRC_RPL_ENDOFMOTD(MetaProperties p) {
+    public void handle_IRC_RPL_ENDOFMOTD(EventDescriptor p) {
         if (containsKey("IRCJoin")) {
-            handle_IRC_INVITE(new Message(this));
+            handle_IRC_INVITE(new EventDescriptor(this));
         }
     }
 
-    public void handle_IRC_INVITE(MetaProperties m) {
+    public void handle_IRC_INVITE(EventDescriptor m) {
         if (!containsKey("NoInvite")) {
             handle_JOIN(m);
         }
     }
 
-    public void handle_JOIN(MetaProperties m) {
+    public void handle_JOIN(EventDescriptor m) {
         String t = "flood";
         String chans = m.containsKey("IRCJoin") ? m.get("IRCJoin").toString() : m.get(VALUE_KEY).toString();
         StringTokenizer s = new StringTokenizer(chans);
@@ -210,24 +210,24 @@ public class IRC extends AbstractAgent implements Runnable {
         }
     }
 
-    public void handle_IRC_PRIVMSG(MetaProperties p) {
-        MetaProperties n = new Message(p);
+    public void handle_IRC_PRIVMSG(EventDescriptor p) {
+        EventDescriptor n = new EventDescriptor(p);
         String prefix = "";
         parseLine(p.get(VALUE_KEY).toString().substring(1), n, prefix);
-        String dest = n.get(Message.DESTINATION_KEY).toString();
-        if (n.get(Message.DESTINATION_KEY).equals(get("IRCNickname"))) {
+        String dest = n.get(EventDescriptor.DESTINATION_KEY).toString();
+        if (n.get(EventDescriptor.DESTINATION_KEY).equals(get("IRCNickname"))) {
             n.put("IRCDestination", dest);
-            n.put(Message.DESTINATION_KEY, getJMSReplyTo());
+            n.put(EventDescriptor.DESTINATION_KEY, getJMSReplyTo());
         }
         n.put(IRCREPLYTO_KEY, p.getJMSReplyTo()); //skips the user's input replyto value
-        n.put(Message.REPLYTO_KEY, getJMSReplyTo());
+        n.put(EventDescriptor.REPLYTO_KEY, getJMSReplyTo());
         send(n);
     }
 
     /**
      * 433 nickname invalid
      */
-    public void handle_IRC_ERR_NICKNAMEINUSE(MetaProperties p) {
+    public void handle_IRC_ERR_NICKNAMEINUSE(EventDescriptor p) {
         nickname_ctr++;
         String t;
         if (containsKey("IRCBasename")) {
@@ -238,13 +238,13 @@ public class IRC extends AbstractAgent implements Runnable {
         }
         t += nickname_ctr;
         put("IRCNickname", t);
-        handle_NICK(new Message(this));
+        handle_NICK(new EventDescriptor(this));
     }
 
     private Map channels = new HashMap();
 
-    public void handle_AGENT_REMOVE(MetaProperties m) {
-        Object l = new Location(m);
+    public void handle_AGENT_REMOVE(EventDescriptor m) {
+        Object l = new EventDescriptor(m);
         StringTokenizer t = new StringTokenizer(m.get(VALUE_KEY).toString());
         while (t.hasMoreTokens()) {
             String token = t.nextToken();
@@ -252,8 +252,8 @@ public class IRC extends AbstractAgent implements Runnable {
         }
     }
 
-    public void handle_AGENT_JOIN(MetaProperties m) {
-        Location l = new Location(m);
+    public void handle_AGENT_JOIN(EventDescriptor m) {
+        EventDescriptor l = new EventDescriptor(m);
         StringTokenizer t = new StringTokenizer(m.get(VALUE_KEY).toString());
         while (t.hasMoreTokens()) {
             String token = t.nextToken();
@@ -264,21 +264,21 @@ public class IRC extends AbstractAgent implements Runnable {
     /**
      * Generated by Together on May 2, 2002
      */
-    private void xmitChannelToLocations(MetaProperties m) {
+    private void xmitChannelToLocations(EventDescriptor m) {
         if (getChannels().containsKey(m.get(IRCCHANNEL_KEY))) {
-            Collection<Location> c = (Collection<Location>) getChannels().get(m.get(IRCCHANNEL_KEY));
-            Iterator<Location> i = c.iterator();
+            Collection<EventDescriptor> c = (Collection<EventDescriptor>) getChannels().get(m.get(IRCCHANNEL_KEY));
+            Iterator<EventDescriptor> i = c.iterator();
             while (i.hasNext()) {
-                Location l = i.next();
-                MetaProperties n = new Message(m);
-                n.put(Message.DESTINATION_KEY, l.getJMSReplyTo());
+                EventDescriptor l = i.next();
+                EventDescriptor n = new EventDescriptor(m);
+                n.put(EventDescriptor.DESTINATION_KEY, l.getJMSReplyTo());
                 send(n);
             }
         }
     }
 
     /**
-     * <P>Populates a Message with message semantic values. <P> Produces the fields in order<OL><LI> JMSReplyTo<LI>JMSType
+     * <P>Populates a EventDescriptor with message semantic values. <P> Produces the fields in order<OL><LI> JMSReplyTo<LI>JMSType
      * <LI>JMSDestination<LI>Value
      *
      * @param sourceLine - sourceLine of text
@@ -301,22 +301,22 @@ public class IRC extends AbstractAgent implements Runnable {
         String nick = tokenizer.nextToken();
         messageIn.put(IRCREPLYTO_KEY, IRCReplyTo);
         messageIn.put(IRCAGENT_KEY, getJMSReplyTo());
-        messageIn.put(Message.REPLYTO_KEY, nick);
+        messageIn.put(EventDescriptor.REPLYTO_KEY, nick);
         if (JMSType.equals(IRCPRVMSG_TYPE)) {
             {
                 IRCDestination = parameters;
-                JMSDestination = IRCDestination.equals(get("IRCNickName")) ? get(Message.REPLYTO_KEY).toString() : IRCDestination;
+                JMSDestination = IRCDestination.equals(get("IRCNickName")) ? get(EventDescriptor.REPLYTO_KEY).toString() : IRCDestination;
                 messageIn.put("IRCDestination", IRCDestination.trim());
             }
-            messageIn.put(Message.DESTINATION_KEY, JMSDestination);
+            messageIn.put(EventDescriptor.DESTINATION_KEY, JMSDestination);
         } else if (JMSType.equals("RPL_NAMREPLY") || JMSType.equals("RPL_ENDOFNAMES")) {
             tokenizer = new StringTokenizer(parameters, "=");
             IRCDestination = tokenizer.nextToken().trim();
             JMSDestination = tokenizer.nextToken().trim();
             messageIn.put("IRCDestination", IRCDestination.trim());
         }
-        messageIn.put(Message.DESTINATION_KEY, JMSDestination.trim().toLowerCase());
-        messageIn.put(Message.TYPE_KEY, prefix + JMSType);
+        messageIn.put(EventDescriptor.DESTINATION_KEY, JMSDestination.trim().toLowerCase());
+        messageIn.put(EventDescriptor.TYPE_KEY, prefix + JMSType);
         Logger.getAnonymousLogger().info(messageIn.toString());
     }
 
@@ -454,7 +454,7 @@ public class IRC extends AbstractAgent implements Runnable {
         RFCTags.put("371".trim(), new String[]{"RPL_INFO".trim(), "	:<string>".trim(),});
         RFCTags.put("372".trim(), new String[]{"RPL_MOTD".trim(), "	:- <text>".trim(),});
         RFCTags.put("374".trim(), new String[]{"RPL_ENDOFINFO".trim(), "	:End of INFO list".trim(),});
-        RFCTags.put("375".trim(), new String[]{"RPL_MOTDSTART".trim(), "	:- <server> Message of the day -".trim(),});
+        RFCTags.put("375".trim(), new String[]{"RPL_MOTDSTART".trim(), "	:- <server> EventDescriptor of the day -".trim(),});
         RFCTags.put("376".trim(), new String[]{"RPL_ENDOFMOTD".trim(), "	:End of MOTD command".trim(),});
         RFCTags.put("381".trim(), new String[]{"RPL_YOUREOPER".trim(), "	:You are now an IRC operator".trim(),});
         RFCTags.put("382".trim(), new String[]{"RPL_REHASHING".trim(), "	<config file> :Rehashing".trim(),});

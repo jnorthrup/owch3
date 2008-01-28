@@ -29,7 +29,7 @@ public class PipeSocket {
     String label = "Generic Pipe" + sc++;
 
     /**
-     * pass in the requesting web socket, a MetaAgent with an URL defining the serving host/port, and a request stolen from a
+     * pass in the requesting web socket, a EventDescriptor with an URL defining the serving host/port, and a request stolen from a
      * GateKeeper incoming connection.  This literally opens up a proxy connection to said service and passes the information
      * along.
      * TODO: look up simple web proxy semantics for connection headers.

@@ -1,8 +1,10 @@
 package net.sourceforge.owch2.kernel;
 
 import static net.sourceforge.owch2.kernel.AgentLifecycle.*;
-import static net.sourceforge.owch2.kernel.Message.*;
+import static net.sourceforge.owch2.kernel.EventDescriptor.*;
 import net.sourceforge.owch2.protocol.*;
+import static net.sourceforge.owch2.protocol.Transport.*;
+import net.sourceforge.owch2.protocol.router.*;
 
 import static java.lang.Thread.*;
 import java.lang.reflect.*;
@@ -12,7 +14,7 @@ import java.util.logging.*;
 /**
  * AbstractAgent provides the base class which communicates with the Env
  * agent host platform and the protocols it operates. communication is
- * handled by constructing a MetaProperties Object and calling the
+ * handled by constructing a EventDescriptor Object and calling the
  * send() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
  * other nodes in the namespace.
  *
@@ -25,7 +27,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     protected static final String DEPLOYNODE_TYPE = DeployNode.toString();
     protected static final String UNLINK_TYPE = UnLink.toString();
-    protected static final Object CLONE_KEY = Clone.toString();
+    protected static final String CLONE_KEY = Clone.toString();
     protected static final String UPDATED_TYPE = Updated.toString();
     protected static final String UPDATE_TYPE = Update.toString();
     protected static final String LINK_TYPE = Link.toString();
@@ -34,7 +36,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
     boolean virgin;
 //    LinkRegistry acl = null;
 
-    private final static Class[] cls_m = new Class[]{MetaProperties.class};
+    private final static Class[] cls_m = new Class[]{EventDescriptor.class};
 
     private static final Class[] no_class = new Class[0];
     private static final Object[] no_Parm = new Object[0];
@@ -117,18 +119,18 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
             Logger.getAnonymousLogger().info(".link invoked. routing to default");
             linkDestination = Env.getInstance().getParentNode().getJMSReplyTo();
         }
-        MetaProperties n = new Message();
+        EventDescriptor n = new EventDescriptor();
         n.put(DESTINATION_KEY, linkDestination);
         n.put(TYPE_KEY, LINK_TYPE);
         send(n);
     }
 
     /**
-     * AbstractAgent level Message insignia creation and inter-process notification routing.
+     * AbstractAgent level EventDescriptor insignia creation and inter-process notification routing.
      *
-     * @param n Message destined for somewhere else
+     * @param n EventDescriptor destined for somewhere else
      */
-    public void send(MetaProperties n) {
+    public void send(EventDescriptor n) {
 
 
         if (n.getJMSReplyTo() == null) {
@@ -140,7 +142,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
     }
 
 
-    public final void recv(MetaProperties notificationIn) {
+    public final void recv(EventDescriptor notificationIn) {
         try {
 
             String msgType = (String) notificationIn.get(TYPE_KEY);
@@ -165,7 +167,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     public AbstractAgent(Map proto) {
         super(proto);
-        Transport.ipc.pathExists(this);
+        Transport.ipc.getPathMap().put(getJMSReplyTo(), this);
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }
@@ -173,7 +175,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     public void init(Map<String, ? extends V> proto) {
         putAll(proto);
-        Transport.ipc.pathExists(this);
+        Transport.ipc.hasPath(this.getJMSReplyTo());
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }
@@ -183,13 +185,13 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      * this tells our (potentially clone) agent to stop re-registering.
      * it will cease to spin.
      */
-    public void handle_Dissolve(MetaProperties n) {
+    public void handle_Dissolve(EventDescriptor n) {
         killFlag = true;
         //UnLink("default");
         Router r[] = {
                 Transport.ipc,
                 Transport.owch,
-                Transport.http,
+                http,
         };
         for (Router aR : r) {
             try {
@@ -200,9 +202,9 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
         }
     }
 
-    public void handle_Link(MetaAgent p) {
+    public void handle_Link(EventDescriptor p) {
         String dest = p.getJMSReplyTo();
-        MetaProperties n = new Message();
+        EventDescriptor n = new EventDescriptor();
         n.put(TYPE_KEY, UPDATE_TYPE);
         n.put(DESTINATION_KEY, dest);
         send(n);
@@ -215,9 +217,9 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param p JMSReplyTo
      */
-    public void handle_Update(MetaAgent p) {
+    public void handle_Update(EventDescriptor p) {
         String dest = p.getJMSReplyTo();
-        MetaProperties n = new Message();
+        EventDescriptor n = new EventDescriptor();
         n.put(TYPE_KEY, UPDATED_TYPE);
         n.put(DESTINATION_KEY, dest);
         send(n);
@@ -229,14 +231,14 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param m node(s) to link to
      */
-    public void handle_Unlink(MetaAgent m) {
+    public void handle_Unlink(EventDescriptor m) {
         String lk = m.getJMSReplyTo();
         if (lk == null) {
 
             lk = Env.getInstance().getParentNode().getJMSReplyTo();
         }
 
-        MetaProperties n = new Message();
+        EventDescriptor n = new EventDescriptor();
         n.put(DESTINATION_KEY, lk);
         n.put(TYPE_KEY, UNLINK_TYPE);
         send(n);
@@ -261,21 +263,22 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param notificationIn the payload describing the move
      */
-    public void handle_Move(MetaProperties<? extends String> notificationIn) {
+    public void handle_Move(EventDescriptor notificationIn) {
 
-        String host = notificationIn.get(MOBILEHOST_KEY); //name of a Deploy agent
+        String host = (String) notificationIn.get(MOBILEHOST_KEY); //name of a Deploy agent
         if (host == null) {
             host = Env.getInstance().getHostname();
         }
-        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Transport);
+        //if (Env.logDebug) Env.log(50, "Env.getURI - " + Transport);
 
-        MetaProperties response = (MetaProperties) Transport.http.getLocation();
+        EventDescriptor response = new EventDescriptor();
+        response.put(URI_KEY, http.getURI());
         response.putAll(this);
         response.put(TYPE_KEY, DEPLOYNODE_TYPE);
         response.put(CLASSTYPE_KEY, getClass().getName());
         response.put(REPLYTO_KEY, getJMSReplyTo());
 
-        response.put(SOURCE_KEY, Transport.http.getLocation().getURI() + get(RESOURCE_KEY));
+        response.put(SOURCE_KEY, http.getURI().toASCIIString() + get(RESOURCE_KEY));
 
         response.put(DESTINATION_KEY, host);
         send(response);
@@ -285,14 +288,15 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     public void clone_state1(String host) {
 
-        MetaProperties response = (MetaProperties) Transport.http.getLocation().clone();
+        EventDescriptor response = new EventDescriptor(http.getURI());
+        ;
         response.putAll(this);
         response.put(TYPE_KEY, DEPLOYNODE_TYPE);
         response.put(CLASSTYPE_KEY, getClass().getName());
         response.put(REPLYTO_KEY, getJMSReplyTo());
-        //if (Env.logDebug) Env.log(50, "Env.getLocation - " + Transport);
+        //if (Env.logDebug) Env.log(50, "Env.getURI - " + Transport);
 
-        response.put(SOURCE_KEY, Transport.http.getLocation().getURI() + get(RESOURCE_KEY));
+        response.put(SOURCE_KEY, http.getURI().toASCIIString() + get(RESOURCE_KEY));
         //resource remains constant in this incarnation
         //n2.put( "Resource",get("Resource"));//produces 3 Strings
         response.put(DESTINATION_KEY, host);
@@ -303,8 +307,10 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
     /**
      * clone <OL><LI>recv order to clone, and host<LI>  deploy
      * new class.  <LI>deliver content.  <LI>close channel.
+     *
+     * @param n clone instructions
      */
-    public void handle_Clone(MetaProperties<? extends V> n) {
+    public void handle_Clone(EventDescriptor n) {
 
         String host = n.get(MOBILEHOST_KEY).toString(); //name of a Deploy agent
         if (host == null) {

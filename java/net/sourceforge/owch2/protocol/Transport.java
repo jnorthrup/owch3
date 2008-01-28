@@ -1,11 +1,10 @@
 package net.sourceforge.owch2.protocol;
 
 import net.sourceforge.owch2.kernel.*;
+import net.sourceforge.owch2.protocol.router.*;
 
-import java.io.*;
-import java.lang.ref.*;
 import java.net.*;
-import java.util.*;
+import java.nio.channels.*;
 import java.util.concurrent.*;
 
 /**
@@ -20,20 +19,22 @@ public enum Transport implements Router {
     owch,
     http,
     Domain,
+    multicast,
     Default,
     Null,
-    Pipe,
-    UdpChannel;
+    RFC822 {
+        public void init() {
+            router = new NullRouter();
+        }},;
 
-    ExecutorService threadPool;
 
     Router router;
     InetAddress hostAddress;
     NetworkInterface hostInterface;
-    Short port;
+    int port = -1;
     Integer sockets;
     Integer threads;
-    private Location location;
+
 
     Transport() {
         this.init();
@@ -43,7 +44,7 @@ public enum Transport implements Router {
         String routerClassName = null;
         try {
             routerClassName = getClass().getPackage().getName() + ".router." + name() + "Router";
-            Class<?> routerClass = Class.forName(routerClassName);
+            Class routerClass = Class.forName(routerClassName);
             this.router = (Router) routerClass.newInstance();
         } catch (Throwable e) {
             e.printStackTrace();
@@ -52,13 +53,37 @@ public enum Transport implements Router {
 
     }
 
-
     public Router getRouter() {
         return router;
     }
 
-    public Location getLocation() {
-        return location;
+    public URI getURI() {
+        try {
+            /*
+            I(String scheme,
+           String userInfo,
+           String host,
+           int port,
+           String path,
+           String query,
+           String fragment)
+             */
+            String canonicalName = getClass().getCanonicalName() + "." + name();
+            String hostName = Env.getInstance().getHostAddress().getCanonicalHostName();
+            String name1 = canonicalName.replaceAll(".", "/") + ".class";
+            String path =
+                    "/" + java.net.URLEncoder.encode(ClassLoader.getSystemClassLoader().getResource(getClass().getCanonicalName().replaceAll("\\.", "/") + ".class").toString());
+            String username = hostInterface == null ? null : hostInterface.getDisplayName();
+            String scheme = name();
+
+            final URI uri = new URI(scheme, canonicalName, hostName, port, path, null, username);
+            System.out.println(uri.toASCIIString());
+            return uri;
+        } catch (URISyntaxException e) {
+            e.printStackTrace();  //ToDo: change body of catch statement use File | Settings | File Templates.
+        }
+
+        return null;
     }
 
     public void setHostAddress(InetAddress hostAddress) {
@@ -81,40 +106,59 @@ public enum Transport implements Router {
         this.sockets = sockets;
     }
 
-    public Short getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public ConcurrentMap<String, URI> getPathMap() {
+        return router.getPathMap();
     }
 
-    public Reference<Map> getPathMap() {
-        return router.getPathMap();  //Todo: verify for a purpose
+    public URI getPath(EventDescriptor destination) {
+        return router.getPath(destination);
     }
 
-    public Location getPath(MetaAgent destination) {
-        return router.getPath(destination);//Todo: verify for a purpose
+    public boolean hasPath(EventDescriptor location) {
+        return router.hasPath(location);
     }
 
-    public void send(Message... async) {
-        router.send(async);
+    public Future<Reciept> send(EventDescriptor... async) throws Exception {
+        return router.send(async);
     }
 
-    public Serializable sendWithLog(Message... logged) {
-        return router.sendWithLog(logged);
 
+    public URI remove(String jmsReplyTo) {
+        return router.remove(jmsReplyTo);
     }
 
-    public Reciept sendWithReceipt(Message... synMessages) {
-        return router.sendWithReceipt(synMessages);  //Todo: verify for a purpose
+    /**
+     * inbound messages enter here from the net.  transport-specific metadata is gathered about this socket
+     *
+     * @param byteChannel from "accept"
+     * @return boolean telling the reactor to proceed adding or to cancel the Selectable
+     */
+    public boolean channelAccept(ByteChannel byteChannel) {
+        return true;
     }
 
-    public Reference<Observable> sendWithNotification(Message... syncMessages) {
-        return router.sendWithNotification(syncMessages);
+    /**
+     * @param channel
+     * @return reinit in the reactor or remove?
+     */
+    public boolean channelConnect(SelectableChannel channel) {
+        return true;
     }
 
-    public boolean hasPath(String jmsdestination) {
-        return router.hasPath();
+
+    public boolean channelRead(ByteChannel channel) {
+        return true;
+    }
+
+    public boolean channelWrite(ByteChannel byteChannel) {
+        return true;
+    }
+
+    public boolean hasPath(String destination) {
+        return getPathMap().containsKey(destination);
     }
 }

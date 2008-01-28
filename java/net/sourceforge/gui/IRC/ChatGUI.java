@@ -6,20 +6,19 @@ import net.sourceforge.owch2.kernel.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.util.*;
 
 public class ChatGUI extends JInternalFrame implements AgentVisitor {
     private JList UsersList = new JList(new ScrollingListModel());
     private Container EntryDoc = new JToolBar();
     private JList msgList = new JList(new ScrollingListModel());
     private Component ValueText = new JTextField();
-    Location agentLocation;
+    EventDescriptor agentEventDescriptor;
     ChatAgent node;
 
-    public ChatGUI(MetaProperties JoinMsg) {
-        agentLocation = new Location(JoinMsg);
-        agentLocation.put("IRCManager", agentLocation.get(Message.REPLYTO_KEY));
-        agentLocation.put(Message.REPLYTO_KEY, agentLocation.get("Value"));
+    public ChatGUI(EventDescriptor JoinMsg) {
+        agentEventDescriptor = new EventDescriptor(JoinMsg);
+        agentEventDescriptor.put("IRCManager", agentEventDescriptor.get(EventDescriptor.REPLYTO_KEY));
+        agentEventDescriptor.put(EventDescriptor.REPLYTO_KEY, agentEventDescriptor.get("Value"));
         initGUI();
         startAgent();
     }
@@ -82,16 +81,16 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
     }
 
     public void stopAgent() {
-        Map message = new Message();
+        EventDescriptor message = new EventDescriptor();
         message.put("JMSType", "Dissolve");
-        message.put(Message.REPLYTO_KEY, node.get("IRCManager"));
-        message.put(Message.DESTINATION_KEY, node.getJMSReplyTo());
+        message.put(EventDescriptor.REPLYTO_KEY, node.get("IRCManager"));
+        message.put(EventDescriptor.DESTINATION_KEY, node.getJMSReplyTo());
         Env.getInstance().send(message);
     }
 
     public void startAgent() {
-        node = new ChatAgent(this, agentLocation);
-        setTitle(agentLocation.get("Value").toString());
+        node = new ChatAgent(this, agentEventDescriptor);
+        setTitle(agentEventDescriptor.get("Value").toString());
     }
 
     /**

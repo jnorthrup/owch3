@@ -12,7 +12,7 @@ import java.util.*;
  * bet, the owch agent registered in the WeakHashMap is notified of a waiting pipeline
  */
 public class GateKeeper extends AbstractAgent<String> {
-    private HttpRegistry httpRegistry = Env.getInstance().getHttpRegistry();
+    private httpRegistry httpRegistry = Env.getInstance().getHttpRegistry();
 
 
     //todo:  modernize the agent spinning into the workerques
@@ -20,7 +20,7 @@ public class GateKeeper extends AbstractAgent<String> {
 
         Map m = Env.getInstance().parseCommandLineArgs(args);
 
-        if (!m.containsKey(Message.REPLYTO_KEY)) {
+        if (!m.containsKey(EventDescriptor.REPLYTO_KEY)) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
                     "-name name\n" + "$Id$\n");
         }
@@ -33,10 +33,10 @@ public class GateKeeper extends AbstractAgent<String> {
 
     }
 
-    public void handle_Register(MetaProperties notificationIn) {
+    public void handle_Register(EventDescriptor notificationIn) {
         String item = (String) notificationIn.get("URLSpec");
         notificationIn.put("URL", notificationIn.get("URLFwd"));
-        httpRegistry.registerItem(item, new Location(notificationIn));
+        httpRegistry.registerItem(item, new EventDescriptor(notificationIn));
     }
 
 
@@ -45,7 +45,7 @@ public class GateKeeper extends AbstractAgent<String> {
      *
      * @param notificationIn
      */
-    public void handle_UnRegister(MetaProperties notificationIn) {
+    public void handle_UnRegister(EventDescriptor notificationIn) {
         Object item = (String) notificationIn.get("URLSpec");
         notificationIn.put("URL", notificationIn.get("URLFwd"));
         httpRegistry.unregisterItem(item);

@@ -21,15 +21,15 @@ import java.util.concurrent.*;
  * @author James Northrup
  * @version $Id$
  */
-public class HttpRegistry {
-    private NavigableMap<String, MetaAgent> registeredResources = new ConcurrentSkipListMap<String, MetaAgent>();
+public class httpRegistry {
+    private NavigableMap<String, EventDescriptor> registeredResources = new ConcurrentSkipListMap<String, EventDescriptor>();
     public Map<String, Socket> httpdSockets = new ConcurrentHashMap<String, Socket>();
 
-    public HttpRegistry() {
+    public httpRegistry() {
     }
 
-    public void registerItem(String resource, Location l) {
-        MetaAgent agent = registeredResources.put(resource, l);
+    public void registerItem(String resource, EventDescriptor l) {
+        EventDescriptor agent = registeredResources.put(resource, l);
 
     }
 
@@ -56,22 +56,22 @@ public class HttpRegistry {
      *
      * @return whether the request was fulfilled from this agent host's registrant.
      */
-    public boolean dispatchRequest(Socket socket, MetaProperties notification) {
+    public boolean dispatchRequest(Socket socket, EventDescriptor notification) {
         String resource = notification.get("Resource").toString();
-        MetaAgent registrant = getResourceHandler(resource);
+        EventDescriptor registrant = getResourceHandler(resource);
 
         String method = notification.get("Method").toString();
         notification.put("Proxy-Request", notification.get("Request"));
 
         if (registrant != null) {
-            MetaAgent lname = registrant ;
+            EventDescriptor lname = registrant;
 
             if (ipc.hasPath(lname)) {
                 httpdSockets.put(socket.toString(), socket);
                 notification.put("_Socket", socket.toString());
-                notification.put(Message.DESTINATION_KEY, lname);
+                notification.put(EventDescriptor.DESTINATION_KEY, lname);
                 notification.put("JMSType", "httpd");
-                notification.put(Message.REPLYTO_KEY, "nobody"); //apparently we *MUST* give ourselves a name..
+                notification.put(EventDescriptor.REPLYTO_KEY, "nobody"); //apparently we *MUST* give ourselves a name..
                 Env.getInstance().send(notification);
                 return true;
             }
@@ -86,13 +86,13 @@ public class HttpRegistry {
      * @param resource a requested url
      * @return returns the resource, or the nearest matching parent of that resource, or the shortest resource of all.
      */
-    private MetaAgent getResourceHandler(String resource) {
+    private EventDescriptor getResourceHandler(String resource) {
 
         if (registeredResources.containsKey(resource)) return registeredResources.get(resource);
-//        MetaAgent registrant = registeredResources.get(resource);
+//        EventDescriptor registrant = registeredResources.get(resource);
 
 
-        NavigableMap<String, MetaAgent> map = registeredResources.headMap(resource, false);
+        NavigableMap<String, EventDescriptor> map = registeredResources.headMap(resource, false);
         NavigableSet<String> navigableSet = map.descendingKeySet();
 
         String key = null;

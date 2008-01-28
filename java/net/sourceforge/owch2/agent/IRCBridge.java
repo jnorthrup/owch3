@@ -27,30 +27,30 @@ public class IRCBridge extends AbstractAgent {
     }
 
 
-    public void handle_IRC_PRIVMSG(MetaProperties m) {
+    public void handle_IRC_PRIVMSG(EventDescriptor m) {
         final String ircAgent = m.get("IRCAgent").toString(),
-                ircNickName = m.get(Message.REPLYTO_KEY).toString(),
+                ircNickName = m.get(EventDescriptor.REPLYTO_KEY).toString(),
                 preliminaryValue = m.get("Value").toString(),
                 finalValue = "<" + ircNickName + "@" + ircAgent + "> " + preliminaryValue;
         String agent;
-        Message repeatedMessage;
+        EventDescriptor repeatedEventDescriptor;
 
         for (String agent1 : agents) {
             agent = agent1;
             if (ircAgent.equals(agent))
                 continue;
-            repeatedMessage = new Message(m);
-            repeatedMessage.put("JMSType", "MSG");
-            repeatedMessage.put("IRCChannel", getJMSReplyTo());
-            repeatedMessage.put(Message.DESTINATION_KEY, agent);
-            repeatedMessage.put("Value", finalValue);
-            send(repeatedMessage);
+            repeatedEventDescriptor = new EventDescriptor(m);
+            repeatedEventDescriptor.put("JMSType", "MSG");
+            repeatedEventDescriptor.put("IRCChannel", getJMSReplyTo());
+            repeatedEventDescriptor.put(EventDescriptor.DESTINATION_KEY, agent);
+            repeatedEventDescriptor.put("Value", finalValue);
+            send(repeatedEventDescriptor);
         }
     }
 
     public static void main(String[] args) {
         Map m = Env.getInstance().parseCommandLineArgs(args);
-        final String[] ka = {Message.REPLYTO_KEY, "IRCAgents",};
+        final String[] ka = {EventDescriptor.REPLYTO_KEY, "IRCAgents",};
 
         if (!m.keySet().containsAll(Arrays.asList(ka))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +

@@ -6,6 +6,7 @@
 package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
+import static net.sourceforge.owch2.kernel.EventDescriptor.*;
 import net.sourceforge.owch2.protocol.*;
 
 import java.io.*;
@@ -24,9 +25,9 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     public MobilePayload(Map<?, ?> m) {
         super(m);
         if (containsKey("Source")) {
-            init((String) get(Message.REPLYTO_KEY), (String) get("Source"), (String) get("Resource"));
+            init((String) get(EventDescriptor.REPLYTO_KEY), (String) get("Source"), (String) get("Resource"));
         } else {
-            init((String) get(Message.REPLYTO_KEY), (String) get("Resource"));
+            init((String) get(EventDescriptor.REPLYTO_KEY), (String) get("Resource"));
         }
     }
 
@@ -36,7 +37,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public MobilePayload(String name, String url, String resource) {
-        put(Message.REPLYTO_KEY, name);
+        put(EventDescriptor.REPLYTO_KEY, name);
         put("Resource", resource);
         remove("Source");
         init(name, url, resource);
@@ -44,8 +45,8 @@ public class MobilePayload extends AbstractAgent implements Runnable {
 
     public static void main(String[] args) {
         Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        if (!(m.containsKey(Message.REPLYTO_KEY) && m.containsKey("Resource"))) {
-            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "MobilePayload Agent usage:\n\n" + "-name name\n" +
+        if (!(m.containsKey(EventDescriptor.REPLYTO_KEY) && m.containsKey("Resource"))) {
+            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "MobilePayload Agent usage:\n\n" + "-name name\n" +
                     "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n" +
                     "-Source 'file' -- the file \n" + "[-Content-Type 'application/msword']\n" + "[-Clone 'host1[ ..hostn]']\n" +
                     "[-Deploy 'host1[ ..hostn]']\n" + "$Id$\n");
@@ -56,7 +57,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     /**
      * this is a set of headers that is simply nice to have...
      */
-    protected MetaProperties nice = new Message();
+    protected EventDescriptor nice = new EventDescriptor();
 
     /**
      * this is a set of header fields that is simply nice to have...
@@ -99,10 +100,10 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     /**
      * this tells our (potentially clone) web page to stop re-registering.  it will cease to spin.
      */
-    public void handle_Dissolve(MetaProperties n) {
+    public void handle_Dissolve(EventDescriptor n) {
         thread.interrupt();
-        MetaProperties n2 = new Message();
-        n2.put(Message.DESTINATION_KEY, "GateKeeper");
+        EventDescriptor n2 = new EventDescriptor();
+        n2.put(DESTINATION_KEY, "GateKeeper");
         n2.put("JMSType", "UnRegister");
         n2.put("URLSpec", get("Resource").toString());
         send(n2);
@@ -128,7 +129,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
 */
 
     public void init(String name, String file) {
-        put(Message.REPLYTO_KEY, name);
+        put(EventDescriptor.REPLYTO_KEY, name);
         put("Resource", file);
         inductFile(file);
     }
@@ -182,7 +183,8 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public void inductStream(InputStream is) {
-        Transport.ipc.pathExists(this);
+        Transport.ipc.getPathMap().put(getJMSReplyTo(), new EventDescriptor() {
+        });
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] buf = new byte[16384];
@@ -217,16 +219,17 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         linkTo(null);
         String resource = get("Resource").toString();
 
-        MetaProperties localHttpLocation = Transport.http.getLocation();
-        Location location = new Location(localHttpLocation);
-        location.put(Message.REPLYTO_KEY, getJMSReplyTo());
+        URI localHttpLocation = Transport.http.getURI();
+        EventDescriptor EventDescriptor = new EventDescriptor();
+        EventDescriptor.put(REPLYTO_KEY, getJMSReplyTo());
 
-        Env.getInstance().getHttpRegistry().registerItem(resource, location);
-        MetaProperties n2 = new Message();
-        n2.put(Message.DESTINATION_KEY, "GateKeeper");
+        Env.getInstance().getHttpRegistry().registerItem(resource, EventDescriptor);
+        EventDescriptor n2 = new EventDescriptor();
+        n2.put(URI_KEY, localHttpLocation);
+        n2.put(DESTINATION_KEY, "GateKeeper");
         n2.put("JMSType", "Register");
         n2.put("URLSpec", resource);
-        n2.put("URLFwd", location.getURI());
+        n2.put("URLFwd", EventDescriptor.getURI());
         send(n2);
     }
 
@@ -275,7 +278,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         }
     }
 
-    public void handle_httpd(MetaProperties n) {
+    public void handle_httpd(EventDescriptor n) {
         Socket s = Env.getInstance().getHttpRegistry().httpdSockets.remove("_Socket");
         sendPayload(s);
     }
@@ -285,7 +288,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
      *
      * @param message
      */
-    public void handle_WriteFile(MetaProperties message) {
+    public void handle_WriteFile(EventDescriptor message) {
         String path;
         path = (String) message.get("Path");
         String filename;

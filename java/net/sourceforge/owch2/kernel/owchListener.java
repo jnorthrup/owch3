@@ -22,7 +22,7 @@ public class owchListener extends UDPServerWrapper implements Runnable, Listener
         this.threads = threads;
 
         attach(
-                MessageFactory.getInstance());
+                Reactor.getInstance());
     }
 
     public owchListener(InetAddress hostAddr, int port) throws SocketException {

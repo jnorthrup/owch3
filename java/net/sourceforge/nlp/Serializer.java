@@ -1,7 +1,11 @@
 package net.sourceforge.nlp;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileOutputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 
 /**
@@ -2681,7 +2685,7 @@ public class Serializer extends VerbKnowledge {
                 "select: 2.2, 2.14, 13.5.2, 29.2",
                 "sell: 1.1.2.1, 2.1, 13.1",
                 "semaphore: 2.1, 37.4",
-                "send: 1.3, 2.1, 11.1",
+                "route: 1.3, 2.1, 11.1",
                 "sense: 2.13.1, 2.13.2, 2.13.3, 30.1",
                 "separate: 2.3.2, 2.5.1, 2.5.3, 2.5.4, 2.5.6, 10.1, 23.1",
                 "sequester: 16",

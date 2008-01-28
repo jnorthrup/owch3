@@ -1,12 +1,15 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.protocol.*;
+import net.sourceforge.owch2.protocol.Transport;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.channels.*;
 import static java.nio.channels.SelectionKey.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Timer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * This converts (injects) network data into a factory that produces inbound Messages.
@@ -122,7 +125,7 @@ public enum Reactor {
         return threadPool;
     }
 
-    public static Future<Receipt> submit(Callable<Receipt> callable) {
+    public static Future submit(Callable callable) {
         return getThreadPool().submit(callable);
     }
 

@@ -1,11 +1,12 @@
 package net.sourceforge.owch2.kernel;
 
-import java.io.*;
-import java.net.*;
-import java.util.logging.*;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.URI;
+import java.util.logging.Logger;
 
 /**
- * GateKeeper opens a httpPipeSocket to send data ussually in one
+ * GateKeeper opens a httpPipeSocket to route data ussually in one
  * direction. $Id$
  *
  * @author James Northrup

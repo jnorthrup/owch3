@@ -30,7 +30,7 @@ public enum InboundLifeCycle {
      */
     queue,
     /**
-     * send a routed receipt back to sender
+     * route a routed receipt back to sender
      * asyncronously, as message, if applicable
      */
     receipt,

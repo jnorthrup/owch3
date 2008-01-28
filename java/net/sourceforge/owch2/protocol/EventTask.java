@@ -1,8 +1,8 @@
 package net.sourceforge.owch2.protocol;
 
-import net.sourceforge.owch2.kernel.*;
+import net.sourceforge.owch2.kernel.EventDescriptor;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 
 /**
  * Glamdring Incorporated Enterprises.  All rights reserved.
@@ -12,6 +12,6 @@ import java.util.concurrent.*;
  */
 public abstract class EventTask {
 
-    abstract Callable getCallable(EventDescriptor event);
+    public abstract Callable getCallable(EventDescriptor event);
 
 }

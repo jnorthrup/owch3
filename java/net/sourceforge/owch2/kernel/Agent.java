@@ -4,7 +4,7 @@ package net.sourceforge.owch2.kernel;
  * Agent provides the base class which communicates with the Env
  * agent host platform and the protocols it operates. communication is
  * handled by constructing a EventDescriptor Object and calling the
- * send() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
+ * route() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
  * other agents in the namespace.
  *
  * @author James Northrup
@@ -24,7 +24,7 @@ public interface Agent<V> {
     void linkTo(String lk);
 
     /**
-     * send a EventDescriptor
+     * route a EventDescriptor
      *
      * @param n EventDescriptor destined for somewhere else
      */

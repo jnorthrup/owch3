@@ -82,12 +82,12 @@ public class httpServer/* extends TCPServerWrapper implements ListenerReference,
 //    }
 //
 //    /**
-//     * default action of an agent host is to just send a file.
+//     * default action of an agent host is to just route a file.
 //     */
 //    public static void sendFile(Socket s, String file) {
 //        String file1 = file;
 //        /**
-//         * errors would send... HTTP/1.1 404 Not Found Date: Sun, 08 Apr 2001 21:31:24 GMT
+//         * errors would route... HTTP/1.1 404 Not Found Date: Sun, 08 Apr 2001 21:31:24 GMT
 //         * Server: Apache/1.3.12 (Unix) mod_perl/1.24 Connection: close Content-Type: text/html; charset=iso-8859-1
 //         */
 //        try {

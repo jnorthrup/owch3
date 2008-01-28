@@ -1,12 +1,15 @@
 package net.sourceforge.owch2.kernel;
 
 import java.io.*;
-import static java.lang.Thread.*;
-import java.net.*;
-import java.util.zip.*;
+import static java.lang.Thread.sleep;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 /**
- * GateKeeper opens a PipeSocket to send data ussually in one direction.
+ * GateKeeper opens a PipeSocket to route data ussually in one direction.
  *
  * @author James Northrup
  * @version $Id$

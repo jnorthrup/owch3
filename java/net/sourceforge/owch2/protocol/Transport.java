@@ -1,12 +1,23 @@
 package net.sourceforge.owch2.protocol;
 
-import net.sourceforge.owch2.kernel.*;
-import net.sourceforge.owch2.protocol.router.*;
+import net.sourceforge.owch2.kernel.Agent;
+import net.sourceforge.owch2.kernel.Env;
+import net.sourceforge.owch2.kernel.EventDescriptor;
+import net.sourceforge.owch2.protocol.router.NullRouter;
+import net.sourceforge.owch2.protocol.router.Router;
+import net.sourceforge.owch2.protocol.router.ipcRouter;
 
-import java.net.*;
-import java.nio.channels.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.lang.reflect.Constructor;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.SelectableChannel;
+import java.util.EnumMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 
 /**
  * these are transports
@@ -19,8 +30,8 @@ public enum Transport implements Router {
     ipc {
         public void init() {
             super.init();
-            this.outboundEventAgenda.put(OutboundLifecycle.route, new EventTask() {
-                Callable getCallable(final EventDescriptor event) {
+            this.getOutboundEventAgenda().put(OutboundLifecycle.route, new EventTask() {
+                public Callable getCallable(final EventDescriptor event) {
                     return new Callable() {
                         public Object call() throws Exception {
                             return ((ipcRouter) router).getLocalAgents().containsKey(event.getDestination());
@@ -28,8 +39,8 @@ public enum Transport implements Router {
                     };
                 }
             });
-            this.inboundEventAgenda.put(InboundLifeCycle.route, new EventTask() {
-                Callable getCallable(final EventDescriptor event) {
+            this.getInboundEventAgenda().put(InboundLifeCycle.route, new EventTask() {
+                public Callable getCallable(final EventDescriptor event) {
                     return new Callable() {
                         public Object call() throws Exception {
                             ipcRouter r = (ipcRouter) router;
@@ -61,22 +72,25 @@ public enum Transport implements Router {
     Integer sockets;
     Integer threads;
 
-    public static Map<OutboundLifecycle, EventTask> outboundEventAgenda;
-    private Map<InboundLifeCycle, EventTask> inboundEventAgenda;
-    private Map<InboundLifeCycle, EventTask> outboundEventAgenda;
+    private EnumMap<OutboundLifecycle, EventTask> outboundEventAgenda;
+    private EnumMap<InboundLifeCycle, EventTask> inboundEventAgenda;
+
 
     Transport() {
         inboundEventAgenda = new EnumMap<InboundLifeCycle, EventTask>(InboundLifeCycle.class);
-        outboundEventAgenda = new EnumMap<InboundLifeCycle, EventTask>(InboundLifeCycle.class);
+        outboundEventAgenda = new EnumMap<OutboundLifecycle, EventTask>(OutboundLifecycle.class);
         this.init();
     }
+
 
     public void init() {
         String routerClassName = null;
         try {
             routerClassName = getClass().getPackage().getName() + ".router." + name() + "Router";
             Class routerClass = Class.forName(routerClassName);
-            this.router = (Router) routerClass.newInstance();
+//            this.router = (Router) routerClass.newInstance();
+            Constructor constructor = routerClass.getConstructor(Transport.class);
+            router = (Router) constructor.newInstance(this);
         } catch (Throwable e) {
             e.printStackTrace();
             throw new Error("Router mismatch finding " + routerClassName);
@@ -153,8 +167,8 @@ public enum Transport implements Router {
         return router.hasPath(location);
     }
 
-    public Future<Receipt> send(EventDescriptor... async) throws Exception {
-        return router.send(async);
+    public Future<Receipt> route(EventDescriptor... async) throws Exception {
+        return router.route(async);
     }
 
 
@@ -194,11 +208,23 @@ public enum Transport implements Router {
     }
 
     public Callable getInboundEventAgendaTask(InboundLifeCycle inboundLifeCycle, EventDescriptor event) {
-        EventTask task = inboundEventAgenda.get(inboundLifeCycle);
+        EventTask task = getInboundEventAgenda().get(inboundLifeCycle);
         return task.getCallable(event);
     }
 
     public void addReceipt(Receipt receipt) {
 
+    }
+
+    public EnumMap<OutboundLifecycle, EventTask> getOutboundEventAgenda() {
+        return outboundEventAgenda;
+    }
+
+    public EnumMap<InboundLifeCycle, EventTask> getInboundEventAgenda() {
+        return inboundEventAgenda;
+    }
+
+    public Transport addResult(EventDescriptor event, Enum key, Object result) {
+        return this;
     }
 }

@@ -1,12 +1,15 @@
 package net.sourceforge.owch2.agent;
 
-import net.sourceforge.owch2.kernel.*;
-import static net.sourceforge.owch2.protocol.Transport.*;
+import net.sourceforge.owch2.kernel.AbstractAgent;
+import net.sourceforge.owch2.kernel.Env;
+import net.sourceforge.owch2.kernel.EventDescriptor;
+import static net.sourceforge.owch2.protocol.Transport.owch;
 
 import java.io.*;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.*;
-import java.util.logging.*;
+import java.util.logging.Logger;
 
 public class IRC extends AbstractAgent implements Runnable {
     private BufferedReader is;
@@ -467,14 +470,14 @@ public class IRC extends AbstractAgent implements Runnable {
         RFCTags.put("401".trim(), new String[]{"ERR_NOSUCHNICK".trim(), "	<nickname> :No such nick/channel".trim(),});
         RFCTags.put("402".trim(), new String[]{"ERR_NOSUCHSERVER".trim(), "	<server name> :No such server".trim(),});
         RFCTags.put("403".trim(), new String[]{"ERR_NOSUCHCHANNEL".trim(), "	<channel name> :No such channel".trim(),});
-        RFCTags.put("404".trim(), new String[]{"ERR_CANNOTSENDTOCHAN".trim(), "	<channel name> :Cannot send to channel".trim(),});
+        RFCTags.put("404".trim(), new String[]{"ERR_CANNOTSENDTOCHAN".trim(), "	<channel name> :Cannot route to channel".trim(),});
         RFCTags.put("405".trim(), new String[]{"ERR_TOOMANYCHANNELS".trim(), "	<channel name> :You have joined too many channels".trim(),});
         RFCTags.put("406".trim(), new String[]{"ERR_WASNOSUCHNICK".trim(), "	<nickname> :There was no such nickname".trim(),});
         RFCTags.put("407".trim(), new String[]{"ERR_TOOMANYTARGETS".trim(), "	<target> :<error code> recipients. <abort message>".trim(),});
         RFCTags.put("408".trim(), new String[]{"ERR_NOSUCHSERVICE".trim(), "	<service name> :No such service".trim(),});
         RFCTags.put("409".trim(), new String[]{"ERR_NOORIGIN".trim(), "	:No origin specified".trim(),});
         RFCTags.put("411".trim(), new String[]{"ERR_NORECIPIENT".trim(), "	:No recipient given (<command>)".trim(),});
-        RFCTags.put("412".trim(), new String[]{"ERR_NOTEXTTOSEND".trim(), "	:No text to send".trim(),});
+        RFCTags.put("412".trim(), new String[]{"ERR_NOTEXTTOSEND".trim(), "	:No text to route".trim(),});
         RFCTags.put("413".trim(), new String[]{"ERR_NOTOPLEVEL".trim(), "	<mask> :No toplevel domain specified".trim(),});
         RFCTags.put("414".trim(), new String[]{"ERR_WILDTOPLEVEL".trim(), "	<mask> :Wildcard in toplevel domain".trim(),});
         RFCTags.put("415".trim(), new String[]{"ERR_BADMASK".trim(), "	<mask> :Bad Server/host mask".trim(),});

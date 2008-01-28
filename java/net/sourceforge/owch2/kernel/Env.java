@@ -1,12 +1,13 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.protocol.*;
-import net.sourceforge.owch2.protocol.router.*;
+import net.sourceforge.owch2.protocol.Transport;
+import net.sourceforge.owch2.protocol.router.Router;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Mobile Agent Hosting Environment. This class acts as a hub for realtime messages
@@ -19,7 +20,7 @@ import java.util.concurrent.*;
  * agent identifiers (labeled <B>"JMSReplyTo"</B>).  Agents are semantically named with short human-readable ID's in order to
  * facilitate generic service names living among cloned, replicated, and mobile agents, who will
  * always communicate via the nearest agent hop named "default" initially to locate direct transport locations to
- * send to.
+ * route to.
  * <p/>
  * "default" Agent routing is bootstrapped into an agent host and all traffic of unknown destination path will
  * forward to the agent named "default", typically a  domain object.

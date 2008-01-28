@@ -2,20 +2,24 @@ package net.sourceforge.owch2.kernel;
 
 import static net.sourceforge.owch2.kernel.AgentLifecycle.*;
 import static net.sourceforge.owch2.kernel.EventDescriptor.*;
-import net.sourceforge.owch2.protocol.*;
-import static net.sourceforge.owch2.protocol.Transport.*;
-import net.sourceforge.owch2.protocol.router.*;
+import net.sourceforge.owch2.protocol.Transport;
+import static net.sourceforge.owch2.protocol.Transport.http;
+import net.sourceforge.owch2.protocol.router.ipcRouter;
 
-import static java.lang.Thread.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.logging.*;
+import static java.lang.Thread.sleep;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.logging.Logger;
 
 /**
  * AbstractAgent provides the base class which communicates with the Env
  * agent host platform and the protocols it operates. communication is
  * handled by constructing a EventDescriptor Object and calling the
- * send() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
+ * route() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
  * other nodes in the namespace.
  *
  * @author James Northrup

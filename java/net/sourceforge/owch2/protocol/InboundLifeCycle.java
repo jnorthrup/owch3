@@ -1,10 +1,20 @@
 package net.sourceforge.owch2.protocol;
 
 public enum InboundLifeCycle {
+
     /**
      * stack events to open underlying network relying on stack/worker internal queueing
      */
     accept,
+    postAccept,
+    /**
+     *
+     */
+    initHeaderBuffers,
+    /**
+     *
+     */
+    decodeHeader,
     /**
      * determine applicable ACL fit
      */
@@ -26,16 +36,7 @@ public enum InboundLifeCycle {
      */
     route,
     /**
-     * insert into router queue and/or agent queue
+     * insert into transport queue and/or agent queue
      */
     queue,
-    /**
-     * route a routed receipt back to sender
-     * asyncronously, as message, if applicable
-     */
-    receipt,
-    /**
-     * cleanup
-     */
-    cleanup
 }

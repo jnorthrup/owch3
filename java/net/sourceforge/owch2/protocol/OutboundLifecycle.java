@@ -1,7 +1,9 @@
 package net.sourceforge.owch2.protocol;
 
 /**
- * Glamdring Incorporated Enterprises.  All rights reserved.
+ * This defines the steps and order of delivering an EventDescriptor to
+ * a destination.  it is not necessary to apply all steps to all transports
+ * <p/>
  * User: jim
  * Date: Jan 26, 2008
  * Time: 3:53:16 PM
@@ -10,48 +12,68 @@ public enum OutboundLifecycle {
     /**
      * proto or message specific work is inserted
      */
-    preSend,
-    /**
-     * deliver a message to a router for delivery
-     */
-    send,
-    /**
-     * convert and/or decorate the notification with transaction and JMS info.
-     */
-    marshal,
-    /**
-     * async delivery into the protocol message queue
-     */
-    queue,
+    preRoute,
     /**
      * locate a path and perform path housekeeping defined by this event
      * via the outbound resolver
      */
     route,
+
     /**
      * post-route Domain specifics
      */
     postRoute,
+
+    /**
+     * proto or message specific work is inserted
+     */
+    preSend,
+
+    /**
+     * deliver a message to a transport for delivery
+     */
+    send,
+
+    /**
+     * proto or message specific work is inserted
+     */
+    postSend,
+
+    /**
+     * convert and/or decorate the notification with transaction and JMS info.
+     */
+    marshal,
+
+    /**
+     * async delivery into the protocol message queue
+     */
+    queue,
+
     /**
      * async connection specified including any credentials handshake
      */
     connect,
+
     /**
-     * underlying Stack state is managed
+     * buffers are delivered to the low-level system api's
      */
-    transport,
+    push,
+
     /**
      * message state-changes are reported such as Select() and open/connect/route/close/failure events.
      */
     monitor,
+
+    /**
+     * message may also experience policy-based expire.
+     */
+    expire,
+
     /**
      * Domain-specific hooks such as timing
      */
-    postSend,
-    /**
-     * message may also experience policy-based expire.  domain specific resource-cleanup
-     */
-    expire,
+    close,
+
     /**
      * resources are reclaimed and or additional reporting
      */

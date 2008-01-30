@@ -11,7 +11,7 @@ import java.util.*;
  * URL startswith (element <n>) </OL> The when an URL is located -- registering the URL "/" is a sure
  * bet, the owch agent registered in the WeakHashMap is notified of a waiting pipeline
  */
-public class GateKeeper extends AbstractAgent<String> {
+public class GateKeeper extends AbstractAgent {
     private httpRegistry httpRegistry = Env.getInstance().getHttpRegistry();
 
 

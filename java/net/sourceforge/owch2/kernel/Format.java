@@ -1,16 +1,18 @@
 package net.sourceforge.owch2.kernel;
 
 import java.io.*;
-import java.util.*;
+import java.nio.*;
+import java.util.concurrent.*;
 
 /**
  * @author James Northrup
  * @version $Id$
  */
 public interface Format {
-    void read(InputStream reader, Map map) throws IOException;
+    Future<Exchanger<ByteBuffer>> send(final EventDescriptor event) throws InterruptedException;
 
-    void write(OutputStream writer, Map map) throws IOException;
+    EventDescriptor recv(Exchanger<ByteBuffer> fBufX) throws InterruptedException, ExecutionException, UnsupportedEncodingException;
 }
+
 
 

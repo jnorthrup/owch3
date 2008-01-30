@@ -1,6 +1,6 @@
 package net.sourceforge.owch2.kernel;
 
-import static net.sourceforge.owch2.protocol.Transport.*;
+import static net.sourceforge.owch2.protocol.TransportEnum.*;
 
 import java.net.*;
 import java.util.*;
@@ -66,7 +66,7 @@ public class httpRegistry {
         if (registrant != null) {
             EventDescriptor lname = registrant;
 
-            if (ipc.hasPath(lname)) {
+            if (local.hasPath(lname.getDestination())) {
                 httpdSockets.put(socket.toString(), socket);
                 notification.put("_Socket", socket.toString());
                 notification.put(EventDescriptor.DESTINATION_KEY, lname);

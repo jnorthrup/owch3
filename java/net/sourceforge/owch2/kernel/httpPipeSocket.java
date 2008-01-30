@@ -1,9 +1,8 @@
 package net.sourceforge.owch2.kernel;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.net.URI;
-import java.util.logging.Logger;
+import java.io.*;
+import java.net.*;
+import java.util.logging.*;
 
 /**
  * GateKeeper opens a httpPipeSocket to route data ussually in one

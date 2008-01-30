@@ -2,7 +2,7 @@ package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
 import net.sourceforge.owch2.protocol.*;
-import static net.sourceforge.owch2.protocol.Transport.*;
+import static net.sourceforge.owch2.protocol.TransportEnum.*;
 
 import static java.lang.Thread.*;
 import java.util.*;
@@ -30,11 +30,11 @@ public class Domain extends Deploy {
 
         Env.setInboundTransports(
                 new Transport[]{
-                        owch, ipc, Null
+                        owch, local, TransportEnum.Null
                 }
         );
         Env.setOutboundTransports(new Transport[]{
-                ipc, owch, Null
+                local, owch, Null
         });
     }
 

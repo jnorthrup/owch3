@@ -2,18 +2,12 @@ package net.sourceforge.owch2.kernel;
 
 import static net.sourceforge.owch2.kernel.AgentLifecycle.*;
 import static net.sourceforge.owch2.kernel.EventDescriptor.*;
-import net.sourceforge.owch2.protocol.Transport;
-import static net.sourceforge.owch2.protocol.Transport.http;
-import net.sourceforge.owch2.protocol.router.ipcRouter;
+import static net.sourceforge.owch2.protocol.TransportEnum.*;
 
-import static java.lang.Thread.sleep;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.logging.Logger;
+import static java.lang.Thread.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.logging.*;
 
 /**
  * AbstractAgent provides the base class which communicates with the Env
@@ -171,17 +165,17 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
     }
 
     public AbstractAgent(Map proto) {
-        super(proto);
-        final ipcRouter ipcRouter = (ipcRouter) Transport.ipc.getRouter();
-        ipcRouter.getLocalAgents().put(getJMSReplyTo(), this);
-        if (!isParent()) {
-            linkTo(DEFAULT_LINK_NAME);
-        }
+//        super(proto);
+//        final ipcRouter ipcRouter = (ipcRouter) Transport.ipc.getRouter();
+//        ipcRouter.getLocalAgents().put(getJMSReplyTo(), this);
+//        if (!isParent()) {
+//            linkTo(DEFAULT_LINK_NAME);
+//        }
     }
 
     public void init(Map<String, ? extends V> proto) {
         putAll(proto);
-        Transport.ipc.hasPath(this.getJMSReplyTo());
+//        Transport.ipc.hasPath(this.getJMSReplyTo());
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }

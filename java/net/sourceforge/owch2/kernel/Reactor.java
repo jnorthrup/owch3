@@ -1,18 +1,31 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.protocol.Transport;
+import net.sourceforge.owch2.protocol.*;
 
-import java.io.IOException;
+import java.io.*;
+import java.lang.ref.*;
+import java.nio.*;
 import java.nio.channels.*;
 import static java.nio.channels.SelectionKey.*;
-import java.util.Timer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
- * This converts (injects) network data into a factory that produces inbound Messages.
+ * Reactor design pattern singleton as presented by the letters E,N,U, and M.
+ * <p/>
+ * 1 unified thread pool
+ * 1 unified selector
+ * 1 unified timer
+ * <p/>
+ * all ChannelControllers are designed as ordered generic slotted tasks for state progression.
+ * <p/>
+ * Controllers can be built by overrriding the task return vlues with the reference to the desired next slot.
+ * <p/>
+ * e.g.  simple controller
+ * <p/>
+ * enum Agenda{ state1,state2,state3 };
+ * enum ChannelController{ t1,t2 }
+ * Reactor.READ(channe;ChannelController)
  *
  * @author James Northrup
  * @version $Id$
@@ -20,34 +33,33 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 
 public enum Reactor {
-
     /**
-     * Accept Reactor are transport specific operations
+     * Accept Reactor are ChannelController specific operations
      */
     ACCEPT(OP_ACCEPT) {
-
-        boolean call(final SelectableChannel channel, final Transport transport) throws IOException {
-            ServerSocketChannel schannel = (ServerSocketChannel) channel;
-            SocketChannel socketChannel = schannel.accept();
-            channel.configureBlocking(false);
-            return transport.channelAccept(socketChannel);
+        boolean call(SelectionKey key) throws IOException {
+            return ((ChannelController) key.attachment()).channelAccept(key);
         }
     },
     CONNECT(OP_CONNECT) {
-        boolean call(final SelectableChannel channel, final Transport transport) throws IOException {
-            SocketChannel socketChannel = (SocketChannel) channel;
-            return socketChannel.finishConnect() && transport.channelConnect(channel);
+        boolean call(SelectionKey key) throws IOException {
+            return ((ChannelController) key.attachment()).channelConnect(key);
         }},
     READ(OP_READ) {
-        boolean call(final SelectableChannel channel, final Transport transport) throws IOException {
-            return transport.channelRead((ByteChannel) channel);
+        boolean call(SelectionKey key) throws IOException, ExecutionException, InterruptedException {
+            return ((ChannelController) key.attachment()).channelRead(key);
         }},
     WRITE(OP_WRITE) {
-        boolean call(SelectableChannel channel, Transport transport) throws IOException {
-            return transport.channelWrite((ByteChannel) channel);
+        boolean call(SelectionKey key) throws IOException, InterruptedException {
+            return ((ChannelController) key.attachment()).channelWrite(key);
+
         }},;
+
     static Selector selector;
 
+    public static final int BUFFSIZE = 1024 * 16;
+    static final int BUFFCOUNT = 128;
+    private static ByteBuffer cache;
 
     static {
         try {
@@ -57,49 +69,54 @@ public enum Reactor {
         }
         threadPool = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
-        staticInit();
+        Init();
+        cache = ByteBuffer.allocateDirect(BUFFCOUNT * BUFFSIZE);
     }
 
-    private static void staticInit() {
-        threadPool.execute(new Runnable() {
-            public void run() {
-                int i = 0;
-                Env instance = Env.getInstance();
-                while (!instance.shutdown)
-                    try {
-                        i = selector.select();
-                        if (i >= 1)
-                            for (final SelectionKey selectionKey : selector.selectedKeys())
-                                for (final Reactor reactor : values())
-                                    if (0 != (reactor.op & selectionKey.readyOps()))
-                                        threadPool.submit(
-                                                new Callable() {
-                                                    public Boolean call() throws Exception {
-                                                        boolean b = reactor.call(selectionKey.channel(), (Transport) selectionKey.attachment());
-                                                        if (!b) selectionKey.cancel();
-                                                        return b;
-                                                    }
-                                                });
-                    } catch (IOException e) {
-                        e.printStackTrace();  //ToDo: change body of catch statement use File | Settings | File Templates.
+    private static void Init() {
+        threadPool.execute(
+                new Runnable() {
+                    public void run() {
+                        int i = 0;
+                        Env instance = Env.getInstance();
+                        while (!instance.shutdown)
+                            try {
+
+                                //this blocks
+                                i = selector.select();
+                                if (i >= 1) threadPool.submit(
+                                        new Callable() {
+                                            public Boolean call() throws Exception {
+                                                boolean b = false;
+                                                for (final SelectionKey selectionKey : selector.selectedKeys())
+                                                    for (final Reactor reactor : values())
+                                                        if (0 != (reactor.op & selectionKey.readyOps())) {
+                                                            b = reactor.call(selectionKey);
+                                                            if (!b) {
+                                                                selectionKey.cancel();
+                                                                return false;
+                                                            }
+                                                        }
+                                                return true;
+                                            }
+                                        }
+                                );
+                            } catch (IOException e) {
+                                e.printStackTrace();  //ToDo: change body of catch statement use File | Settings | File Templates.
+                            }
                     }
-
-
-            }
-        });
+                });
     }
-
 
     /**
      * react to the event.
      *
      * @return whether to re-use this object or remove it (and child if any) from the reactor
      */
-    abstract boolean call(final SelectableChannel channel, final Transport transport) throws IOException;
-
+    abstract boolean call(SelectionKey key) throws IOException, ExecutionException, InterruptedException;
 
     static ThreadPoolExecutor threadPool;
-    static Timer timer = new Timer();
+    Timer timer = new Timer();
 
     private int op;
 
@@ -107,18 +124,15 @@ public enum Reactor {
         this.op = op;
     }
 
-    void registerChannel(SelectableChannel channel, Transport transport) throws IOException {
-
+    static public SelectionKey registerChannel(SelectableChannel channel, ChannelController ChannelController) throws IOException {
         if (!channel.isOpen()) {
-            return;
+            return null;
         }
-
         if (channel.isBlocking()) {
             channel.configureBlocking(false);
         }
-
         int valid = channel.validOps();
-        channel.register(selector, valid, transport);
+        return channel.register(selector, valid, ChannelController);
     }
 
     public static ThreadPoolExecutor getThreadPool() {
@@ -129,6 +143,26 @@ public enum Reactor {
         return getThreadPool().submit(callable);
     }
 
+    public static Selector getSelector() {
+        return selector;
+    }
+
+
+    private static final ReferenceQueue<ByteBuffer> RECLAIMER = new ReferenceQueue<ByteBuffer>();
+
+    static {
+
+        for (int pos = 0; pos < BUFFCOUNT; pos += BUFFSIZE) {
+            cache.position(pos);
+            cache.limit(pos + BUFFSIZE);
+            new WeakReference<ByteBuffer>(cache.slice(), RECLAIMER);
+        }
+
+    }
+
+    static public ByteBuffer getCacheBuffer() throws InterruptedException {
+        return RECLAIMER.remove().get();
+    }
 }
 
 

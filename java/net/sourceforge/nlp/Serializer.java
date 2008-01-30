@@ -1,11 +1,7 @@
 package net.sourceforge.nlp;
 
-import java.io.FileOutputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 
 /**

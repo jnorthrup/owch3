@@ -222,7 +222,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         linkTo(null);
         String resource = get("Resource").toString();
 
-        URI localHttpLocation = Transport.http.getURI();
+        URI localHttpLocation = TransportEnum.http.getURI();
         EventDescriptor EventDescriptor = new EventDescriptor();
         EventDescriptor.put(REPLYTO_KEY, getJMSReplyTo());
 

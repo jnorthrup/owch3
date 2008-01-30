@@ -1,15 +1,12 @@
 package net.sourceforge.owch2.agent;
 
-import net.sourceforge.owch2.kernel.AbstractAgent;
-import net.sourceforge.owch2.kernel.Env;
-import net.sourceforge.owch2.kernel.EventDescriptor;
-import static net.sourceforge.owch2.protocol.Transport.owch;
+import net.sourceforge.owch2.kernel.*;
+import static net.sourceforge.owch2.protocol.TransportEnum.*;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.net.*;
 import java.util.*;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 public class IRC extends AbstractAgent implements Runnable {
     private BufferedReader is;

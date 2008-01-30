@@ -1,13 +1,11 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.protocol.Transport;
-import net.sourceforge.owch2.protocol.router.Router;
+import net.sourceforge.owch2.protocol.*;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 /**
  * Mobile Agent Hosting Environment. This class acts as a hub for realtime messages
@@ -43,7 +41,7 @@ public class Env {
     private int hostThreads = 2;
     private int socketCount = 2;
     private String domainName = "default";
-    private Map<Transport, Router> routerCache = new HashMap<Transport, Router>(13);
+
     private Map<String, Format> formatCache;
 
 
@@ -63,6 +61,7 @@ public class Env {
     private httpRegistry httpRegistry;
     private static Transport[] inboundTransports;
     private static Transport[] outboundTransports;
+    private static Set<Agent> localAgents = new ConcurrentSkipListSet<Agent>();
 
     private Env() {
     }
@@ -96,8 +95,10 @@ public class Env {
         return httpRegistry;
     }
 
-    public void send(EventDescriptor notification) {
-
+    public void send(EventDescriptor eventDescriptor) {
+        for (Transport outboundTransport : outboundTransports)
+            if (outboundTransport.hasPath(eventDescriptor.getDestination()))
+                outboundTransport.send(eventDescriptor);
     }
 
     public static void setInboundTransports(Transport[] inboundTransport) {
@@ -106,6 +107,24 @@ public class Env {
 
     public static void setOutboundTransports(Transport[] outboundTransport) {
         outboundTransports = outboundTransport;
+    }
+
+    public static Set<Agent> getLocalAgents() {
+        return localAgents;
+    }
+
+    public static Transport[] getInboundTransports() {
+        return inboundTransports;
+    }
+
+    public void recv(EventDescriptor eventDescriptor1) {
+        for (Transport inboundTransport : inboundTransports) {
+            if (inboundTransport.hasPath(eventDescriptor1.getDestination())) {
+                inboundTransport.recv(eventDescriptor1);
+            } else if (Env.getInstance().isParentHost()) {
+                this.send(eventDescriptor1);
+            }
+        }
     }
 
     enum ProtocolParam {
@@ -166,7 +185,7 @@ public class Env {
                 String[] strings = protoToken.split(":", 2);
                 if (strings.length == 2) {
                     try {
-                        Transport transport = Transport.valueOf(protoToken);
+                        Transport transport = TransportEnum.valueOf(protoToken);
                         String attrToken = strings[1];
 
                         ProtocolParam param = ProtocolParam.valueOf(attrToken);
@@ -244,7 +263,7 @@ public class Env {
                 "-debugLevel  - controls how much scroll is displayed\n";
         s += "-ParentURL   - typically owch://hostname:2112 -- instructs our agent host where to find an uplink\n\n";
         s += "this edition of the Agent Hosting Platform comes with the folowing configurable protocols: \n";
-        for (Transport ptype : Transport.values()) {
+        for (TransportEnum ptype : TransportEnum.values()) {
             if (ptype.getPort() == -1) {
                 continue;
             }

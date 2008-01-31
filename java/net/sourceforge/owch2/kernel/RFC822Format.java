@@ -13,16 +13,10 @@ import java.util.concurrent.*;
 public class RFC822Format implements Format {
     private static final char[] colon = ": ".toCharArray();
 
-    public RFC822Format() {
-    }
-
-
-    public Future<Exchanger<ByteBuffer>> send(final EventDescriptor event) throws InterruptedException {
-        final Exchanger<ByteBuffer> exchanger = new Exchanger<ByteBuffer>();
+    public Exchanger<ByteBuffer> send(final EventDescriptor event) throws InterruptedException {
+        final Exchanger<ByteBuffer> sendX = new Exchanger<ByteBuffer>();
         final StringBuilder builder = new StringBuilder();
-
-
-        Callable<Exchanger<ByteBuffer>> byteBufferCallable = new Callable<Exchanger<ByteBuffer>>() {
+        Reactor.submit(new Callable<Exchanger<ByteBuffer>>() {
             ByteBuffer cacheBuf = Reactor.getCacheBuffer();
             CharBuffer buffer = cacheBuf.duplicate().asCharBuffer();
 
@@ -41,69 +35,147 @@ public class RFC822Format implements Format {
                 buffer.append('\n');
 
                 flip();
-                return exchanger;
+                return sendX;
             }
 
-            private void flip() throws InterruptedException {
-                if (builder.length() > buffer.length()) {
-                    exchanger.exchange((ByteBuffer) ByteBuffer.wrap(builder.toString().getBytes()).rewind());
-                } else if (builder.length() > buffer.remaining()) {
-                    cacheBuf = (ByteBuffer) exchanger.exchange(cacheBuf).flip();
-                    buffer = cacheBuf.asCharBuffer();
-                    buffer.append(builder);
+            private void flip() throws InterruptedException, InvalidPropertiesFormatException {
+                if (builder.length() <= buffer.length()) {
+                    if (builder.length() > buffer.remaining()) {
+                        cacheBuf = (ByteBuffer) sendX.exchange(cacheBuf).flip();
+                        buffer = cacheBuf.asCharBuffer();
+                        buffer.append(builder);
+                    }
+                    return;
                 }
+                throw new InvalidPropertiesFormatException("output line exceeds " + Reactor.BUFFSIZE);
+            }
+        });
+        return sendX;
+    }
+
+
+    /**
+     * howto:
+     * <p/>
+     * you send me the Exchanger.  I send you the future for the spinning routine.
+     * when you want the results you do future.get;
+     * <p/>
+     * you fill the exchanger and send a null pointer to get the event back.
+     *
+     * @param readX
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws UnsupportedEncodingException
+     */
+    public Future<EventDescriptor> recv(final Exchanger<ByteBuffer> readX) {
+
+        //got the readX
+        Callable<EventDescriptor> callable = new Callable<EventDescriptor>() {
+
+            EventDescriptor event; //the future is here
+
+
+            String line = "";
+            ByteBuffer buffer;
+            boolean completion = false;
+
+            public EventDescriptor call() throws InterruptedException {
+
+
+                try {
+                    buffer = Reactor.getCacheBuffer();
+
+                    CharBuffer charBuffer = buffer.asCharBuffer();
+                    StringBuilder bounce = null;
+
+                    while (buffer != null) {
+                        buffer = readX.exchange(buffer);
+                        StringBuilder key = null;
+                        StringBuilder val = null;
+                        boolean escaping = false;
+                        boolean commenting = false;
+                        int keysep = -1;
+                        int indent = 0;
+                        while (charBuffer.hasRemaining()) {
+                            char c = charBuffer.get();
+                            if (escaping) continue;
+                            final int pos = charBuffer.position();
+                            switch (c) {
+
+                                case '\\':
+                                    escaping = true;
+                                    break;
+                                case '#':
+                                    commenting |= pos == indent + 1 && key == null;
+                                    break;
+                                case ':':
+                                    if (!commenting) keysep = pos;
+                                    break;
+                                case ' ':
+                                    if (key == null) {
+                                        if (!commenting) {
+                                            if (keysep != pos - 1) {
+                                                if (pos == indent + 1) indent++;
+                                            } else {
+                                                if (event == null) {
+                                                    event = new EventDescriptor();
+                                                }
+
+                                                key = new StringBuilder();
+                                                if (bounce != null) {
+                                                    key.append(bounce);
+                                                    bounce = null;
+                                                }
+                                                key.append(key).append(charBuffer.duplicate().position(keysep - 1).flip().toString());
+                                                charBuffer = charBuffer.slice();
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case '\n':
+                                    if (!commenting) {
+                                        if (key == null) {
+                                            if (pos == 1) {
+                                                completion = true;
+                                            }
+                                        } else {
+                                            val = new StringBuilder();
+                                            if (bounce != null) {
+                                                val.append(bounce);
+                                                bounce = null;
+                                            }
+                                            val.append(charBuffer.duplicate().position(pos - 1).flip().toString());
+                                            event.put(URLDecoder.decode(key.toString(), "UTF-8").trim(), URLDecoder.decode(val.toString(), "UTF-8").trim());
+                                        }
+
+                                        //this will set us up for a  new happy key next line
+                                        charBuffer = charBuffer.slice();
+                                    } else {
+                                        commenting = false;
+                                    }
+                                default:
+                                    break;
+                            }
+
+                            if (completion) break;
+                        }
+                        if (completion) break;
+                        bounce = new StringBuilder(charBuffer.flip().toString());
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+
+                return event;
             }
         };
-        return Reactor.submit(byteBufferCallable);
+        return Reactor.submit(callable);
     }
 
 
-    public EventDescriptor recv(Exchanger<ByteBuffer> fBufX) throws InterruptedException, ExecutionException, UnsupportedEncodingException {
-//        Exchanger<ByteBuffer> bufX = new Exchanger<ByteBuffer>();
-        EventDescriptor event = new EventDescriptor();
-        String line = "";
-        ByteBuffer buffer = fBufX.exchange(Reactor.getCacheBuffer());
-
-        do {
-            CharBuffer charBuffer = buffer.asCharBuffer();
-            charBuffer.mark();
-            if (charBuffer.hasRemaining()) {
-                do {
-                    try {
-
-                        if (charBuffer.get() == '\n') {
-                            // we've found an Map.entry
-                            // we know the value ends here.
-
-
-                            int pos = charBuffer.position();
-                            CharBuffer buf1 = (CharBuffer) charBuffer.duplicate().reset().limit(pos - 1);
-                            buf1 = buf1.slice();
-                            line += buf1.toString().trim();
-
-                            do {
-                                while (buf1.get() != ':') {
-                                }
-                            } while (buf1.get() != ' ');
-
-                            //we should be on the start of the 'value'
-
-                            String val = URLDecoder.decode(buf1.slice().limit(buf1.remaining() - 1).toString(), "UTF-8");
-
-                            //we marked the beiginning of the key...
-                            String key = URLDecoder.decode(buf1.position(buf1.position() - 2).flip().toString(), "UTF-8");
-                            event.put(key, val);
-                            line = "";
-                        }
-                    } catch (BufferUnderflowException e) {
-
-                        line = ((CharBuffer) charBuffer.reset()).slice().toString();
-                        buffer = (ByteBuffer) fBufX.exchange(buffer).rewind();
-
-                    }
-                } while (charBuffer.hasRemaining());
-            }
-        } while (!line.isEmpty());
-        return event;
-    }
 }
+
+
+
+

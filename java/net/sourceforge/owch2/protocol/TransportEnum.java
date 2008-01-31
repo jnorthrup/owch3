@@ -42,7 +42,7 @@ public enum TransportEnum implements Transport {
             new ChannelController() {
                 RFC822Format format = new RFC822Format();
 
-                private Exchanger<ByteBuffer> readSwap = new Exchanger<ByteBuffer>();
+                private Exchanger<ByteBuffer> readX = new Exchanger<ByteBuffer>();
                 private Exchanger<ByteBuffer> writeSwap = new Exchanger<ByteBuffer>();
 
                 public URI getUri() {
@@ -50,7 +50,7 @@ public enum TransportEnum implements Transport {
                 }
 
                 public void init(Exchanger<ByteBuffer> swap) {
-                    this.readSwap = swap;
+                    this.readX = swap;
                     try {
                         DatagramSocket socket = new DatagramSocket();
                         socket.setReceiveBufferSize(Reactor.BUFFSIZE);
@@ -88,14 +88,15 @@ public enum TransportEnum implements Transport {
                 public boolean channelRead(SelectionKey key) throws ExecutionException, InterruptedException, IOException {
                     Future<EventDescriptor> future = Reactor.submit(new Callable<EventDescriptor>() {
                         public EventDescriptor call() throws Exception {
-                            return format.recv(readSwap);
+                            final Future<EventDescriptor> future1 = format.recv(readX);
+                            return future1.get();
                         }
                     });
 
                     ByteChannel iChannel = (ByteChannel) key.channel();
                     ByteBuffer buffer = Reactor.getCacheBuffer();
                     int i = iChannel.read(buffer);
-                    readSwap.exchange(buffer);
+                    readX.exchange(buffer);
                     Env.getInstance().recv(future.get());
                     return true;
                 }
@@ -109,9 +110,6 @@ public enum TransportEnum implements Transport {
                     int i = channel1.write(buffer);
                     return false;
                 }
-
-                ;
-                ;
             };
 
         }

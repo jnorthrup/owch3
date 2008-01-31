@@ -1,6 +1,5 @@
 package net.sourceforge.owch2.kernel;
 
-import java.io.*;
 import java.nio.*;
 import java.util.concurrent.*;
 
@@ -9,10 +8,7 @@ import java.util.concurrent.*;
  * @version $Id$
  */
 public interface Format {
-    Future<Exchanger<ByteBuffer>> send(final EventDescriptor event) throws InterruptedException;
+    Exchanger<ByteBuffer> send(final EventDescriptor event) throws InterruptedException;
 
-    EventDescriptor recv(Exchanger<ByteBuffer> fBufX) throws InterruptedException, ExecutionException, UnsupportedEncodingException;
+    Future<EventDescriptor> recv(Exchanger<ByteBuffer> fBufX);
 }
-
-
-

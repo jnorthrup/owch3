@@ -259,7 +259,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
                 }
 
             }
-            nice.save(os);
+//            nice.save(os);
 
             int actual = 0;
             InputStream is = new ByteArrayInputStream(payload);

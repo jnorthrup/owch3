@@ -16,13 +16,13 @@ public class IRCChannelAgent extends AbstractAgent {
     public IRCChannelAgent(IRCChannelGUI g, Map l) {
         super(l);
         try {
-            sParser = new SentenceParser(getJMSReplyTo() + ".hist");
+            sParser = new SentenceParser(getFrom() + ".hist");
         }
         catch (Exception e) {
             try {
                 Serializer ser = new Serializer();
-                ser.serialize(getJMSReplyTo() + ".hist");
-                sParser = new SentenceParser(getJMSReplyTo() + ".hist");
+                ser.serialize(getFrom() + ".hist");
+                sParser = new SentenceParser(getFrom() + ".hist");
             }
             catch (Exception e1) {
                 e1.printStackTrace();
@@ -34,21 +34,22 @@ public class IRCChannelAgent extends AbstractAgent {
     /**
      * this tells our (potentially clone) agent to stop re-registering.  it will cease to spin.
      */
-    public void handle_Dissolve(EventDescriptor n) {
-        n.put(EventDescriptor.DESTINATION_KEY, get("IRCManager"));
+    public void handle_Dissolve(Notification n1) {
+        final DefaultMapTransaction n = new DefaultMapTransaction(n1);
+        n.put(ImmutableNotification.DESTINATION_KEY, get("IRCManager"));
         n.put("JMSType", "PART");
-        n.put("Value", getJMSReplyTo());
-        n.put(EventDescriptor.REPLYTO_KEY, getJMSReplyTo());
+        n.put("Value", getFrom());
+        n.put(ImmutableNotification.FROM_KEY, getFrom());
         send(n);
-        sParser.write(getJMSReplyTo() + ".hist");
-        super.handle_Dissolve(new EventDescriptor(this));
+        sParser.write(getFrom() + ".hist");
+        super.handle_Dissolve(new DefaultMapNotification(this));
     }
 
 
     /**
      * THe nlp version of handlePrivMsg
      */
-    public void handle_IRC_PRIVMSG(EventDescriptor m) {
+    public void handle_IRC_PRIVMSG(Notification m) {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
         List<Report> l = sParser.tokenize(value);
@@ -62,10 +63,10 @@ public class IRCChannelAgent extends AbstractAgent {
     /**
      * THe almost-chat version of handlePrivMsg
      */
-    public void handle_IRC_PRIVMSG2(EventDescriptor m) {
+    public void handle_IRC_PRIVMSG2(Notification m) {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
-        String ret = value.startsWith("\00ACTION") ? "* " + m.get(EventDescriptor.REPLYTO_KEY) + " " + value.substring(6).trim() : "<" + m.get(EventDescriptor.REPLYTO_KEY) + "> " + value;
+        String ret = value.startsWith("\00ACTION") ? "* " + m.get(ImmutableNotification.FROM_KEY) + " " + value.substring(6).trim() : "<" + m.get(ImmutableNotification.FROM_KEY) + "> " + value;
         lm.addElement(ret);
         while (lm.getSize() > 1000) {
             lm.remove(0);
@@ -73,7 +74,7 @@ public class IRCChannelAgent extends AbstractAgent {
         sParser.tokenize(value);
     }
 
-    public void handle_IRC_RPL_NAMREPLY(EventDescriptor m) {
+    public void handle_IRC_RPL_NAMREPLY(Notification m) {
         StringTokenizer tk = new StringTokenizer(m.get("Value").toString());
         ScrollingListModel lm = (ScrollingListModel) gui.getUsersList().getModel();
 
@@ -83,7 +84,7 @@ public class IRCChannelAgent extends AbstractAgent {
 //        if (Env.logDebug) Env.log(50, "recvd names");
     }
 
-    public void handle_IRC_RPL_ENDOFNAMES(EventDescriptor m) {
+    public void handle_IRC_RPL_ENDOFNAMES(Notification m) {
         gui.getUsersList().invalidate();
         gui.getUsersList().repaint();
     }

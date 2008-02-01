@@ -2,7 +2,6 @@ package net.sourceforge.owch2.protocol;
 
 import net.sourceforge.owch2.kernel.*;
 
-import javax.lang.model.element.*;
 import java.net.*;
 import java.nio.*;
 import java.util.*;
@@ -15,13 +14,13 @@ import java.util.concurrent.*;
  * To change this template use File | Settings | File Templates.
  */
 public interface Transport {
-    Map<Name, Agent> getLocalAgents();
+    Map<CharSequence, Agent> getLocalAgents();
 
     URI getURI();
 
     Short getPort();
 
-    boolean hasPath(String name);
+    boolean hasPath(CharSequence name);
 
     void setHostAddress(InetAddress hostAddress);
 
@@ -36,8 +35,8 @@ public interface Transport {
 
     Format getFormat();
 
-    Future<Receipt> recv(EventDescriptor event);
+    void recv(Notification notification);
 
-    Future<Exchanger<ByteBuffer>> send(EventDescriptor event);
+    Future<Exchanger<ByteBuffer>> send(Notification notification);
 }
 

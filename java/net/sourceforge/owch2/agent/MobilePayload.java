@@ -6,7 +6,6 @@
 package net.sourceforge.owch2.agent;
 
 import net.sourceforge.owch2.kernel.*;
-import static net.sourceforge.owch2.kernel.EventDescriptor.*;
 import net.sourceforge.owch2.protocol.*;
 
 import java.io.*;
@@ -18,16 +17,17 @@ import java.util.logging.*;
  * base class proof of concept for an object that can start up, suck
  * down some content, clone, and finally take over functions. this class carries content far away safe from harm.
  */
-public class MobilePayload extends AbstractAgent implements Runnable {
+public class MobilePayload extends AbstractAgent {
     private Thread
             thread;
+    private HashMap<CharSequence, Object> nice = new HashMap<CharSequence, Object>();
 
-    public MobilePayload(Map<?, ?> m) {
+    public MobilePayload(Map<CharSequence, Object> m) {
         super(m);
         if (containsKey("Source")) {
-            init((String) get(EventDescriptor.REPLYTO_KEY), (String) get("Source"), (String) get("Resource"));
+            init((String) get(ImmutableNotification.FROM_KEY), (String) get("Source"), (String) get("Resource"));
         } else {
-            init((String) get(EventDescriptor.REPLYTO_KEY), (String) get("Resource"));
+            init((String) get(ImmutableNotification.FROM_KEY), (String) get("Resource"));
         }
     }
 
@@ -37,15 +37,15 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     }
 
     public MobilePayload(String name, String url, String resource) {
-        put(EventDescriptor.REPLYTO_KEY, name);
+        put(ImmutableNotification.FROM_KEY, name);
         put("Resource", resource);
         remove("Source");
         init(name, url, resource);
     }
 
     public static void main(String[] args) {
-        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        if (!(m.containsKey(EventDescriptor.REPLYTO_KEY) && m.containsKey("Resource"))) {
+        final HashMap<CharSequence, Object> m = getMap(Env.getInstance().parseCommandLineArgs(args));
+        if (!(m.containsKey(ImmutableNotification.FROM_KEY) && m.containsKey("Resource"))) {
             Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "MobilePayload Agent usage:\n\n" + "-name name\n" +
                     "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n" +
                     "-Source 'file' -- the file \n" + "[-Content-Type 'application/msword']\n" + "[-Clone 'host1[ ..hostn]']\n" +
@@ -53,11 +53,11 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         }
         new MobilePayload(m);
     }
-
-    /**
-     * this is a set of headers that is simply nice to have...
-     */
-    protected EventDescriptor nice = new EventDescriptor();
+//
+//    /**
+//     * this is a set of headers that is simply nice to have...
+//     */
+//    protected Notification nice = new ImmutableNotification(getFrom(), getURI(),(Iterable<Map.Entry<CharSequence, Object>>) this);
 
     /**
      * this is a set of header fields that is simply nice to have...
@@ -88,21 +88,19 @@ public class MobilePayload extends AbstractAgent implements Runnable {
 
             long tim = (long) (Math.random() * (interval / 2.0) + interval / 2.0);
             try {
-                Thread.currentThread().sleep(tim);
+                Thread.sleep(tim);
             } catch (InterruptedException e) {
                 e.printStackTrace();  //To change body of catch statement use Options | File Templates.
             }
-
-
         }
     }
 
     /**
      * this tells our (potentially clone) web page to stop re-registering.  it will cease to spin.
      */
-    public void handle_Dissolve(EventDescriptor n) {
+    public void handle_Dissolve(HasProperties n) {
         thread.interrupt();
-        EventDescriptor n2 = new EventDescriptor();
+        Transaction n2 = new DefaultMapTransaction(n);
         n2.put(DESTINATION_KEY, "GateKeeper");
         n2.put("JMSType", "UnRegister");
         n2.put("URLSpec", get("Resource").toString());
@@ -129,7 +127,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
 */
 
     public void init(String name, String file) {
-        put(EventDescriptor.REPLYTO_KEY, name);
+        put(ImmutableNotification.FROM_KEY, name);
         put("Resource", file);
         inductFile(file);
     }
@@ -185,8 +183,8 @@ public class MobilePayload extends AbstractAgent implements Runnable {
     public void inductStream(InputStream is) {
         throw new Error("under rennovation");
         /*    Transport.ipc.getPathMap().put(
-                getJMSReplyTo(),
-                new EventDescriptor() {
+                getFrom(),
+                new Notification() {
         });
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -223,16 +221,16 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         String resource = get("Resource").toString();
 
         URI localHttpLocation = TransportEnum.http.getURI();
-        EventDescriptor EventDescriptor = new EventDescriptor();
-        EventDescriptor.put(REPLYTO_KEY, getJMSReplyTo());
+        Transaction eventDescriptor = new DefaultMapTransaction(this);
+        eventDescriptor.put(FROM_KEY, getFrom());
 
-        Env.getInstance().getHttpRegistry().registerItem(resource, EventDescriptor);
-        EventDescriptor n2 = new EventDescriptor();
+        Env.getInstance().getHttpRegistry().registerItem(resource, eventDescriptor);
+        Transaction n2 = new DefaultMapTransaction(this);
         n2.put(URI_KEY, localHttpLocation);
         n2.put(DESTINATION_KEY, "GateKeeper");
         n2.put("JMSType", "Register");
         n2.put("URLSpec", resource);
-        n2.put("URLFwd", EventDescriptor.getURI());
+        n2.put("URLFwd", eventDescriptor.getURI());
         send(n2);
     }
 
@@ -281,7 +279,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
         }
     }
 
-    public void handle_httpd(EventDescriptor n) {
+    public void handle_httpd(Notification n) {
         Socket s = Env.getInstance().getHttpRegistry().httpdSockets.remove("_Socket");
         sendPayload(s);
     }
@@ -291,7 +289,7 @@ public class MobilePayload extends AbstractAgent implements Runnable {
      *
      * @param message
      */
-    public void handle_WriteFile(EventDescriptor message) {
+    public void handle_WriteFile(Notification message) {
         String path;
         path = (String) message.get("Path");
         String filename;

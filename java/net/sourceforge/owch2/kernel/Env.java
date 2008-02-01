@@ -1,7 +1,9 @@
 package net.sourceforge.owch2.kernel;
 
+import static net.sourceforge.owch2.kernel.ImmutableNotification.*;
 import net.sourceforge.owch2.protocol.*;
 
+import javax.script.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -33,7 +35,7 @@ import java.util.concurrent.*;
  * @version $Id$
  * @see AbstractAgent
  */
-public class Env {
+public class Env implements Invocable {
     volatile public boolean shutdown = false;
     private boolean parentFlag = false;
     private int owchPort = 0;
@@ -46,9 +48,9 @@ public class Env {
 
 
     /**
-     * returns a EventDescriptor suitable for parent routing.
+     * returns a Notification suitable for parent routing.
      */
-    EventDescriptor parentNode = null;
+    HasOrigin parentNode = null;
 
 //    private PathResolver pathResolver = new LeafPathResolver();
 
@@ -95,10 +97,10 @@ public class Env {
         return httpRegistry;
     }
 
-    public void send(EventDescriptor eventDescriptor) {
+    public void send(Transaction notification) {
         for (Transport outboundTransport : outboundTransports)
-            if (outboundTransport.hasPath(eventDescriptor.getDestination()))
-                outboundTransport.send(eventDescriptor);
+            if (outboundTransport.hasPath(notification.getDestination()))
+                outboundTransport.send(notification);
     }
 
     public static void setInboundTransports(Transport[] inboundTransport) {
@@ -117,15 +119,86 @@ public class Env {
         return inboundTransports;
     }
 
-    public void recv(EventDescriptor eventDescriptor1) {
+    public void recv(Transaction notificationDescriptor1) {
         for (Transport inboundTransport : inboundTransports) {
-            if (inboundTransport.hasPath(eventDescriptor1.getDestination())) {
-                inboundTransport.recv(eventDescriptor1);
+            if (inboundTransport.hasPath(notificationDescriptor1.getDestination())) {
+                inboundTransport.recv(notificationDescriptor1);
             } else if (Env.getInstance().isParentHost()) {
-                this.send(eventDescriptor1);
+                this.send(notificationDescriptor1);
             }
         }
     }
+
+    /**
+     * Calls a method on a script object compiled during a previous script execution,
+     * which is retained in the state of the <code>ScriptEngine</code>.
+     *
+     * @param name The name of the procedure to be called.
+     * @param thiz If the procedure is a member  of a class
+     *             defined in the script and thiz is an instance of that class
+     *             returned by a previous execution or invocation, the named method is
+     *             called through that instance.
+     * @param args Arguments to pass to the procedure.  The rules for converting
+     *             the arguments to scripting variables are implementation-specific.
+     * @return The value returned by the procedure.  The rules for converting the scripting
+     *         variable returned by the script method to a Java Object are implementation-specific.
+     * @throws javax.script.ScriptException if an error occurrs during invocation of the method.
+     * @throws NoSuchMethodException        if method with given name or matching argument types cannot be found.
+     * @throws NullPointerException         if the method name is null.
+     * @throws IllegalArgumentException     if the specified thiz is null or the specified Object is
+     *                                      does not represent a scripting object.
+     */
+    public Object invokeMethod(Object thiz, String name, Object... args) throws ScriptException, NoSuchMethodException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * Used to call top-level procedures and functions defined in scripts.
+     *
+     * @param args Arguments to pass to the procedure or function
+     * @return The value returned by the procedure or function
+     * @throws javax.script.ScriptException if an error occurrs during invocation of the method.
+     * @throws NoSuchMethodException        if method with given name or matching argument types cannot be found.
+     * @throws NullPointerException         if method name is null.
+     */
+    public Object invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * Returns an implementation of an interface using functions compiled in
+     * the interpreter. The methods of the interface
+     * may be implemented using the <code>invokeFunction</code> method.
+     *
+     * @param clasz The <code>Class</code> object of the interface to return.
+     * @return An instance of requested interface - null if the requested interface is unavailable,
+     *         i. e. if compiled functions in the <code>ScriptEngine</code> cannot be found matching
+     *         the ones in the requested interface.
+     * @throws IllegalArgumentException if the specified <code>Class</code> object
+     *                                  is null or is not an interface.
+     */
+    public <T> T getInterface(Class<T> clasz) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * Returns an implementation of an interface using member functions of
+     * a scripting object compiled in the interpreter. The methods of the
+     * interface may be implemented using the <code>invokeMethod</code> method.
+     *
+     * @param thiz  The scripting object whose member functions are used to implement the methods of the interface.
+     * @param clasz The <code>Class</code> object of the interface to return.
+     * @return An instance of requested interface - null if the requested interface is unavailable,
+     *         i. e. if compiled methods in the <code>ScriptEngine</code> cannot be found matching
+     *         the ones in the requested interface.
+     * @throws IllegalArgumentException if the specified <code>Class</code> object
+     *                                  is null or is not an interface, or if the specified Object is
+     *                                  null or does not represent a scripting object.
+     */
+    public <T> T getInterface(Object thiz, Class<T> clasz) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
 
     enum ProtocolParam {
         Threads("Number of Threads to service all of protocol's ports"),
@@ -150,9 +223,9 @@ public class Env {
      * @param arguments usu. the commandline args or the source args for a clone instance
      * @return the props from the commandline
      */
-    public EventDescriptor parseCommandLineArgs(String[] arguments) {
+    public Iterable<Map.Entry<CharSequence, Object>> parseCommandLineArgs(String[] arguments) {
         try {
-            EventDescriptor bootMessage = new EventDescriptor();
+            ArrayList<Entry<CharSequence, Object>> bootMessage = new ArrayList<Entry<CharSequence, Object>>();
             //harsh but effective, asume everything is key value pairs.
             for (int i = 0; i < arguments.length - arguments.length % 2; i += 2) {
 
@@ -168,7 +241,7 @@ public class Env {
                     throw new RuntimeException("requested help");
                 }
                 if (protoToken.equals("name")) {
-                    protoToken = EventDescriptor.REPLYTO_KEY;
+                    protoToken = FROM_KEY;
                     continue;
                 }
 
@@ -220,9 +293,9 @@ public class Env {
                     continue;
                 }
                 if (protoToken.equals("ParentURL")) {
-                    EventDescriptor EventDescriptor = (EventDescriptor) getParentNode();
-                    EventDescriptor.put("URL", valueString);
-                    setParentNode(EventDescriptor);
+                    Notification evt = (Notification) getParentNode();
+                    evt.put("URL", valueString);
+                    setParentNode(evt);
                     continue;
                 }
 
@@ -237,7 +310,7 @@ public class Env {
                     }
                     continue;
                 }
-                bootMessage.put(protoToken, valueString);
+                bootMessage.add(new AbstractMap.SimpleEntry<CharSequence, Object>(protoToken, valueString));
             }
             return bootMessage;
         } catch (RuntimeException e) {
@@ -319,7 +392,7 @@ public class Env {
         parentFlag = flag;
     }
 
-    public void setParentNode(EventDescriptor l) {
+    public void setParentNode(Notification l) {
         parentNode = l;
     }
 
@@ -333,12 +406,12 @@ public class Env {
     }
 
 
-    public EventDescriptor getParentNode() {
+    public HasOrigin getParentNode() {
         if (parentNode == null) {
-            EventDescriptor l = new EventDescriptor();
+            DefaultMapNotification l = new DefaultMapNotification();
             l.put("Created", "env.getDomain()");
-            l.put(EventDescriptor.REPLYTO_KEY, "default");
-            l.put("URL", "owch://" + getHostAddress().getCanonicalHostName() + ":2112/");
+            l.put(FROM_KEY, "default");
+            l.put(URI_KEY, "owch://" + getHostAddress().getCanonicalHostName() + ":2112/");
             parentNode = l;
         }
         return parentNode;

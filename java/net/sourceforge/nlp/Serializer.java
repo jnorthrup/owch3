@@ -74,7 +74,7 @@ public class Serializer extends VerbKnowledge {
         metaClause.put("3.3", "Instrument Subject Alternation ");
         metaClause.put("3.4", "Abstract Cause Subject Alternation ");
         metaClause.put("3.5", "Locatum Subject Alternation ");
-        metaClause.put("3.6", "EventDescriptor Subject Alternation ");
+        metaClause.put("3.6", "Notification Subject Alternation ");
         metaClause.put("3.7", "Container Subject Alternation");
         metaClause.put("3.8", "Raw Material Subject Alternation");
         metaClause.put("3.9", "Sum of Money Subject Alternation");
@@ -232,7 +232,7 @@ public class Serializer extends VerbKnowledge {
         metaClause.put("36.2", "Marry Verbs");
         metaClause.put("36.3", "Meet Verbs");
         metaClause.put("37", "Verbs of Communication");
-        metaClause.put("37", "I Verbs of Transfer of a EventDescriptor");
+        metaClause.put("37", "I Verbs of Transfer of a Notification");
         metaClause.put("37.2", "Tell");
         metaClause.put("37.3", "Verbs of Manner of Speaking");
         metaClause.put("37.4", "Verbs of Instrument of Communication");
@@ -308,7 +308,7 @@ public class Serializer extends VerbKnowledge {
         metaClause.put("47.5.3", "Bulge Verbs");
         metaClause.put("47.6", "Verbs of Spatial Configuration");
         metaClause.put("47.7", "Meander Verbs");
-        metaClause.put("47.8", "Verbs of Contiguous EventDescriptor");
+        metaClause.put("47.8", "Verbs of Contiguous Notification");
         metaClause.put("48", "Verbs of Appearance, Disappearance, and Occurrence");
         metaClause.put("48.1", "Verbs of Appearance");
         metaClause.put("48.1.1", "Appear Verbs");

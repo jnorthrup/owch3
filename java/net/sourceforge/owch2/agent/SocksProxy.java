@@ -24,8 +24,10 @@ public class SocksProxy extends AbstractAgent implements Runnable {
     };
 
     public static void main(String[] args) {
-        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        if (!(m.containsKey(EventDescriptor.REPLYTO_KEY) && m.containsKey("SocksHost") && m.containsKey("SourcePort") &&
+        Map m;
+        final Iterable<Map.Entry<CharSequence, Object>> iterable = Env.getInstance().parseCommandLineArgs(args);
+        m = getMap(iterable);
+        if (!(m.containsKey(ImmutableNotification.FROM_KEY) && m.containsKey("SocksHost") && m.containsKey("SourcePort") &&
                 m.containsKey("SourceHost") && m.containsKey("AgentPort"))) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "SocketProxy Agent usage:\n\n" +
                     "-name       (String)name\n" + "-SourceHost (String)hostname/IP\n" + "-SocksHost (String)hostname/IP\n" +
@@ -33,7 +35,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
                     "[-SocksPort (int)port]\n" + "[-Clone 'host1[ ..hostn]']\n" + "[-Deploy 'host1[ ..hostn]']\n" +
                     "$Id$\n");
         }
-        SocketProxy d = new SocketProxy(m);
+        SocketProxy d = new SocketProxy(iterable);
         Thread t = new Thread();
         try {
             t.start();
@@ -299,7 +301,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
 //1) we now use reflection to decode message types.
 //
 //a message looks for handle_<JMSType> method that takes a
-// EventDescriptor as its input
+// Notification as its input
 //
 //2) we now serve HTTP / 1.1 at every opportunity, sending
 // content-length, and last-modified, and content type by

@@ -12,8 +12,20 @@ public class PCTScanner extends AbstractAgent {
 
     protected static final String CHANNEL_NAME = "store";
 
-    public PCTScanner(Map<String, Object> m) {
+    public PCTScanner(Iterable<Map.Entry<CharSequence, Object>> m) {
         super(m);
+        final String[] ka;
+        ka = new String[]{ImmutableNotification.FROM_KEY, (String) DESTINATION_KEY, "AgentPort", "AgentHost"};
+
+        if (!keySet().containsAll(Arrays.asList(ka))) {
+            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
+                    "PCTScanner Agent usage:\n\n" +
+                    "-name     (String)name\n" +
+                    "-AgentPort   (int)port\n" +
+                    "-JMSDestination  (String) The destination agent name\n" +
+                    "$Id$\n");
+            Runtime.getRuntime().halt(1);
+        }
 
 
         ServerSocket serverSocket;
@@ -67,10 +79,10 @@ public class PCTScanner extends AbstractAgent {
                         //no data    e.printStackTrace();  //To change body of catch statement use Options | File Templates.
                     }
                     new PCTMessage(command.getCodes().get(Character.valueOf(type)), arg, flags, serialNo, data);
-                    EventDescriptor message = new EventDescriptor();
-                    Object value = get(EventDescriptor.DESTINATION_KEY);
+                    Notification message = new DefaultMapTransaction(this);
+                    Object value = get(ImmutableNotification.DESTINATION_KEY);
                     if (null != value)
-                        message.put(EventDescriptor.DESTINATION_KEY, String.valueOf(value));
+                        message.put(ImmutableNotification.DESTINATION_KEY, String.valueOf(value));
                     Map<Character, command> cmd_type = command.getCodes();
                     command cmd = cmd_type.get(Character.valueOf(type));
                     //   if ("PCT_KEEP_ALIVE".equals(cmd.getName())) {
@@ -82,7 +94,7 @@ public class PCTScanner extends AbstractAgent {
                     message.put("PCTMessage.flags", Character.valueOf(flags));
                     message.put("PCTMessage.serial", serialNo);
                     message.put("PCTMessage.data", data);
-                    send(message);
+                    send((Transaction) message);
                 }
             }
         } catch (IOException e) {
@@ -92,21 +104,7 @@ public class PCTScanner extends AbstractAgent {
     }
 
     public static void main(String[] args) throws Exception {
-        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        final String[] ka;
-        ka = new String[]{EventDescriptor.REPLYTO_KEY, EventDescriptor.DESTINATION_KEY, "AgentPort", "AgentHost"};
-
-        if (!m.keySet().containsAll(Arrays.asList(ka))) {
-            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
-                    "PCTScanner Agent usage:\n\n" +
-                    "-name     (String)name\n" +
-                    "-AgentPort   (int)port\n" +
-                    "-JMSDestination  (String) The destination agent name\n" +
-                    "$Id$\n");
-
-        }
-        PCTScanner d;
-        d = new PCTScanner((Map<String, Object>) m);
+        new PCTScanner(Env.getInstance().parseCommandLineArgs(args));
     }
 
     public void putValue(String key, Object value) {

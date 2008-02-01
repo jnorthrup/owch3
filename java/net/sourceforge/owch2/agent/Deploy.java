@@ -11,12 +11,18 @@ import java.net.*;
 import java.util.*;
 
 public class Deploy extends AbstractAgent {
+
     static int uniq = 0;
+    private boolean killFlag;
+
+    public Deploy(Iterable<Map.Entry<CharSequence, Object>> p) {
+        this(getMap(p));//To change body of created methods use File | Settings | File Templates.
+    }
 
     public static void main(String[] args) throws Exception {
-        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
+        Map<CharSequence, Object> m = getMap(Env.getInstance().parseCommandLineArgs(args));
         {
-            final String[] ka = {EventDescriptor.REPLYTO_KEY,};
+            final String[] ka = {ImmutableNotification.FROM_KEY,};
 
             if (!m.keySet().containsAll(Arrays.asList(ka))) {
                 Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
@@ -25,7 +31,7 @@ public class Deploy extends AbstractAgent {
                         "$Id$\n");
             }
         }
-        AbstractAgent d = new Deploy(m);
+        Deploy d = new Deploy(m);
         Thread t = new Thread();
         t.start();
         while (!d.killFlag) t.sleep(1000 * 60 * 3);
@@ -38,22 +44,24 @@ public class Deploy extends AbstractAgent {
     *  Initializes communication
     */
 
-    public Deploy(Map<?, ?> map) {
-        super(map);
+    public Deploy(Map<CharSequence, Object> map) {
+        super(map.entrySet());
     }
 
     /**
-     * <B>EventDescriptor:</B> Deploy Fields:<UL> <LI>Class - class to be constructed
+     * <B>Notification:</B> Deploy Fields:<UL> <LI>Class - class to be constructed
      * <LI>Path  - Array of URL Strings for Classpath, or "default" for native classloader
      * <LI> Parameters  -  array of normalized Strings to pass into our  new object
      */
-    public void handle_Deploy(EventDescriptor n) {
-        String _class = (String) n.get("Class");
-        String path = (String) n.get("Path");
-        String parm = (String) n.get("Parameters");
-        String signature = (String) n.get("Signature");
+    public void handle_Deploy(Notification n) {
+
+        final HashMap hashMap = getMap(n);
+        String _class = (String) hashMap.get("Class");
+        String path = (String) hashMap.get("Path");
+        String parm = (String) hashMap.get("Parameters");
+        String signature = (String) hashMap.get("Signature");
         int i;
-        java.util.List tokens;
+        List<Object> tokens;
         //we use a classloader based on our reletive origin..
         ClassLoader loader = getClass().getClassLoader();
         String[] tok_arr = new String[]{path, parm, signature};
@@ -61,7 +69,7 @@ public class Deploy extends AbstractAgent {
         StringTokenizer st;
         for (i = 0; i < tok_arr.length; i++) {
             String temp_str = tok_arr[i];
-            tokens = new ArrayList();
+            tokens = new ArrayList<Object>();
             if (temp_str == null) {
                 temp_str = "";
             }
@@ -95,63 +103,70 @@ public class Deploy extends AbstractAgent {
             /* this creates a new Object */
 
             loader.loadClass(_class).getConstructor(sig_arr).newInstance(parm_arr);
-            return;
         }
         catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void handle_DeployNode(EventDescriptor n) {
-        String _class = (String) n.get("Class");
-        String path = (String) n.get("Path");
-        int i;
-        java.util.List tokens;
-        //we use a classloader based on our reletive origin..
-        ClassLoader loader = getClass().getClassLoader();
-        String[] tok_arr = new String[]{path,};
-        URL[] path_arr = new URL[]{};
-        Object[][] res_arr = new Object[tok_arr.length][];
-        StringTokenizer st;
-        for (i = 0; i < tok_arr.length; i++) {
-            String temp_str = tok_arr[i];
-            tokens = new ArrayList();
-            if (temp_str == null) {
-                temp_str = "";
-            }
-            st = new StringTokenizer(temp_str);
-            while (st.hasMoreElements()) {
-                tokens.add(st.nextElement());
-            }
-            res_arr[i] = tokens.toArray();
-        }
-        try {
-            if (!n.containsKey("Singleton")) {
-                n.put(EventDescriptor.REPLYTO_KEY, n.getJMSReplyTo() + "." + uniq + "." + getJMSReplyTo());
-                uniq++;
-            } else {
-                n.put(EventDescriptor.REPLYTO_KEY, n.getJMSReplyTo());
+    //TODO: repair
+//    public void handle_DeployNode(Notification notification) {
+//        HashMap n = getMap(notification);
+//        String _class = (String) n.get("Class");
+//        String path = (String) n.get("Path");
+//        int i;
+//        List<Object> tokens;
+//        //we use a classloader based on our reletive origin..
+//        ClassLoader loader = getClass().getClassLoader();
+//        String[] tok_arr = new String[]{path,};
+//        URL[] path_arr = new URL[]{};
+//        Object[][] res_arr = new Object[tok_arr.length][];
+//        StringTokenizer st;
+//        for (i = 0; i < tok_arr.length; i++) {
+//            String temp_str = tok_arr[i];
+//            tokens = new ArrayList<Object>();
+//            if (temp_str == null) {
+//                temp_str = "";
+//            }
+//            st = new StringTokenizer(temp_str);
+//            while (st.hasMoreElements()) {
+//                tokens.add(st.nextElement());
+//            }
+//            res_arr[i] = tokens.toArray();
+//        }
+//        try {
+//            if (!n.containsKey("Singleton")) {
+//                n.put(ImmutableNotification.FROM_KEY, notification.getFrom()) + "." + uniq + "." + getFrom());
+//                uniq++;
+//            } else {
+//                n.put(FROM_KEY, notif.getFrom());
+//
+//            }
+//            //path is URL's, gotta do a loop to instantiate URL's...
+//            for (i = 0; i < res_arr[0].length; i++) {
+//                path_arr[i] = new URL((String) res_arr[0][i]);
+//            }
+//
+//            /* this creates a new Object */
+//            Object Location = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
+//            //use our Notification as a bootstrap of parms
+//            if (Location instanceof ImmutableNotification) {
+//                throw new Error("return to fix this...");
+////                owch.remove(((Notification) Notification).getFrom());
+////                ipc.hasPath((Map) Notification);
+//            }
+//            return;
+//        }
+//        catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-            }
-            //path is URL's, gotta do a loop to instantiate URL's...
-            for (i = 0; i < res_arr[0].length; i++) {
-                path_arr[i] = new URL((String) res_arr[0][i]);
-            }
-
-            /* this creates a new Object */
-            Object Location = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
-            //use our EventDescriptor as a bootstrap of parms
-            if (Location instanceof EventDescriptor) {
-                throw new Error("return to fix this...");
-//                owch.remove(((EventDescriptor) EventDescriptor).getJMSReplyTo());
-//                ipc.hasPath((Map) EventDescriptor);
-            }
-            return;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+    public Object getValue(CharSequence key) {
+        return get(key);  //To change body of implemented methods use File | Settings | File Templates.
     }
+
+
 }
 
 

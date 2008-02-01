@@ -14,29 +14,33 @@ import java.util.*;
 public class GateKeeper extends AbstractAgent {
     private httpRegistry httpRegistry = Env.getInstance().getHttpRegistry();
 
+    public GateKeeper(HashMap<CharSequence, Object> map) {
+        super(map);
+    }
+
 
     //todo:  modernize the agent spinning into the workerques
     public static void main(String[] args) throws InterruptedException {
 
-        Map m = Env.getInstance().parseCommandLineArgs(args);
+        final HashMap<CharSequence, Object> map = getMap(Env.getInstance().parseCommandLineArgs(args));
 
-        if (!m.containsKey(EventDescriptor.REPLYTO_KEY)) {
-            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
+        if (!map.containsKey(ImmutableNotification.FROM_KEY)) {
+            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +
                     "-name name\n" + "$Id$\n");
         }
         Thread t = new Thread();
         t.start();
-        GateKeeper d = new GateKeeper(m);
+        GateKeeper d = new GateKeeper(map);
         while (!Env.getInstance().shutdown) {
             sleep(60000);
         }
 
     }
 
-    public void handle_Register(EventDescriptor notificationIn) {
+    public void handle_Register(Notification notificationIn) {
         String item = (String) notificationIn.get("URLSpec");
         notificationIn.put("URL", notificationIn.get("URLFwd"));
-        httpRegistry.registerItem(item, new EventDescriptor(notificationIn));
+        httpRegistry.registerItem(item, new DefaultMapNotification(notificationIn));
     }
 
 
@@ -45,22 +49,13 @@ public class GateKeeper extends AbstractAgent {
      *
      * @param notificationIn
      */
-    public void handle_UnRegister(EventDescriptor notificationIn) {
+    public void handle_UnRegister(Notification notificationIn) {
         Object item = (String) notificationIn.get("URLSpec");
         notificationIn.put("URL", notificationIn.get("URLFwd"));
         httpRegistry.unregisterItem(item);
 
     }
 
-    /**
-     * this has the effect of taking over the command of the http
-     * service on the agent host and handling messages to marshal http registrations
-     *
-     * @param params bootStrap stuff
-     */
-    public GateKeeper(Map<String, String> params) {
-        super(params);
-    }
 }
 
 

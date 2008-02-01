@@ -27,24 +27,8 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     private ServerSocket ss;
 
     public static void main(String[] args) {
-        Map<?, ?> m = Env.getInstance().parseCommandLineArgs(args);
-        final String[] ka = {EventDescriptor.REPLYTO_KEY, "SourcePort", "SourceHost", "AgentPort"};
 
-        if (!m.keySet().containsAll(Arrays.asList(ka))) {
-            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
-                    "SocketProxy Agent usage:\n\n" +
-                    "-name       (String)name\n" +
-                    "-SourceHost (String)'hostname/IP[ ...n]'\n" +
-                    "-SourcePort (int)'port[ ...n]'\n" +
-                    "-AgentPort  (int)port\n" +
-                    "[-Buffer (int)128+]\n" +
-                    "[-{Inflate|Deflate} (String){agent|source|both} ..n]\n" +
-                    "[-ZipBuf (int)<128+]]\n" +
-                    "[-Clone 'host1[ ..hostn]']\n" +
-                    "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id$\n");
-        }
-        SocketProxy d = new SocketProxy(m);
+        SocketProxy d = new SocketProxy(Env.getInstance().parseCommandLineArgs(args));
     }
 
     public int getSourcePort() {
@@ -67,15 +51,33 @@ public class SocketProxy extends AbstractAgent implements Runnable {
      * this has the effect of taking over the command of the http
      * service on the agent host and handling messages to marshal http registrations
      */
-    public SocketProxy(Map m) {
+    public SocketProxy(Iterable<Map.Entry<CharSequence, Object>> m) {
         super(m);
-        StringTokenizer t = new StringTokenizer(m.get("SourcePort").toString());
+        final String[] ka = {ImmutableNotification.FROM_KEY, "SourcePort", "SourceHost", "AgentPort"};
+
+        if (!keySet().containsAll(Arrays.asList(ka))) {
+            Env.getInstance().cmdLineHelp(
+                    "\n\n******************** cmdline syntax error\n" +
+                            "SocketProxy Agent usage:\n\n" +
+                            "-name       (String)name\n" +
+                            "-SourceHost (String)'hostname/IP[ ...n]'\n" +
+                            "-SourcePort (int)'port[ ...n]'\n" +
+                            "-AgentPort  (int)port\n" +
+                            "[-Buffer (int)128+]\n" +
+                            "[-{Inflate|Deflate} (String){agent|source|both} ..n]\n" +
+                            "[-ZipBuf (int)<128+]]\n" +
+                            "[-Clone 'host1[ ..hostn]']\n" +
+                            "[-Deploy 'host1[ ..hostn]']\n" +
+                            "$Id$\n");
+            System.exit(1);
+        }
+        StringTokenizer t = new StringTokenizer(get("SourcePort").toString());
 
         while (t.hasMoreTokens()) {
             srcPort.add(Integer.decode(t.nextToken()));
         }
 
-        t = new StringTokenizer(m.get("SourceHost").toString());
+        t = new StringTokenizer(get("SourceHost").toString());
 
         while (t.hasMoreTokens()) {
             srcHost.add(t.nextToken());

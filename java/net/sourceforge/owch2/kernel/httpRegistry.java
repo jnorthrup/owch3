@@ -22,14 +22,14 @@ import java.util.concurrent.*;
  * @version $Id$
  */
 public class httpRegistry {
-    private NavigableMap<String, EventDescriptor> registeredResources = new ConcurrentSkipListMap<String, EventDescriptor>();
+    private NavigableMap<CharSequence, HasOrigin> registeredResources = new ConcurrentSkipListMap<CharSequence, HasOrigin>();
     public Map<String, Socket> httpdSockets = new ConcurrentHashMap<String, Socket>();
 
     public httpRegistry() {
     }
 
-    public void registerItem(String resource, EventDescriptor l) {
-        EventDescriptor agent = registeredResources.put(resource, l);
+    public void registerItem(CharSequence resource, HasOrigin l) {
+        registeredResources.put(resource, l);
 
     }
 
@@ -56,22 +56,25 @@ public class httpRegistry {
      *
      * @return whether the request was fulfilled from this agent host's registrant.
      */
-    public boolean dispatchRequest(Socket socket, EventDescriptor notification) {
+    public boolean dispatchRequest(Socket socket, Transaction notification) {
         String resource = notification.get("Resource").toString();
-        EventDescriptor registrant = getResourceHandler(resource);
+        HasOrigin registrant = getResourceHandler(resource);
 
         String method = notification.get("Method").toString();
         notification.put("Proxy-Request", notification.get("Request"));
 
         if (registrant != null) {
-            EventDescriptor lname = registrant;
+            Transaction lname = new DefaultMapTransaction();
+
+            lname.put(Transaction.FROM_KEY, registrant.getFrom());
+            lname.put(Transaction.URI_KEY, registrant.getURI());
 
             if (local.hasPath(lname.getDestination())) {
                 httpdSockets.put(socket.toString(), socket);
                 notification.put("_Socket", socket.toString());
-                notification.put(EventDescriptor.DESTINATION_KEY, lname);
+                notification.put(ImmutableNotification.DESTINATION_KEY, lname);
                 notification.put("JMSType", "httpd");
-                notification.put(EventDescriptor.REPLYTO_KEY, "nobody"); //apparently we *MUST* give ourselves a name..
+                notification.put(ImmutableNotification.FROM_KEY, "nobody"); //apparently we *MUST* give ourselves a name..
                 Env.getInstance().send(notification);
                 return true;
             }
@@ -86,19 +89,20 @@ public class httpRegistry {
      * @param resource a requested url
      * @return returns the resource, or the nearest matching parent of that resource, or the shortest resource of all.
      */
-    private EventDescriptor getResourceHandler(String resource) {
+    private HasOrigin getResourceHandler(String resource) {
 
         if (registeredResources.containsKey(resource)) return registeredResources.get(resource);
-//        EventDescriptor registrant = registeredResources.get(resource);
+//        Notification registrant = registeredResources.get(resource);
 
 
-        NavigableMap<String, EventDescriptor> map = registeredResources.headMap(resource, false);
-        NavigableSet<String> navigableSet = map.descendingKeySet();
+        final NavigableMap<CharSequence, HasOrigin> notificationNavigableMap = registeredResources.headMap(resource, false);
+        NavigableMap<CharSequence, HasOrigin> map = notificationNavigableMap;
+        NavigableSet<CharSequence> navigableSet = map.descendingKeySet();
 
-        String key = null;
-        for (String s : navigableSet) {
+        CharSequence key = null;
+        for (CharSequence s : navigableSet) {
             key = s;
-            if (resource.startsWith(s)) {
+            if (resource.startsWith(s.toString())) {
                 break;
             }
         }

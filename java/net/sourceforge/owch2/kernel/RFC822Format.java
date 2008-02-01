@@ -1,5 +1,7 @@
 package net.sourceforge.owch2.kernel;
 
+import static net.sourceforge.owch2.kernel.Reactor.*;
+
 import java.io.*;
 import java.net.*;
 import java.nio.*;
@@ -13,19 +15,20 @@ import java.util.concurrent.*;
 public class RFC822Format implements Format {
     private static final char[] colon = ": ".toCharArray();
 
-    public Exchanger<ByteBuffer> send(final EventDescriptor event) throws InterruptedException {
+    public Exchanger<ByteBuffer> send(final Map.Entry<CharSequence, Object>... event) throws InterruptedException {
+
         final Exchanger<ByteBuffer> sendX = new Exchanger<ByteBuffer>();
         final StringBuilder builder = new StringBuilder();
-        Reactor.submit(new Callable<Exchanger<ByteBuffer>>() {
-            ByteBuffer cacheBuf = Reactor.getCacheBuffer();
+        submit(new Callable<Exchanger<ByteBuffer>>() {
+            ByteBuffer cacheBuf = getCacheBuffer();
             CharBuffer buffer = cacheBuf.duplicate().asCharBuffer();
 
             public Exchanger<ByteBuffer> call() throws Exception {
                 cacheBuf.rewind();
 
-                for (Map.Entry<String, ?> entry : event.entrySet()) {
+                for (Map.Entry<CharSequence, Object> entry : event) {
 
-                    builder.append(URLEncoder.encode(entry.getKey(), "UTF-8")).append(colon);
+                    builder.append(URLEncoder.encode(entry.getKey().toString(), "UTF-8")).append(colon);
                     builder.append(URLEncoder.encode(String.valueOf(entry.getValue()), "UTF-8"));
                     builder.append('\n');
 
@@ -47,7 +50,7 @@ public class RFC822Format implements Format {
                     }
                     return;
                 }
-                throw new InvalidPropertiesFormatException("output line exceeds " + Reactor.BUFFSIZE);
+                throw new InvalidPropertiesFormatException("output line exceeds " + BUFFSIZE);
             }
         });
         return sendX;
@@ -68,23 +71,23 @@ public class RFC822Format implements Format {
      * @throws ExecutionException
      * @throws UnsupportedEncodingException
      */
-    public Future<EventDescriptor> recv(final Exchanger<ByteBuffer> readX) {
+    public Future<Iterable<Map.Entry<CharSequence, Object>>> recv(final Exchanger<ByteBuffer> readX) {
 
         //got the readX
-        Callable<EventDescriptor> callable = new Callable<EventDescriptor>() {
-
-            EventDescriptor event; //the future is here
+        Callable<Iterable<Map.Entry<CharSequence, Object>>> callable = new Callable<Iterable<Map.Entry<CharSequence, Object>>>() {
 
 
             String line = "";
             ByteBuffer buffer;
             boolean completion = false;
 
-            public EventDescriptor call() throws InterruptedException {
+            public Iterable<Map.Entry<CharSequence, Object>> call() throws InterruptedException {
+                List<Map.Entry<CharSequence, Object>> event = null; //the future is here
+                ListIterator<Map.Entry<CharSequence, Object>> event_put = null;
 
 
                 try {
-                    buffer = Reactor.getCacheBuffer();
+                    buffer = getCacheBuffer();
 
                     CharBuffer charBuffer = buffer.asCharBuffer();
                     StringBuilder bounce = null;
@@ -119,7 +122,8 @@ public class RFC822Format implements Format {
                                                 if (pos == indent + 1) indent++;
                                             } else {
                                                 if (event == null) {
-                                                    event = new EventDescriptor();
+                                                    event = new ArrayList<Map.Entry<CharSequence, Object>>();
+                                                    event_put = event.listIterator();
                                                 }
 
                                                 key = new StringBuilder();
@@ -146,7 +150,61 @@ public class RFC822Format implements Format {
                                                 bounce = null;
                                             }
                                             val.append(charBuffer.duplicate().position(pos - 1).flip().toString());
-                                            event.put(URLDecoder.decode(key.toString(), "UTF-8").trim(), URLDecoder.decode(val.toString(), "UTF-8").trim());
+                                            final String k = URLDecoder.decode(key.toString(), "UTF-8").trim();
+                                            final String v = URLDecoder.decode(val.toString(), "UTF-8").trim();
+
+                                            event_put.add((Map.Entry<CharSequence, Object>) new Map.Entry<CharSequence, Object>() {
+                                                /**
+                                                 * Returns the key corresponding to this entry.
+                                                 *
+                                                 * @return the key corresponding to this entry
+                                                 * @throws IllegalStateException implementations may, but are not
+                                                 *                               required to, throw this exception if the entry has been
+                                                 *                               removed from the backing map.
+                                                 */
+                                                public CharSequence getKey() {
+                                                    return k;  //To change body of implemented methods use File | Settings | File Templates.
+                                                }
+
+                                                /**
+                                                 * Returns the value corresponding to this entry.  If the mapping
+                                                 * has been removed from the backing map (by the iterator's
+                                                 * <tt>remove</tt> operation), the results of this call are undefined.
+                                                 *
+                                                 * @return the value corresponding to this entry
+                                                 * @throws IllegalStateException implementations may, but are not
+                                                 *                               required to, throw this exception if the entry has been
+                                                 *                               removed from the backing map.
+                                                 */
+                                                public Object getValue() {
+                                                    return v;  //To change body of implemented methods use File | Settings | File Templates.
+                                                }
+
+                                                /**
+                                                 * Replaces the value corresponding to this entry with the specified
+                                                 * value (optional operation).  (Writes through to the map.)  The
+                                                 * behavior of this call is undefined if the mapping has already been
+                                                 * removed from the map (by the iterator's <tt>remove</tt> operation).
+                                                 *
+                                                 * @param value new value to be stored in this entry
+                                                 * @return old value corresponding to the entry
+                                                 * @throws UnsupportedOperationException if the <tt>put</tt> operation
+                                                 *                                       is not supported by the backing map
+                                                 * @throws ClassCastException            if the class of the specified value
+                                                 *                                       prevents it from being stored in the backing map
+                                                 * @throws NullPointerException          if the backing map does not permit
+                                                 *                                       null values, and the specified value is null
+                                                 * @throws IllegalArgumentException      if some property of this value
+                                                 *                                       prevents it from being stored in the backing map
+                                                 * @throws IllegalStateException         implementations may, but are not
+                                                 *                                       required to, throw this exception if the entry has been
+                                                 *                                       removed from the backing map.
+                                                 */
+                                                public Object setValue(Object value) {
+                                                    throw new UnsupportedOperationException();
+                                                }
+                                            });
+
                                         }
 
                                         //this will set us up for a  new happy key next line
@@ -170,7 +228,7 @@ public class RFC822Format implements Format {
                 return event;
             }
         };
-        return Reactor.submit(callable);
+        return (Future<Iterable<Map.Entry<CharSequence, Object>>>) submit(callable);
     }
 
 

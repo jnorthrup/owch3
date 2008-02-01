@@ -17,7 +17,7 @@ public class httpServer/* extends TCPServerWrapper implements ListenerReference,
 //            ArrayList list = new ArrayList();
 //            try {
 //                Socket s = accept();
-//                EventDescriptor n = getRequest(s);
+//                Notification n = getRequest(s);
 //                parseRequest(n);
 //                dispatchRequest(s, n);
 //            }
@@ -66,9 +66,9 @@ public class httpServer/* extends TCPServerWrapper implements ListenerReference,
 //    /**
 //     * called only on a new socket
 //     */
-//    public static EventDescriptor getRequest(Socket s) {
+//    public static Notification getRequest(Socket s) {
 //        String line = "";
-//        EventDescriptor n = new EventDescriptor();
+//        Notification n = new Notification();
 //        try {
 //            DataInputStream ins = new DataInputStream(s.getInputStream());
 //
@@ -144,9 +144,9 @@ public class httpServer/* extends TCPServerWrapper implements ListenerReference,
 //    }
 //
 //    /**
-//     * this cuts the first line of the request into parts of the Request EventDescriptor so its easier to use
+//     * this cuts the first line of the request into parts of the Request Notification so its easier to use
 //     */
-//    public static void parseRequest(EventDescriptor n) {
+//    public static void parseRequest(Notification n) {
 //        String line = n.get("Request").toString();
 //        StringTokenizer st = new StringTokenizer(line);
 //        List<String> list = new ArrayList<String>();
@@ -163,7 +163,7 @@ public class httpServer/* extends TCPServerWrapper implements ListenerReference,
 //     * this is written to be over-ridden by the GateKeeper who looks at registered URL specs.  by default
 //     * it just sends a file it can find
 //     */
-//    public static void dispatchRequest(Socket s, EventDescriptor n) {
+//    public static void dispatchRequest(Socket s, Notification n) {
 //
 //        if (!Env.getInstance().getHttpRegistry().dispatchRequest(s, n)) {
 //            sendFile(s, (String) n.get(GateKeeper.RESOURCE_KEY));

@@ -22,14 +22,14 @@ import java.util.concurrent.*;
 @SuppressWarnings({"ALL"})
 public enum TransportEnum implements Transport {
     local {
-        public boolean hasPath(String name) {
+        public boolean hasPath(CharSequence name) {
             return localAgents.containsKey(name);
         }
 
-        public Future<Exchanger<ByteBuffer>> send(final EventDescriptor event) {
+        public Future<Exchanger<ByteBuffer>> send(final Notification notification) {
             Callable callable = new Callable() {
                 public Object call() throws Exception {
-                    localAgents.get(event.getJMSReplyTo()).recv(event);
+                    localAgents.get(notification.getFrom()).recv(notification);
                     return null;
                 }
             };
@@ -86,18 +86,21 @@ public enum TransportEnum implements Transport {
 
 
                 public boolean channelRead(SelectionKey key) throws ExecutionException, InterruptedException, IOException {
-                    Future<EventDescriptor> future = Reactor.submit(new Callable<EventDescriptor>() {
-                        public EventDescriptor call() throws Exception {
-                            final Future<EventDescriptor> future1 = format.recv(readX);
-                            return future1.get();
-                        }
-                    });
+//                    Future<Iterable<Map.Entry<CharSequence,Object>>> future = Reactor.submit(new Callable<Iterable<Map.Entry<CharSequence, Object>>>() {
+//                        public Iterable<Map.Entry<CharSequence, Object>>
+//                        call() throws Exception {
+//                            final Future<Iterable<Map.Entry<CharSequence, Object>>> future1 = format.recv(readX);
+//                            return future1.get();
+//                        }
+//                    });
+                    final Future<Iterable<Map.Entry<CharSequence, Object>>> iterableFuture = format.recv(readX);
 
                     ByteChannel iChannel = (ByteChannel) key.channel();
                     ByteBuffer buffer = Reactor.getCacheBuffer();
                     int i = iChannel.read(buffer);
-                    readX.exchange(buffer);
-                    Env.getInstance().recv(future.get());
+                    final ByteBuffer buffer1 = readX.exchange(buffer);
+
+                    Env.getInstance().recv(new DefaultMapTransaction(iterableFuture.get()));
                     return true;
                 }
 
@@ -117,7 +120,7 @@ public enum TransportEnum implements Transport {
     http,
     Null;
     private static DatagramChannel channel;
-    private static Map<Name, Agent> localAgents = new ConcurrentHashMap<Name, Agent>();
+    private static Map<CharSequence, Agent> localAgents = new ConcurrentHashMap<CharSequence, Agent>();
     private ConcurrentSkipListMap<Name, URI> pathMap = new ConcurrentSkipListMap<Name, URI>();
     private URI URI;
     private InetAddress hostAddress;
@@ -150,7 +153,7 @@ public enum TransportEnum implements Transport {
     ;
 
 
-    public Map<Name, Agent> getLocalAgents() {
+    public Map<CharSequence, Agent> getLocalAgents() {
         return localAgents;
     }
 
@@ -182,19 +185,19 @@ public enum TransportEnum implements Transport {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Future<Receipt> recv(EventDescriptor event) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public void recv(Notification notification) {
+
     }
 
     public Short getPort() {
         return port;
     }
 
-    public boolean hasPath(String name) {
+    public boolean hasPath(CharSequence name) {
         return pathMap.containsKey(name);  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Future<Exchanger<ByteBuffer>> send(EventDescriptor event) {
+    public Future<Exchanger<ByteBuffer>> send(Notification notification) {
 
         return null;
     }

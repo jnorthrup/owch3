@@ -1,7 +1,7 @@
 package net.sourceforge.owch2.protocol;
 
 /**
- * This defines the steps and order of delivering an EventDescriptor to
+ * This defines the steps and order of delivering an Notification to
  * a destination.  it is not necessary to apply all steps to all transports
  * <p/>
  * User: jim

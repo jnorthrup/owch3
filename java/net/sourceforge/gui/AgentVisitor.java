@@ -5,7 +5,7 @@ import net.sourceforge.owch2.kernel.*;
 public interface AgentVisitor {
     Object get(String key);
 
-    void put(String key, Object val);
+    void put(CharSequence key, Object val);
 
     void stopAgent();
 

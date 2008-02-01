@@ -3,16 +3,14 @@ package net.sourceforge.owch2.kernel;
 /**
  * Agent provides the base class which communicates with the Env
  * agent host platform and the protocols it operates. communication is
- * handled by constructing a EventDescriptor Object and calling the
+ * handled by constructing a Notification Object and calling the
  * route() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
  * other agents in the namespace.
  *
  * @author James Northrup
  * @version $Id$
  */
-public interface Agent<V> {
-    String RESOURCE_KEY = "Resource";
-
+public interface Agent extends HasOrigin, HasProperties/*, Invocable*/ {
 
     boolean isParent();
 
@@ -24,19 +22,18 @@ public interface Agent<V> {
     void linkTo(String lk);
 
     /**
-     * route a EventDescriptor
+     * route a Notification
      *
-     * @param n EventDescriptor destined for somewhere else
+     * @param n Notification destined for somewhere else
      */
-    void send(EventDescriptor n);
+    void send(Transaction n);
 
     /**
      * handle an incoming message presumably to this instance.
      */
-    void recv(EventDescriptor notificationIn);
+    void recv(Notification notificationIn);
 
+    Object getValue(CharSequence key);
 
-    V getValue(String key);
-
-    void putValue(String key, V value);
+    void putValue(String key, Object value);
 }

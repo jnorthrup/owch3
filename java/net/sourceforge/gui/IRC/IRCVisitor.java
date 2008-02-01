@@ -13,7 +13,7 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
     public TextPanel IRCHostText = new TextPanel("IRCHostname"),
             IRCPortText = new TextPanel("IRCPort"),
             IRCJoinText = new TextPanel("Channels"),
-            JMSReplyToText = new TextPanel(EventDescriptor.REPLYTO_KEY),
+            JMSReplyToText = new TextPanel(ImmutableNotification.FROM_KEY),
             IRCNicknameText = new TextPanel("IRCNickname"),
             ParentURLText = new TextPanel("ParentURL");
 
@@ -106,7 +106,7 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
             "IRCPort",
             "IRCNickname",
             "IRCJoin",
-            EventDescriptor.REPLYTO_KEY,
+            ImmutableNotification.FROM_KEY,
             "ParentURL",
     };
 
@@ -128,7 +128,7 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
     }
 
     public void startAgent() {
-        EventDescriptor l = new EventDescriptor();
+        final HashMap l = new HashMap();
         //        AgentDescriptor.setVisible(false);
         //desktop.remove(AgentDescriptor);
         for (int i = 0; i < getApp_keys().length; i++) {
@@ -180,7 +180,7 @@ public class IRCVisitor extends JFrame implements AgentVisitor {
     }
 
 
-    public void put(String key, Object val) {
+    public void put(CharSequence key, Object val) {
 
 
         try {

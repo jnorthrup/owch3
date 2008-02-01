@@ -12,13 +12,14 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
     private Container EntryDoc = new JToolBar();
     private JList msgList = new JList(new ScrollingListModel());
     private Component ValueText = new JTextField();
-    EventDescriptor agentEventDescriptor;
+    DefaultMapNotification agentEventDescriptor;
     ChatAgent node;
 
-    public ChatGUI(EventDescriptor JoinMsg) {
-        agentEventDescriptor = new EventDescriptor(JoinMsg);
-        agentEventDescriptor.put("IRCManager", agentEventDescriptor.get(EventDescriptor.REPLYTO_KEY));
-        agentEventDescriptor.put(EventDescriptor.REPLYTO_KEY, agentEventDescriptor.get("Value"));
+    public ChatGUI(HasProperties joinMsg) {
+        agentEventDescriptor = new DefaultMapNotification(joinMsg);
+
+        agentEventDescriptor.put("IRCManager", agentEventDescriptor.get(ImmutableNotification.FROM_KEY));
+        agentEventDescriptor.put(ImmutableNotification.FROM_KEY, agentEventDescriptor.get("Value"));
         initGUI();
         startAgent();
     }
@@ -77,14 +78,14 @@ public class ChatGUI extends JInternalFrame implements AgentVisitor {
         return null;
     }
 
-    public void put(String key, Object val) {
+    public void put(CharSequence key, Object val) {
     }
 
     public void stopAgent() {
-        EventDescriptor message = new EventDescriptor();
+        final DefaultMapTransaction message = new DefaultMapTransaction();
         message.put("JMSType", "Dissolve");
-        message.put(EventDescriptor.REPLYTO_KEY, node.get("IRCManager"));
-        message.put(EventDescriptor.DESTINATION_KEY, node.getJMSReplyTo());
+        message.put(ImmutableNotification.FROM_KEY, node.get("IRCManager"));
+        message.put(ImmutableNotification.DESTINATION_KEY, node.getFrom());
         Env.getInstance().send(message);
     }
 

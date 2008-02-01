@@ -20,7 +20,7 @@ public enum InboundLifeCycle {
      */
     authenticate,
     /**
-     * message cracking and marshal the artifacts into a EventDescriptor
+     * message cracking and marshal the artifacts into a Notification
      */
     marshal,
     /**

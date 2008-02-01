@@ -1,33 +1,39 @@
 package net.sourceforge.owch2.kernel;
 
 import static net.sourceforge.owch2.kernel.AgentLifecycle.*;
-import static net.sourceforge.owch2.kernel.EventDescriptor.*;
 import static net.sourceforge.owch2.protocol.TransportEnum.*;
 
 import static java.lang.Thread.*;
 import java.lang.reflect.*;
+import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
 /**
  * AbstractAgent provides the base class which communicates with the Env
  * agent host platform and the protocols it operates. communication is
- * handled by constructing a EventDescriptor Object and calling the
+ * handled by constructing a Notification Object and calling the
  * route() method of the AbstractAgent.  The Env Host platform manages the details of protocols, routing, and delivery to
  * other nodes in the namespace.
  *
  * @author James Northrup
  * @version $Id$
  */
-public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Agent {
-    protected static final String MOBILEHOST_KEY = "Host";
-    protected static final String DEFAULT_LINK_NAME = "default";
-    protected static final String DEPLOYNODE_TYPE = DeployNode.toString();
-    protected static final String UNLINK_TYPE = UnLink.toString();
-    protected static final String CLONE_KEY = Clone.toString();
-    protected static final String UPDATED_TYPE = Updated.toString();
-    protected static final String UPDATE_TYPE = Update.toString();
-    protected static final String LINK_TYPE = Link.toString();
+public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> implements Agent {
+    CharSequence RESOURCE_KEY = "Resource";
+    CharSequence MOBILEHOST_KEY = "Host";
+    public static final CharSequence TYPE_KEY = "JMSType";
+    public static final CharSequence PRIORITY_KEY = "Priority";
+    public static final CharSequence SOURCE_KEY = "Source";
+    public static final CharSequence DEPLOY_KEY = "Deploy";
+
+    CharSequence DEFAULT_LINK_NAME = "default";
+    String DEPLOYNODE_TYPE = DeployNode.toString();
+    String UNLINK_TYPE = UnLink.toString();
+    String CLONE_KEY = Clone.toString();
+    String UPDATED_TYPE = Updated.toString();
+    String UPDATE_TYPE = Update.toString();
+    String LINK_TYPE = Link.toString();
     /**
      * agent specific old-style thread spinning would use this to stop spinning...
      */
@@ -35,18 +41,35 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
     boolean virgin;
 //    LinkRegistry acl = null;
 
-    private final static Class[] cls_m = new Class[]{EventDescriptor.class};
+    private final static Class[] cls_m = new Class[]{ImmutableNotification.class};
 
     private static final Class[] no_class = new Class[0];
     private static final Object[] no_Parm = new Object[0];
     protected static final String CLASSTYPE_KEY = "Class";
+
+    public AbstractAgent(Iterable<Map.Entry<CharSequence, Object>> l) {
+        this(getMap(l));
+    }
+
+    public AbstractAgent(Map<CharSequence, Object> proto) {
+        super((proto));
+
+        start();
+    }
+
+    private void start() {
+        local.getLocalAgents().put(getFrom(), this);
+        if (!isParent()) {
+            linkTo(DEFAULT_LINK_NAME);
+        }
+    }
 
     /**
      * Gets one of this object's properties using the associated key.
      *
      * @see #putValue
      */
-    public V getValue(String key) {
+    public Object getValue(String key) {
 //        if (Env.logDebug) Env.log(499, getClass().getName() + ":" + key);
         Object value = null; //= default_val;
         Class c = this.getClass();
@@ -62,7 +85,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
                 value = get(key);
             }
         }
-        return (V) value;
+        return value;
     }
 
 
@@ -93,7 +116,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
                 f.set(this, value);
             }
             catch (Exception e) {
-                this.put(key, (V) value);
+                this.put(key, value);
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();  //!TODO: review for fit
@@ -108,48 +131,49 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
     }
 
     /**
+     * Sends a Link notification other node(s) intended to establish direct socket communication.
+     *
+     * @param lk node(s) to link to
+     */
+    public void linkTo(String lk) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
      * Sends a Link notification other node(s) intended to
      * establish direct socket communication.
      *
      * @param linkDestination node(s) to link to
      */
-    public void linkTo(String linkDestination) {
+    public void linkTo(CharSequence linkDestination) {
         if (linkDestination == null) {
             Logger.getAnonymousLogger().info(".link invoked. routing to default");
-            linkDestination = Env.getInstance().getParentNode().getJMSReplyTo();
+            linkDestination = Env.getInstance().getParentNode().getFrom();
         }
-        EventDescriptor n = new EventDescriptor();
+        DefaultMapTransaction n = new DefaultMapTransaction(getFrom(), linkDestination);
         n.put(DESTINATION_KEY, linkDestination);
         n.put(TYPE_KEY, LINK_TYPE);
         send(n);
     }
 
     /**
-     * AbstractAgent level EventDescriptor insignia creation and inter-process notification routing.
+     * AbstractAgent level Notification insignia creation and inter-process notification routing.
      *
-     * @param n EventDescriptor destined for somewhere else
+     * @param n Notification destined for somewhere else
      */
-    public void send(EventDescriptor n) {
-
-
-        if (n.getJMSReplyTo() == null) {
-            n.put(REPLYTO_KEY, this.getJMSReplyTo());
-        }
-        if (n.get(DESTINATION_KEY) != null) {
-            Env.getInstance().send(n);
-        }
+    public void send(Transaction n) {
+        Env.getInstance().send(n);
     }
 
 
-    public final void recv(EventDescriptor notificationIn) {
+    public final void recv(Notification notificationIn) {
         try {
 
-            String msgType = (String) notificationIn.get(TYPE_KEY);
+
+            HashMap map = getMap(notificationIn);
+            String msgType = (String) map.get(TYPE_KEY);
             //for later optimizations.... switch(  valueOf(msgType)) ... is enabled.
-
-            getClass().getMethod("handle_" + msgType, cls_m).invoke(this,
-                    notificationIn);
-
+            if (msgType != null) getClass().getMethod("handle_" + msgType, cls_m).invoke(this, notificationIn);
         }
         catch (InvocationTargetException e) {
             e.getTargetException().printStackTrace();
@@ -161,21 +185,18 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     }
 
-    public AbstractAgent() {
+    public Object getValue(CharSequence key) {
+        return get(key);
     }
 
-    public AbstractAgent(Map proto) {
-//        super(proto);
-//        final ipcRouter ipcRouter = (ipcRouter) Transport.ipc.getRouter();
-//        ipcRouter.getLocalAgents().put(getJMSReplyTo(), this);
-//        if (!isParent()) {
-//            linkTo(DEFAULT_LINK_NAME);
-//        }
+    public AbstractAgent(Map.Entry<CharSequence, Object>... proto) {
+        this(getMap(Arrays.asList(proto)));
     }
 
-    public void init(Map<String, ? extends V> proto) {
+
+    public void init(Map<String, Object> proto) {
         putAll(proto);
-//        Transport.ipc.hasPath(this.getJMSReplyTo());
+//        Transport.ipc.hasPath(this.getFrom());
         if (!isParent()) {
             linkTo(DEFAULT_LINK_NAME);
         }
@@ -185,7 +206,7 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      * this tells our (potentially clone) agent to stop re-registering.
      * it will cease to spin.
      */
-    public void handle_Dissolve(EventDescriptor n) {
+    public void handle_Dissolve(HasProperties n) {
         killFlag = true;
 
     }
@@ -197,13 +218,13 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param p the link initiation
      */
-    public void handle_Link(EventDescriptor p) {
-        String dest = p.getJMSReplyTo();
-        EventDescriptor n = new EventDescriptor();
+    public void handle_Link(Notification p) {
+        CharSequence dest = p.getFrom();
+        DefaultMapTransaction n = new DefaultMapTransaction(getFrom(), getURI(), dest, iterator());
         n.put(TYPE_KEY, UPDATE_TYPE);
-        n.put(DESTINATION_KEY, dest);
+
         send(n);
-        Logger.getAnonymousLogger().info(getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
+        Logger.getAnonymousLogger().info(getClass().getName() + "::" + getFrom() + " AbstractAgent.update() sent for " + dest);
     }
 
 
@@ -224,13 +245,12 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param p JMSReplyTo
      */
-    public void handle_Update(EventDescriptor p) {
-        String dest = p.getJMSReplyTo();
-        EventDescriptor n = new EventDescriptor();
+    public void handle_Update(Notification p) {
+        CharSequence dest = p.getFrom();
+        final DefaultMapTransaction n = new DefaultMapTransaction(getFrom(), getURI(), dest, iterator());
         n.put(TYPE_KEY, UPDATED_TYPE);
-        n.put(DESTINATION_KEY, dest);
         send(n);
-        Logger.getAnonymousLogger().info(getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
+        Logger.getAnonymousLogger().info(getClass().getName() + "::" + getFrom() + " AbstractAgent.update() sent for " + dest);
     }
 
     /**
@@ -239,26 +259,26 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param m node(s) to unlink to
      */
-    public void handle_Unlink(EventDescriptor m) {
-        String lk = m.getJMSReplyTo();
+    public void handle_Unlink(Notification m) {
+        CharSequence lk = m.getFrom();
         if (lk == null) {
 
-            lk = Env.getInstance().getParentNode().getJMSReplyTo();
+            lk = Env.getInstance().getParentNode().getFrom();
         }
 
-        EventDescriptor n = new EventDescriptor();
+        DefaultMapTransaction n = new DefaultMapTransaction(getFrom(), getURI(), lk, iterator());
         n.put(DESTINATION_KEY, lk);
         n.put(TYPE_KEY, UNLINK_TYPE);
         send(n);
     }
 
-    public final String getURI() {
-        return (String) get(URI_KEY);
+    public final URI getURI() {
+        return (URI) get(URI_KEY);
 
     }
 
-    public final String getJMSReplyTo() {
-        return (String) get(REPLYTO_KEY);
+    public final String getFrom() {
+        return (String) get(FROM_KEY);
     }
 
     /**
@@ -269,22 +289,22 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      * informs new clone to register.<LI> awaits
      * dissolve.
      *
-     * @param notificationIn the payload describing the move
+     * @param n the payload describing the move
      */
-    public void handle_Move(EventDescriptor notificationIn) {
-
-        String host = (String) notificationIn.get(MOBILEHOST_KEY); //name of a Deploy agent
+    public void handle_Move(Notification n) {
+        final HashMap<CharSequence, Object> map = getMap(n);
+        CharSequence host = (CharSequence) map.get(MOBILEHOST_KEY);
         if (host == null) {
             host = Env.getInstance().getHostname();
         }
         //if (Env.logDebug) Env.log(50, "Env.getURI - " + Transport);
 
-        EventDescriptor response = new EventDescriptor();
+        DefaultMapTransaction response = new DefaultMapTransaction();
         response.put(URI_KEY, http.getURI());
         response.putAll(this);
         response.put(TYPE_KEY, DEPLOYNODE_TYPE);
         response.put(CLASSTYPE_KEY, getClass().getName());
-        response.put(REPLYTO_KEY, getJMSReplyTo());
+        response.put(FROM_KEY, getFrom());
 
         response.put(SOURCE_KEY, http.getURI().toASCIIString() + get(RESOURCE_KEY));
 
@@ -296,18 +316,16 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
 
     public void clone_state1(String host) {
 
-        EventDescriptor response = new EventDescriptor(http.getURI());
-        ;
+        DefaultMapTransaction response = new DefaultMapTransaction(getFrom(), http.getURI(), host, iterator());
         response.putAll(this);
         response.put(TYPE_KEY, DEPLOYNODE_TYPE);
         response.put(CLASSTYPE_KEY, getClass().getName());
-        response.put(REPLYTO_KEY, getJMSReplyTo());
+        response.put(FROM_KEY, getFrom());
         //if (Env.logDebug) Env.log(50, "Env.getURI - " + Transport);
 
         response.put(SOURCE_KEY, http.getURI().toASCIIString() + get(RESOURCE_KEY));
         //resource remains constant in this incarnation
         //n2.put( "Resource",get("Resource"));//produces 3 Strings
-        response.put(DESTINATION_KEY, host);
         send(response);
     }
 
@@ -318,9 +336,10 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
      *
      * @param n clone instructions
      */
-    public void handle_Clone(EventDescriptor n) {
+    public void handle_Clone(Notification n) {
 
-        String host = n.get(MOBILEHOST_KEY).toString(); //name of a Deploy agent
+        final HashMap<CharSequence, Object> map = getMap(n);
+        String host = map.get(MOBILEHOST_KEY).toString(); //name of a Deploy agent
         if (host == null) {
             host = Env.getInstance().getHostname();
         }
@@ -355,6 +374,23 @@ public abstract class AbstractAgent<V> extends TreeMap<String, V> implements Age
                 e.printStackTrace();  //!TODO: review for fit
             }
         }
+    }
+
+    protected static HashMap<CharSequence, Object> getMap(Iterable<Map.Entry<CharSequence, Object>> n) {
+        final HashMap hashMap = new HashMap<CharSequence, Object>();
+        for (Map.Entry<CharSequence, Object> charSequenceEntry : n) {
+            hashMap.put(charSequenceEntry.getKey(), charSequenceEntry.getValue());
+        }
+        return hashMap;
+    }
+
+    /**
+     * Returns an iterator over a set of elements of type T.
+     *
+     * @return an Iterator.
+     */
+    public Iterator<Map.Entry<CharSequence, Object>> iterator() {
+        return this.entrySet().iterator();
     }
 }
 

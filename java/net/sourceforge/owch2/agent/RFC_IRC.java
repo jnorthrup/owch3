@@ -22,7 +22,7 @@ enum RFC_IRC {
     RPL_LUSEROP(252, "<integer> :operator(s) online"),
     ERR_BADCHANMASK(476, "<channel> :Bad Channel Mask"),
     ERR_NOMOTD(422, ":MOTD File is missing"),
-    RPL_MOTDSTART(375, ":- <server> EventDescriptor of the day -"),
+    RPL_MOTDSTART(375, ":- <server> Notification of the day -"),
     RPL_TRYAGAIN(263, "<command> :Please wait a while and try again."),
     RPL_STATSUPTIME(242, ":Server Up %d days %d:%02d:%02d"),
     RPL_USERSSTART(392, ":UserID   Terminal  Host"),

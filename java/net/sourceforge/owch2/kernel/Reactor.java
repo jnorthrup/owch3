@@ -84,7 +84,7 @@ public enum Reactor {
 
                                 //this blocks
                                 i = selector.select();
-                                if (i >= 1) threadPool.submit(
+                                if (i >= 1) submit(
                                         new Callable() {
                                             public Boolean call() throws Exception {
                                                 boolean b = false;
@@ -139,7 +139,7 @@ public enum Reactor {
         return threadPool;
     }
 
-    public static Future submit(Callable callable) {
+    public static Future<?> submit(Callable<?> callable) {
         return getThreadPool().submit(callable);
     }
 

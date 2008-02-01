@@ -4,7 +4,6 @@ import net.sourceforge.owch2.kernel.*;
 import net.sourceforge.owch2.protocol.*;
 import static net.sourceforge.owch2.protocol.TransportEnum.*;
 
-import static java.lang.Thread.*;
 import java.util.*;
 
 /**
@@ -18,8 +17,15 @@ public class Domain extends Deploy {
     /**
      * default ctor
      */
-    public Domain(Map p) {
+    public Domain(Iterable<Map.Entry<CharSequence, Object>> p) {
         super(p);
+
+//        Env.cmdLineHelp(
+//        "\n\n******************** cmdline syntax error\n" +
+//                            "Domain Agent usage:\n\n" +
+//                            "-JMSReplyTo (String)name\n" +
+//                            "-owch:Port (int)port\n" +
+//                            "$Id$\n");
 
         //Kickstarts the protocols by requesting thier locations.
 
@@ -43,38 +49,7 @@ public class Domain extends Deploy {
     }
 
     public static void main(String[] args) throws Exception {
-        Map<String, ?> m = Env.getInstance().parseCommandLineArgs(args);
-
-        List<String> stringList = Arrays.asList(EventDescriptor.REPLYTO_KEY, "owch:Port");
-        Collection<String> objects = new LinkedList<String>(m.keySet());
-        boolean b = objects.containsAll(stringList);
-        boolean empty = m.isEmpty();
-        if (!empty && b) {
-
-            Domain d = static_init(m, "owch:Port");
-            static_spin(d);
-
-        } else {
-            Env.cmdLineHelp(
-                    "\n\n******************** cmdline syntax error\n" +
-                            "Domain Agent usage:\n\n" +
-                            "-JMSReplyTo (String)name\n" +
-                            "-owch:Port (int)port\n" +
-                            "$Id$\n");
-        }
+        new Domain(Env.getInstance().parseCommandLineArgs(args));
     }
 
-    private static void static_spin(AbstractAgent d) throws InterruptedException {
-        while (!d.killFlag) sleep(60000);
-    }
-
-
-    private static Domain static_init(Map<?, ?> m, Object portString) {
-        Env.getInstance().setParentHost(true);
-        final String s = m.get(portString).toString();
-        final int port = Integer.parseInt(s);
-        Env.getInstance().setOwchPort(port);
-
-        return new Domain(m);
-    }
 }

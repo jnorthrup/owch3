@@ -1,6 +1,7 @@
 package net.sourceforge.owch2.kernel;
 
 import java.nio.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -8,7 +9,7 @@ import java.util.concurrent.*;
  * @version $Id$
  */
 public interface Format {
-    Exchanger<ByteBuffer> send(final EventDescriptor event) throws InterruptedException;
+    Exchanger<ByteBuffer> send(final Map.Entry<CharSequence, Object>... event) throws InterruptedException;
 
-    Future<EventDescriptor> recv(Exchanger<ByteBuffer> fBufX);
+    Future<Iterable<Map.Entry<CharSequence, Object>>> recv(Exchanger<ByteBuffer> fBufX);
 }

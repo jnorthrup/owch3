@@ -52,9 +52,9 @@ public class IRC extends AbstractAgent implements Runnable {
 
 
     public static void main(String[] args) {
-        Map<?, ?> bootstrap = Env.getInstance().parseCommandLineArgs(args);
+        final HashMap<CharSequence, Object> bootstrap = getMap(Env.getInstance().parseCommandLineArgs(args));
 
-        final List requiredList = Arrays.asList(new Object[]{EventDescriptor.REPLYTO_KEY, IRCHOST_KEY, "IRCNickname",});
+        final List requiredList = Arrays.asList(new Object[]{ImmutableNotification.FROM_KEY, IRCHOST_KEY, "IRCNickname",});
         if (!bootstrap.keySet().containsAll(requiredList)) {
             Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
                     "IRC Agent usage:\n\n" +
@@ -73,7 +73,7 @@ public class IRC extends AbstractAgent implements Runnable {
 
 
     protected void removeLocationFromChannel(Object channel, Object l) {
-        Collection<EventDescriptor> ses = (Collection<EventDescriptor>) getChannels().get(channel);
+        Collection<ImmutableNotification> ses = (Collection<ImmutableNotification>) getChannels().get(channel);
         if (ses == null) {
             return;
         }
@@ -83,21 +83,21 @@ public class IRC extends AbstractAgent implements Runnable {
         }
     }
 
-    private void acknowledgePublicMsg(EventDescriptor m) {
-        String backto = m.get(EventDescriptor.REPLYTO_KEY).toString();
-//an irc nick
+    private void acknowledgePublicMsg(Notification m) {
+        String backto = m.get(FROM_KEY).toString();
+        //an irc nick
         String response = backto + ", noted";
-        EventDescriptor n = new EventDescriptor(m);
-        n.put(EventDescriptor.DESTINATION_KEY, getJMSReplyTo());
-        n.put(EventDescriptor.TYPE_KEY, MSG_TYPE);
+        Transaction n = new DefaultMapTransaction(m);
+        n.put(DESTINATION_KEY, getFrom());
+        n.put(TYPE_KEY, MSG_TYPE);
         n.put(VALUE_KEY, response);
         handle_MSG(n);
     }
 
-    protected void addLocationToChannel(Object channel, EventDescriptor l) {
-        Collection<EventDescriptor> ses = (Collection<EventDescriptor>) getChannels().get(channel);
+    protected void addLocationToChannel(Object channel, HasOrigin l) {
+        HashSet<HasOrigin> ses = (HashSet<HasOrigin>) getChannels().get(channel);
         if (ses == null) {
-            ses = new HashSet<EventDescriptor>();
+            ses = new HashSet<HasOrigin>();
         }
         ses.add(l);
     }
@@ -114,11 +114,11 @@ public class IRC extends AbstractAgent implements Runnable {
                 setOs(new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true));
                 //if (E
 
-                EventDescriptor l = new EventDescriptor(owch.getURI());
+                Notification l = new DefaultMapNotification(getFrom(), owch.getURI());
                 String out = "USER" + " owch " + " " + " owch " + " " + " owch " + " :" + l.getURI() +
-                        "/" + getJMSReplyTo();
+                        "/" + getFrom();
                 getOs().println(out);
-                handle_NICK(new EventDescriptor(this));
+                handle_NICK(new DefaultMapNotification(this));
                 String line;
                 while (!this.killFlag) {
                     //				if( getIs().ready())
@@ -129,7 +129,7 @@ public class IRC extends AbstractAgent implements Runnable {
                     } else if (line.startsWith("NOTICE")) {
                     } else {
                         try {
-                            EventDescriptor n = new EventDescriptor();
+                            DefaultMapTransaction n = new DefaultMapTransaction(this);
                             String prefix = "IRC_";
                             parseLine(line, n, prefix);
                             send(n);
@@ -146,35 +146,35 @@ public class IRC extends AbstractAgent implements Runnable {
 
     }
 
-    public void handle_Dissolve(EventDescriptor m) {
+    public void handle_Dissolve(Notification m) {
         super.handle_Dissolve(m);
         try {
-            m.put(VALUE_KEY, "Dissolve EventDescriptor from" + m.getJMSReplyTo());
+            m.put(VALUE_KEY, "Dissolve Notification from" + m.getFrom());
             socket.close();
         }
         catch (Exception e) {
         }
     }
 
-    public void handle_PART(EventDescriptor m) {
+    public void handle_PART(Notification m) {
         getOs().println("PART" + m.get(VALUE_KEY));
     }
 
-    public void handle_QUIT(EventDescriptor m) {
+    public void handle_QUIT(Notification m) {
         getOs().println("QUIT" + m.get(VALUE_KEY));
     }
 
-    public void handle_MSG(EventDescriptor m) {
+    public void handle_MSG(Notification m) {
         try {
-            String out = IRCPRVMSG_TYPE + (m.containsKey(IRCCHANNEL_KEY) ? m.get(IRCCHANNEL_KEY).toString() : m.get(EventDescriptor.DESTINATION_KEY).toString()) + " :" + m.get(VALUE_KEY);
+            String out = IRCPRVMSG_TYPE + (m.containsKey(IRCCHANNEL_KEY) ? m.get(IRCCHANNEL_KEY).toString() : m.get(ImmutableNotification.DESTINATION_KEY).toString()) + " :" + m.get(VALUE_KEY);
             getOs().println(out);
         }
         catch (Exception e) {
-            handle_Dissolve(new EventDescriptor(this));
+            handle_Dissolve(new DefaultMapNotification(this));
         }
     }
 
-    public void handle_NICK(EventDescriptor m) {
+    public void handle_NICK(Notification m) {
         String nick;
         if (m.containsKey(VALUE_KEY)) {
             nick = m.get(VALUE_KEY).toString();
@@ -187,19 +187,19 @@ public class IRC extends AbstractAgent implements Runnable {
     /**
      * 376 end of motd
      */
-    public void handle_IRC_RPL_ENDOFMOTD(EventDescriptor p) {
+    public void handle_IRC_RPL_ENDOFMOTD(Notification p) {
         if (containsKey("IRCJoin")) {
-            handle_IRC_INVITE(new EventDescriptor(this));
+            handle_IRC_INVITE(new DefaultMapNotification(this));
         }
     }
 
-    public void handle_IRC_INVITE(EventDescriptor m) {
+    public void handle_IRC_INVITE(Notification m) {
         if (!containsKey("NoInvite")) {
             handle_JOIN(m);
         }
     }
 
-    public void handle_JOIN(EventDescriptor m) {
+    public void handle_JOIN(Notification m) {
         String t = "flood";
         String chans = m.containsKey("IRCJoin") ? m.get("IRCJoin").toString() : m.get(VALUE_KEY).toString();
         StringTokenizer s = new StringTokenizer(chans);
@@ -210,24 +210,24 @@ public class IRC extends AbstractAgent implements Runnable {
         }
     }
 
-    public void handle_IRC_PRIVMSG(EventDescriptor p) {
-        EventDescriptor n = new EventDescriptor(p);
+    public void handle_IRC_PRIVMSG(Notification p) {
+        DefaultMapTransaction n = new DefaultMapTransaction(p);
         String prefix = "";
         parseLine(p.get(VALUE_KEY).toString().substring(1), n, prefix);
-        String dest = n.get(EventDescriptor.DESTINATION_KEY).toString();
-        if (n.get(EventDescriptor.DESTINATION_KEY).equals(get("IRCNickname"))) {
+        String dest = n.get(ImmutableNotification.DESTINATION_KEY).toString();
+        if (n.get(ImmutableNotification.DESTINATION_KEY).equals(get("IRCNickname"))) {
             n.put("IRCDestination", dest);
-            n.put(EventDescriptor.DESTINATION_KEY, getJMSReplyTo());
+            n.put(ImmutableNotification.DESTINATION_KEY, getFrom());
         }
-        n.put(IRCREPLYTO_KEY, p.getJMSReplyTo()); //skips the user's input replyto value
-        n.put(EventDescriptor.REPLYTO_KEY, getJMSReplyTo());
+        n.put(IRCREPLYTO_KEY, p.getFrom()); //skips the user's input replyto value
+        n.put(ImmutableNotification.FROM_KEY, getFrom());
         send(n);
     }
 
     /**
      * 433 nickname invalid
      */
-    public void handle_IRC_ERR_NICKNAMEINUSE(EventDescriptor p) {
+    public void handle_IRC_ERR_NICKNAMEINUSE(Notification p) {
         nickname_ctr++;
         String t;
         if (containsKey("IRCBasename")) {
@@ -238,13 +238,13 @@ public class IRC extends AbstractAgent implements Runnable {
         }
         t += nickname_ctr;
         put("IRCNickname", t);
-        handle_NICK(new EventDescriptor(this));
+        handle_NICK(new DefaultMapTransaction(this));
     }
 
     private Map channels = new HashMap();
 
-    public void handle_AGENT_REMOVE(EventDescriptor m) {
-        Object l = new EventDescriptor(m);
+    public void handle_AGENT_REMOVE(Notification m) {
+        Object l = new DefaultMapNotification(m);
         StringTokenizer t = new StringTokenizer(m.get(VALUE_KEY).toString());
         while (t.hasMoreTokens()) {
             String token = t.nextToken();
@@ -252,8 +252,8 @@ public class IRC extends AbstractAgent implements Runnable {
         }
     }
 
-    public void handle_AGENT_JOIN(EventDescriptor m) {
-        EventDescriptor l = new EventDescriptor(m);
+    public void handle_AGENT_JOIN(Notification m) {
+        DefaultMapNotification l = new DefaultMapNotification(m);
         StringTokenizer t = new StringTokenizer(m.get(VALUE_KEY).toString());
         while (t.hasMoreTokens()) {
             String token = t.nextToken();
@@ -264,21 +264,21 @@ public class IRC extends AbstractAgent implements Runnable {
     /**
      * Generated by Together on May 2, 2002
      */
-    private void xmitChannelToLocations(EventDescriptor m) {
+    private void xmitChannelToLocations(Notification m) {
         if (getChannels().containsKey(m.get(IRCCHANNEL_KEY))) {
-            Collection<EventDescriptor> c = (Collection<EventDescriptor>) getChannels().get(m.get(IRCCHANNEL_KEY));
-            Iterator<EventDescriptor> i = c.iterator();
+            Collection<ImmutableNotification> c = (Collection<ImmutableNotification>) getChannels().get(m.get(IRCCHANNEL_KEY));
+            Iterator<ImmutableNotification> i = c.iterator();
             while (i.hasNext()) {
-                EventDescriptor l = i.next();
-                EventDescriptor n = new EventDescriptor(m);
-                n.put(EventDescriptor.DESTINATION_KEY, l.getJMSReplyTo());
-                send(n);
+                Notification l = i.next();
+                Notification n = new DefaultMapTransaction(m);
+                n.put(ImmutableNotification.DESTINATION_KEY, l.getFrom());
+                send((Transaction) n);
             }
         }
     }
 
     /**
-     * <P>Populates a EventDescriptor with message semantic values. <P> Produces the fields in order<OL><LI> JMSReplyTo<LI>JMSType
+     * <P>Populates a Notification with message semantic values. <P> Produces the fields in order<OL><LI> JMSReplyTo<LI>JMSType
      * <LI>JMSDestination<LI>Value
      *
      * @param sourceLine - sourceLine of text
@@ -287,7 +287,7 @@ public class IRC extends AbstractAgent implements Runnable {
      */
     private void parseLine(String sourceLine, Map messageIn, String prefix) throws NoSuchElementException {
         StringTokenizer tokenizer;
-        String IRCDestination, IRCChannel, JMSDestination = getJMSReplyTo();
+        String IRCDestination, IRCChannel, JMSDestination = getFrom();
         tokenizer = new StringTokenizer(sourceLine, ":", false);
         String cmd = tokenizer.nextToken(),
                 value = tokenizer.nextToken("\0").substring(1);
@@ -300,23 +300,23 @@ public class IRC extends AbstractAgent implements Runnable {
         tokenizer = new StringTokenizer(IRCReplyTo, "!", false);
         String nick = tokenizer.nextToken();
         messageIn.put(IRCREPLYTO_KEY, IRCReplyTo);
-        messageIn.put(IRCAGENT_KEY, getJMSReplyTo());
-        messageIn.put(EventDescriptor.REPLYTO_KEY, nick);
+        messageIn.put(IRCAGENT_KEY, getFrom());
+        messageIn.put(ImmutableNotification.FROM_KEY, nick);
         if (JMSType.equals(IRCPRVMSG_TYPE)) {
             {
                 IRCDestination = parameters;
-                JMSDestination = IRCDestination.equals(get("IRCNickName")) ? get(EventDescriptor.REPLYTO_KEY).toString() : IRCDestination;
+                JMSDestination = IRCDestination.equals(get("IRCNickName")) ? get(ImmutableNotification.FROM_KEY).toString() : IRCDestination;
                 messageIn.put("IRCDestination", IRCDestination.trim());
             }
-            messageIn.put(EventDescriptor.DESTINATION_KEY, JMSDestination);
+            messageIn.put(ImmutableNotification.DESTINATION_KEY, JMSDestination);
         } else if (JMSType.equals("RPL_NAMREPLY") || JMSType.equals("RPL_ENDOFNAMES")) {
             tokenizer = new StringTokenizer(parameters, "=");
             IRCDestination = tokenizer.nextToken().trim();
             JMSDestination = tokenizer.nextToken().trim();
             messageIn.put("IRCDestination", IRCDestination.trim());
         }
-        messageIn.put(EventDescriptor.DESTINATION_KEY, JMSDestination.trim().toLowerCase());
-        messageIn.put(EventDescriptor.TYPE_KEY, prefix + JMSType);
+        messageIn.put(ImmutableNotification.DESTINATION_KEY, JMSDestination.trim().toLowerCase());
+        messageIn.put(TYPE_KEY, prefix + JMSType);
         Logger.getAnonymousLogger().info(messageIn.toString());
     }
 
@@ -454,7 +454,7 @@ public class IRC extends AbstractAgent implements Runnable {
         RFCTags.put("371".trim(), new String[]{"RPL_INFO".trim(), "	:<string>".trim(),});
         RFCTags.put("372".trim(), new String[]{"RPL_MOTD".trim(), "	:- <text>".trim(),});
         RFCTags.put("374".trim(), new String[]{"RPL_ENDOFINFO".trim(), "	:End of INFO list".trim(),});
-        RFCTags.put("375".trim(), new String[]{"RPL_MOTDSTART".trim(), "	:- <server> EventDescriptor of the day -".trim(),});
+        RFCTags.put("375".trim(), new String[]{"RPL_MOTDSTART".trim(), "	:- <server> Notification of the day -".trim(),});
         RFCTags.put("376".trim(), new String[]{"RPL_ENDOFMOTD".trim(), "	:End of MOTD command".trim(),});
         RFCTags.put("381".trim(), new String[]{"RPL_YOUREOPER".trim(), "	:You are now an IRC operator".trim(),});
         RFCTags.put("382".trim(), new String[]{"RPL_REHASHING".trim(), "	<config file> :Rehashing".trim(),});

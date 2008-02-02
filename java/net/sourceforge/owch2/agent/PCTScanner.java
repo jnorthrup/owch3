@@ -78,20 +78,20 @@ public class PCTScanner extends AbstractAgent {
                     } catch (StringIndexOutOfBoundsException e) {
                         //no data    e.printStackTrace();  //To change body of catch statement use Options | File Templates.
                     }
-                    new PCTMessage(command.getCodes().get(Character.valueOf(type)), arg, flags, serialNo, data);
+                    new PCTMessage(command.getCodes().get(type), arg, flags, serialNo, data);
                     Notification message = new DefaultMapTransaction(this);
                     Object value = get(ImmutableNotification.DESTINATION_KEY);
                     if (null != value)
                         message.put(ImmutableNotification.DESTINATION_KEY, String.valueOf(value));
                     Map<Character, command> cmd_type = command.getCodes();
-                    command cmd = cmd_type.get(Character.valueOf(type));
+                    command cmd = cmd_type.get(type);
                     //   if ("PCT_KEEP_ALIVE".equals(cmd.getName())) {
                     socket.getOutputStream().write(packet.getBytes()); //echo KEEPALIVES
                     //     continue;
                     //}
                     message.put("JMSType", cmd.getName());
-                    message.put("PCTMessage.arg", Character.valueOf(arg));
-                    message.put("PCTMessage.flags", Character.valueOf(flags));
+                    message.put("PCTMessage.arg", arg);
+                    message.put("PCTMessage.flags", flags);
                     message.put("PCTMessage.serial", serialNo);
                     message.put("PCTMessage.data", data);
                     send((Transaction) message);

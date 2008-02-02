@@ -4,7 +4,6 @@ import java.net.*;
 import java.util.*;
 
 public class DefaultMapTransaction extends DefaultMapNotification implements Transaction {
-    private CharSequence to;
     private static final CharSequence DESTINATION_KEY = HasDestination.DESTINATION_KEY;
     private Map.Entry<CharSequence, Object>[] e;
 
@@ -17,7 +16,11 @@ public class DefaultMapTransaction extends DefaultMapNotification implements Tra
 
     public DefaultMapTransaction(CharSequence from, CharSequence to) {
         super(from);
-        this.to = to;
+        setDestination(to);
+    }
+
+    public void setDestination(CharSequence to) {
+        put(DESTINATION_KEY, to);
     }
 
     public DefaultMapTransaction(Map.Entry<CharSequence, Object>... e) {
@@ -25,7 +28,7 @@ public class DefaultMapTransaction extends DefaultMapNotification implements Tra
 
     }
 
-    public DefaultMapTransaction(HasProperties n) {
+    public DefaultMapTransaction(Iterable<Map.Entry<CharSequence, Object>> n) {
         super(n);        //To change body of created methods use File | Settings | File Templates.
     }
 

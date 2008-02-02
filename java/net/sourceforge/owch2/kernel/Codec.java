@@ -19,10 +19,10 @@ public interface Codec {
      *
      * @param readX
      * @param writeX
-     * @param Properties
+     * @param properties
      * @throws java.io.IOException
      */
     Future<Exchanger<ByteBuffer>> encode(Exchanger<ByteBuffer> readX, Exchanger<ByteBuffer> writeX,
-                                         Map.Entry... Properties) throws IOException, InterruptedException;
+                                         Map.Entry<CharSequence, Object>... properties) throws IOException, InterruptedException;
 }
 

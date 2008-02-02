@@ -20,7 +20,7 @@ public class command {
         this.setName(name);
         this.setCode((char) code);
         setDescription(des);
-        getCodes().put(Character.valueOf((char) code), this);
+        getCodes().put((char) code, this);
         getNames().put(name, this);
     }
 

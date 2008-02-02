@@ -267,9 +267,8 @@ public class IRC extends AbstractAgent implements Runnable {
     private void xmitChannelToLocations(Notification m) {
         if (getChannels().containsKey(m.get(IRCCHANNEL_KEY))) {
             Collection<ImmutableNotification> c = (Collection<ImmutableNotification>) getChannels().get(m.get(IRCCHANNEL_KEY));
-            Iterator<ImmutableNotification> i = c.iterator();
-            while (i.hasNext()) {
-                Notification l = i.next();
+            for (ImmutableNotification aC : c) {
+                Notification l = aC;
                 Notification n = new DefaultMapTransaction(m);
                 n.put(ImmutableNotification.DESTINATION_KEY, l.getFrom());
                 send((Transaction) n);

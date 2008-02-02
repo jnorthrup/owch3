@@ -46,8 +46,7 @@ public class ChatAgent extends AbstractAgent {
         String value = m.get("Value").toString();
         ScrollingListModel lm = (ScrollingListModel) gui.getMsgList().getModel();
         List<Report> l = sParser.tokenize(value);
-        Iterator<Report> i = l.iterator();
-        while (i.hasNext()) lm.addElement(i.next());
+        for (Report aL : l) lm.addElement(aL);
         while (lm.getSize() > 1000) {
             lm.remove(0);
         }

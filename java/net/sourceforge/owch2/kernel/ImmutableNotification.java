@@ -19,7 +19,7 @@ public abstract class ImmutableNotification implements Notification {
     private URI URI;
     private Entry<CharSequence, Object>[] message;
 
-    public ImmutableNotification(CharSequence from, URI URI, Entry<CharSequence, Object>... message) {
+    protected ImmutableNotification(CharSequence from, URI URI, Entry<CharSequence, Object>... message) {
         this.from = from;
         this.URI = URI;
         this.message = message;

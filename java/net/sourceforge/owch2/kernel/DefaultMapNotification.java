@@ -18,7 +18,7 @@ public class DefaultMapNotification extends LinkedHashMap<CharSequence, Object>
     }
 
 
-    public DefaultMapNotification(HasProperties entryIterable) {
+    public DefaultMapNotification(Iterable<Map.Entry<CharSequence, Object>> entryIterable) {
         for (Map.Entry<CharSequence, Object> charSequenceObjectEntry : entryIterable) {
             put(charSequenceObjectEntry.getKey(), charSequenceObjectEntry.getValue());
         }

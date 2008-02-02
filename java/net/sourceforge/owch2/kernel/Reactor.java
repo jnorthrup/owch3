@@ -57,7 +57,7 @@ public enum Reactor {
 
     static Selector selector;
 
-    public static final int BUFFSIZE = 1024 * 16;
+    public static final int BUFFSIZE = 1024 << 4;
     static final int BUFFCOUNT = 128;
     private static ByteBuffer cache;
 
@@ -118,7 +118,7 @@ public enum Reactor {
     static ThreadPoolExecutor threadPool;
     Timer timer = new Timer();
 
-    private int op;
+    int op;
 
     Reactor(int op) {
         this.op = op;

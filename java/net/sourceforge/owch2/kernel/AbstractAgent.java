@@ -47,11 +47,11 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
     private static final Object[] no_Parm = new Object[0];
     protected static final String CLASSTYPE_KEY = "Class";
 
-    public AbstractAgent(Iterable<Map.Entry<CharSequence, Object>> l) {
+    protected AbstractAgent(Iterable<Map.Entry<CharSequence, Object>> l) {
         this(getMap(l));
     }
 
-    public AbstractAgent(Map<CharSequence, Object> proto) {
+    protected AbstractAgent(Map<CharSequence, Object> proto) {
         super((proto));
 
         start();
@@ -189,7 +189,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
         return get(key);
     }
 
-    public AbstractAgent(Map.Entry<CharSequence, Object>... proto) {
+    protected AbstractAgent(Map.Entry<CharSequence, Object>... proto) {
         this(getMap(Arrays.asList(proto)));
     }
 

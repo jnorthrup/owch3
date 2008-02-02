@@ -13,7 +13,7 @@ import java.util.concurrent.*;
  * @version $Id$
  */
 public class RFC822Format implements Format {
-    private static final char[] colon = ": ".toCharArray();
+    static final char[] colon = ": ".toCharArray();
 
     public Exchanger<ByteBuffer> send(final Map.Entry<CharSequence, Object>... event) throws InterruptedException {
 

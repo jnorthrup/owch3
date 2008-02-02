@@ -50,19 +50,19 @@ public class SocksProxy extends AbstractAgent implements Runnable {
 
 
     public int getSourcePort() {
-        return Integer.decode((String) get("SourcePort")).intValue();
+        return Integer.decode((String) get("SourcePort"));
     }
 
     public int getSocksPort() {
         if (this.containsKey("SocksPort")) {
-            return Integer.decode((String) get("SocksPort")).intValue();
+            return Integer.decode((String) get("SocksPort"));
         } else {
             return 1080;
         }
     }
 
     public int getProxyPort() {
-        return Integer.decode((String) get("AgentPort")).intValue();
+        return Integer.decode((String) get("AgentPort"));
     }
 
     /**

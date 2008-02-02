@@ -96,10 +96,8 @@ public class Deploy extends AbstractAgent {
                 loader = new URLClassLoader(path_arr, loader);
             }
             //user our loader to populate sig_arr with a Class[]
-            for (i = 0; i < res_arr[2].length; i++) {
+            for (i = 0; i < res_arr[2].length; i++)
                 sig_arr[i] = loader.loadClass((String) res_arr[2][i]);
-            }
-
             /* this creates a new Object */
 
             loader.loadClass(_class).getConstructor(sig_arr).newInstance(parm_arr);
@@ -110,57 +108,57 @@ public class Deploy extends AbstractAgent {
     }
 
     //TODO: repair
-//    public void handle_DeployNode(Notification notification) {
-//        HashMap n = getMap(notification);
-//        String _class = (String) n.get("Class");
-//        String path = (String) n.get("Path");
-//        int i;
-//        List<Object> tokens;
-//        //we use a classloader based on our reletive origin..
-//        ClassLoader loader = getClass().getClassLoader();
-//        String[] tok_arr = new String[]{path,};
-//        URL[] path_arr = new URL[]{};
-//        Object[][] res_arr = new Object[tok_arr.length][];
-//        StringTokenizer st;
-//        for (i = 0; i < tok_arr.length; i++) {
-//            String temp_str = tok_arr[i];
-//            tokens = new ArrayList<Object>();
-//            if (temp_str == null) {
-//                temp_str = "";
-//            }
-//            st = new StringTokenizer(temp_str);
-//            while (st.hasMoreElements()) {
-//                tokens.add(st.nextElement());
-//            }
-//            res_arr[i] = tokens.toArray();
-//        }
-//        try {
-//            if (!n.containsKey("Singleton")) {
-//                n.put(ImmutableNotification.FROM_KEY, notification.getFrom()) + "." + uniq + "." + getFrom());
-//                uniq++;
-//            } else {
-//                n.put(FROM_KEY, notif.getFrom());
-//
-//            }
-//            //path is URL's, gotta do a loop to instantiate URL's...
-//            for (i = 0; i < res_arr[0].length; i++) {
-//                path_arr[i] = new URL((String) res_arr[0][i]);
-//            }
-//
-//            /* this creates a new Object */
-//            Object Location = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
-//            //use our Notification as a bootstrap of parms
-//            if (Location instanceof ImmutableNotification) {
-//                throw new Error("return to fix this...");
-////                owch.remove(((Notification) Notification).getFrom());
-////                ipc.hasPath((Map) Notification);
-//            }
-//            return;
-//        }
-//        catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    //    public void handle_DeployNode(Notification notification) {
+    //        HashMap n = getMap(notification);
+    //        String _class = (String) n.get("Class");
+    //        String path = (String) n.get("Path");
+    //        int i;
+    //        List<Object> tokens;
+    //        //we use a classloader based on our reletive origin..
+    //        ClassLoader loader = getClass().getClassLoader();
+    //        String[] tok_arr = new String[]{path,};
+    //        URL[] path_arr = new URL[]{};
+    //        Object[][] res_arr = new Object[tok_arr.length][];
+    //        StringTokenizer st;
+    //        for (i = 0; i < tok_arr.length; i++) {
+    //            String temp_str = tok_arr[i];
+    //            tokens = new ArrayList<Object>();
+    //            if (temp_str == null) {
+    //                temp_str = "";
+    //            }
+    //            st = new StringTokenizer(temp_str);
+    //            while (st.hasMoreElements()) {
+    //                tokens.add(st.nextElement());
+    //            }
+    //            res_arr[i] = tokens.toArray();
+    //        }
+    //        try {
+    //            if (!n.containsKey("Singleton")) {
+    //                n.put(ImmutableNotification.FROM_KEY, notification.getFrom()) + "." + uniq + "." + getFrom());
+    //                uniq++;
+    //            } else {
+    //                n.put(FROM_KEY, notif.getFrom());
+    //
+    //            }
+    //            //path is URL's, gotta do a loop to instantiate URL's...
+    //            for (i = 0; i < res_arr[0].length; i++) {
+    //                path_arr[i] = new URL((String) res_arr[0][i]);
+    //            }
+    //
+    //            /* this creates a new Object */
+    //            Object Location = loader.loadClass(_class).getConstructor(new Class[]{Map.class}).newInstance(new Object[]{n});
+    //            //use our Notification as a bootstrap of parms
+    //            if (Location instanceof ImmutableNotification) {
+    //                throw new Error("return to fix this...");
+    ////                owch.remove(((Notification) Notification).getFrom());
+    ////                ipc.hasPath((Map) Notification);
+    //            }
+    //            return;
+    //        }
+    //        catch (Exception e) {
+    //            e.printStackTrace();
+    //        }
+    //    }
 
     public Object getValue(CharSequence key) {
         return get(key);  //To change body of implemented methods use File | Settings | File Templates.

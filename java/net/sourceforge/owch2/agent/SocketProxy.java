@@ -34,7 +34,7 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     public int getSourcePort() {
         if (!srcPort_i.hasNext())
             srcPort_i = srcPort.iterator();
-        return srcPort_i.next().intValue();
+        return srcPort_i.next();
     }
 
     public Object getSourceHost() {
@@ -44,7 +44,7 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     }
 
     public int getProxyPort() {
-        return Integer.decode((String) get("AgentPort")).intValue();
+        return Integer.decode((String) get("AgentPort"));
     }
 
     /**
@@ -134,8 +134,8 @@ public class SocketProxy extends AbstractAgent implements Runnable {
         return new StreamDesc(
                 containsKey("Inflate") && Arrays.asList(a).contains(get("Inflate")),
                 containsKey("Deflate") && Arrays.asList(a).contains(get("Deflate")),
-                containsKey("ZipBuf") ? Integer.decode(get("ZipBuf").toString()).intValue() : 4096,
-                containsKey("Buffer") ? Integer.decode(get("Buffer").toString()).intValue() : 0);
+                containsKey("ZipBuf") ? Integer.decode(get("ZipBuf").toString()) : 4096,
+                containsKey("Buffer") ? Integer.decode(get("Buffer").toString()) : 0);
     }
 
     private StreamDesc agentStreamDesc() {
@@ -143,8 +143,8 @@ public class SocketProxy extends AbstractAgent implements Runnable {
         return new StreamDesc(
                 containsKey("Inflate") && Arrays.asList(a).contains(get("Inflate")),
                 containsKey("Deflate") && Arrays.asList(a).contains(get("Deflate")),
-                containsKey("ZipBuf") ? Integer.decode(get("ZipBuf").toString()).intValue() : 4096,
-                containsKey("Buffer") ? Integer.decode(get("Buffer").toString()).intValue() : 0);
+                containsKey("ZipBuf") ? Integer.decode(get("ZipBuf").toString()) : 4096,
+                containsKey("Buffer") ? Integer.decode(get("Buffer").toString()) : 0);
     }
 
     public ServerSocket getSs() {

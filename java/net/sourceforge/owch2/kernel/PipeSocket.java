@@ -62,7 +62,7 @@ public class PipeSocket {
         writer = streamDesc.usingDeflate ? new DeflaterOutputStream(ostream, new Deflater(Deflater.FILTERED)) : ostream;
 
         if (streamDesc.buffered) {
-            int bb = streamDesc.bufbuf > 0 ? streamDesc.bufbuf : 32 * 1024;
+            int bb = streamDesc.bufbuf > 0 ? streamDesc.bufbuf : 32 << 10;
             sock.setReceiveBufferSize(bb);
             sock.setSendBufferSize(bb);
             reader = new BufferedInputStream(reader, bb);
@@ -91,7 +91,7 @@ public class PipeSocket {
         int actual;
         int avail;
         Object pipe;
-        final int blocksize = 18 * 1024;
+        final int blocksize = 18 << 10;
         byte[] buf = new byte[blocksize];
         String name;
         StreamDesc sdesc;

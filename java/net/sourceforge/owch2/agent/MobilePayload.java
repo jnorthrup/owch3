@@ -72,7 +72,7 @@ public class MobilePayload extends AbstractAgent {
     /**
      * interval defines our random interval of re-registration starting with 1/2n..n milliseconds
      */
-    private long interval = 60 * 1000 * 2;
+    private long interval = 60 * 1000 << 1;
     protected byte[] payload; //for now we'll just assume payload is a static buffer
     //todo: servelet api
 
@@ -261,7 +261,7 @@ public class MobilePayload extends AbstractAgent {
 
             int actual = 0;
             InputStream is = new ByteArrayInputStream(payload);
-            byte[] buf = new byte[16 * 1024];
+            byte[] buf = new byte[(16 << 10)];
             do {
 
                 while (0 < is.available()) {
@@ -313,7 +313,7 @@ public class MobilePayload extends AbstractAgent {
         tmpfile = new File(path, filename + "...");
 
         int blocksize;
-        blocksize = 32 * 1024;
+        blocksize = 32 << 10;
         BufferedOutputStream out = null;
         try {
             out = new BufferedOutputStream(new FileOutputStream(tmpfile), blocksize);

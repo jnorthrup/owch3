@@ -227,7 +227,7 @@ public class Env implements Invocable {
         try {
             ArrayList<Entry<CharSequence, Object>> bootMessage = new ArrayList<Entry<CharSequence, Object>>();
             //harsh but effective, asume everything is key value pairs.
-            for (int i = 0; i < arguments.length - arguments.length % 2; i += 2) {
+            for (int i = 0; i < (arguments.length - (arguments.length % 2)); i += 2) {
 
                 String argument;
                 argument = arguments[i];
@@ -285,11 +285,11 @@ public class Env implements Invocable {
                     }
                 }
                 if (protoToken.equals("HostThreads")) {
-                    setHostThreads(Integer.decode(valueString).intValue());
+                    setHostThreads(Integer.decode(valueString));
                     continue;
                 }
                 if (protoToken.equals("SocketCount")) {
-                    setSocketCount(Integer.decode(valueString).intValue());
+                    setSocketCount(Integer.decode(valueString));
                     continue;
                 }
                 if (protoToken.equals("ParentURL")) {

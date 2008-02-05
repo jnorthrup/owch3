@@ -1,7 +1,5 @@
 package net.sourceforge.owch2.kernel;
 
-import net.sourceforge.owch2.protocol.*;
-
 import java.io.*;
 import java.lang.ref.*;
 import java.nio.*;
@@ -61,6 +59,7 @@ public enum Reactor {
     private static ByteBuffer cache;
     private static int futureBufferCount = BUFFCOUNT;
     private static int currentBufferCount = 0;
+    private static boolean shutdown;
 
     static {
         try {
@@ -79,8 +78,8 @@ public enum Reactor {
                 new Runnable() {
                     public void run() {
                         int i = 0;
-                        Env instance = Env.getInstance();
-                        while (!instance.shutdown)
+//                        Env instance = Env.getInstance();
+                        while (!shutdown)
                             try {
 
                                 //this blocks

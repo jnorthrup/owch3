@@ -1,7 +1,5 @@
-package net.sourceforge.owch2.protocol;
+package net.sourceforge.owch2.kernel;
 
-
-import net.sourceforge.owch2.kernel.*;
 
 import java.io.*;
 import java.net.*;
@@ -9,7 +7,6 @@ import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.logging.*;
 
 
 /**
@@ -92,7 +89,7 @@ public enum TransportEnum implements Transport {
                     int i = iChannel.read(buffer);
                     final ByteBuffer buffer1 = readX.exchange(buffer);
 
-                    Env.getInstance().recv(new DefaultMapTransaction(iterableFuture.get()));
+//                    Env.getInstance().recv(new DefaultMapTransaction(iterableFuture.get()));
                     return true;
                 }
 
@@ -110,33 +107,7 @@ public enum TransportEnum implements Transport {
     /**
      * Default's job is to deliver all message up to 'default' agent
      */
-    Default {
-        public boolean hasPath(final CharSequence name) {
-            if (!Env.getInstance().isParentHost()) {
-                owch.pathMap.putIfAbsent(name, Env.getInstance().getDefaultURI());
-                return true;
-            }
-
-            Logger.getAnonymousLogger().warning("Creating Queue Agent for " + name);
-            Agent agent = new AbstractAgent() {
-                {
-                    Set<Notification> set = new HashSet<Notification>();
-                    put("BackLog", set);
-
-                }
-
-                public void recv(Notification n) {
-                    Set set = (Set) get("BackLog");
-                    set.add(n);
-                }
-
-                public CharSequence getFrom() {
-                    return name;
-                }
-            };
-            return true;
-        };
-    }, Null;
+    Default;
     private static DatagramChannel channel;
     private static Map<CharSequence, Agent> localAgents = new ConcurrentHashMap<CharSequence, Agent>();
     private ConcurrentSkipListMap<CharSequence, URI> pathMap = new ConcurrentSkipListMap<CharSequence, URI>();

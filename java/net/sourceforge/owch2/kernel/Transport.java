@@ -1,6 +1,4 @@
-package net.sourceforge.owch2.protocol;
-
-import net.sourceforge.owch2.kernel.*;
+package net.sourceforge.owch2.kernel;
 
 import java.net.*;
 import java.nio.*;

@@ -4,6 +4,9 @@ import java.nio.*;
 import java.util.concurrent.*;
 
 /**
+ * this re-chunks arbitrary input blocks to a specified block
+ * size and achieves 0-copy direct IO with aligned
+ * <p/>
  * User: jim
  * Date: Feb 2, 2008
  * Time: 12:03:44 AM

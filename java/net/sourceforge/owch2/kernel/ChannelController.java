@@ -12,7 +12,7 @@ import java.util.concurrent.*;
  * the exchanger mates with Format exchanger, also works as payload buffer exchanger.
  */
 public interface ChannelController {
-    URI getUri();
+    URI getUri() throws SocketException, URISyntaxException;
 
     void init(Exchanger<ByteBuffer> swap);
 

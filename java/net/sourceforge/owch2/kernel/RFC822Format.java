@@ -34,7 +34,6 @@ public class RFC822Format implements Format {
                     builder.delete(0, builder.length());
                 }
                 buffer.append('\n');
-
                 flip();
                 return sendX;
             }

@@ -24,10 +24,7 @@ public abstract class AbstractBlockCodecTask implements Callable<Exchanger<ByteB
     }
 
     public Exchanger<ByteBuffer> call() throws Exception {
-
         setWriteBlockSize(readBlockSize + 2);
-
-
         ByteBuffer rxBuf = (ByteBuffer) Reactor.getCacheBuffer().clear();
         ByteBuffer tailBuf = (ByteBuffer) Reactor.getCacheBuffer().clear();
         ByteBuffer wxBuf = (ByteBuffer) Reactor.getCacheBuffer().clear();
@@ -59,6 +56,7 @@ public abstract class AbstractBlockCodecTask implements Callable<Exchanger<ByteB
         } while (!(null == rxBuf));
         return writeX;
     }
+
 
     /**
      * buffer underflow occurs when we are not yet closed but we haven't filled one block.

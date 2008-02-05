@@ -22,11 +22,10 @@ public enum TransportEnum implements Transport {
             return localAgents.containsKey(name);
         }
 
-        public Future<Exchanger<ByteBuffer>> send(final Notification notification) {
+        public Future<Exchanger<ByteBuffer>> send(final HasDestination notification) {
             Callable callable = new Callable() {
                 public Object call() throws Exception {
-                    localAgents.get(notification.getFrom()).recv(notification);
-                    return null;
+                    throw new UnsupportedOperationException();
                 }
             };
             Reactor.submit(callable);
@@ -39,10 +38,10 @@ public enum TransportEnum implements Transport {
                 RFC822Format format = new RFC822Format();
 
                 private Exchanger<ByteBuffer> readX = new Exchanger<ByteBuffer>();
-                private Exchanger<ByteBuffer> writeSwap = new Exchanger<ByteBuffer>();
+                private Exchanger<ByteBuffer> writeX = new Exchanger<ByteBuffer>();
 
-                public URI getUri() {
-                    return getURI();  //To change body of implemented methods use File | Settings | File Templates.
+                public URI getUri() throws SocketException, URISyntaxException {
+                    return getURI();
                 }
 
                 public void init(Exchanger<ByteBuffer> swap) {
@@ -73,11 +72,11 @@ public enum TransportEnum implements Transport {
                 }
 
                 public boolean channelAccept(SelectionKey key) {
-                    return false;
+                    throw new UnsupportedOperationException();
                 }
 
                 public boolean channelConnect(SelectionKey key) {
-                    return false;
+                    throw new UnsupportedOperationException();
                 }
 
 
@@ -94,7 +93,7 @@ public enum TransportEnum implements Transport {
                 }
 
                 public boolean channelWrite(SelectionKey key) throws InterruptedException, IOException {
-                    ByteBuffer buffer = writeSwap.exchange(Reactor.getCacheBuffer());
+                    ByteBuffer buffer = writeX.exchange(Reactor.getCacheBuffer());
                     ByteChannel channel1 = (ByteChannel) key.channel();
                     int i = channel1.write(buffer);
                     return false;
@@ -107,7 +106,8 @@ public enum TransportEnum implements Transport {
     /**
      * Default's job is to deliver all message up to 'default' agent
      */
-    Default;
+    Default,
+    slab {};
     private static DatagramChannel channel;
     private static Map<CharSequence, Agent> localAgents = new ConcurrentHashMap<CharSequence, Agent>();
     private ConcurrentSkipListMap<CharSequence, URI> pathMap = new ConcurrentSkipListMap<CharSequence, URI>();
@@ -123,8 +123,30 @@ public enum TransportEnum implements Transport {
         return TransportEnum.localAgents;
     }
 
-    public URI getURI() {
-        return URI;
+    public URI getURI() throws URISyntaxException {
+        String hostName = null;
+        try {
+            hostName = getLocalHostName();
+        } catch (SocketException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        return new URI(name() + "://", null, hostName, port, null, null, null);
+    }
+
+    private String getLocalHostName() throws SocketException {
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        String hostName = "localhost";
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = interfaces.nextElement();
+            if (networkInterface.isLoopback()) continue;
+            Enumeration<InetAddress> inetAddressEnumeration = networkInterface.getInetAddresses();
+            while (inetAddressEnumeration.hasMoreElements()) {
+                InetAddress inetAddress = inetAddressEnumeration.nextElement();
+                hostName = inetAddress.getCanonicalHostName();
+            }
+        }
+        return hostName;
     }
 
     public void setHostAddress(InetAddress hostAddress) {
@@ -151,8 +173,12 @@ public enum TransportEnum implements Transport {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void recv(Notification notification) {
 
+    public void recv(HasDestination notification) {
+        if (getLocalAgents().containsKey(notification.getDestination())) {
+            Agent agent = getLocalAgents().get(notification.getDestination());
+            agent.recv(notification);
+        }
     }
 
     public Short getPort() {
@@ -163,12 +189,10 @@ public enum TransportEnum implements Transport {
         return pathMap.containsKey(name);  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Future<Exchanger<ByteBuffer>> send(Notification notification) {
+    public Future<Exchanger<ByteBuffer>> send(HasDestination notification) {
 
         return null;
     }
-
-    ;
 
     public NetworkInterface getHostInterface() {
         return hostInterface;

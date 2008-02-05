@@ -14,7 +14,7 @@ import java.util.concurrent.*;
 public interface Transport {
     Map<CharSequence, Agent> getLocalAgents();
 
-    URI getURI();
+    URI getURI() throws SocketException, URISyntaxException;
 
     Short getPort();
 
@@ -33,8 +33,8 @@ public interface Transport {
 
     Format getFormat();
 
-    void recv(Notification notification);
+    void recv(HasDestination notification);
 
-    Future<Exchanger<ByteBuffer>> send(Notification notification);
+    Future<Exchanger<ByteBuffer>> send(HasDestination notification);
 }
 

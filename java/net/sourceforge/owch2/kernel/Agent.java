@@ -26,12 +26,12 @@ public interface Agent extends HasOrigin, HasProperties/*, Invocable*/ {
      *
      * @param n Notification destined for somewhere else
      */
-    void send(Transaction n);
+    void send(Object n);
 
     /**
      * handle an incoming message presumably to this instance.
      */
-    void recv(Notification notificationIn);
+    void recv(Object notificationIn);
 
     Object getValue(CharSequence key);
 

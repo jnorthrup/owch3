@@ -29,5 +29,5 @@ public interface HasOrigin {
      *
      * @return a URI
      */
-    URI getURI();
+    URI getURI() throws SocketException, URISyntaxException;
 }

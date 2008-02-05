@@ -139,7 +139,7 @@ public enum Reactor {
         return threadPool;
     }
 
-    public static Future<?> submit(Callable<?> callable) {
+    public static Future<ByteBuffer> submit(Callable<ByteBuffer> callable) {
         return getThreadPool().submit(callable);
     }
 

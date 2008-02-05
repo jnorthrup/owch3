@@ -52,7 +52,7 @@ public class IRC extends AbstractAgent implements Runnable {
 
 
     public static void main(String[] args) {
-        final HashMap<CharSequence, Object> bootstrap = getMap(Env.getInstance().parseCommandLineArgs(args));
+        final Map<CharSequence, Object> bootstrap = getMap(Env.getInstance().parseCommandLineArgs(args));
 
         final List requiredList = Arrays.asList(new Object[]{ImmutableNotification.FROM_KEY, IRCHOST_KEY, "IRCNickname",});
         if (!bootstrap.keySet().containsAll(requiredList)) {
@@ -277,7 +277,7 @@ public class IRC extends AbstractAgent implements Runnable {
     }
 
     /**
-     * <P>Populates a Notification with message semantic values. <P> Produces the fields in order<OL><LI> JMSReplyTo<LI>JMSType
+     * <P>Populates a Notification with message semantic values. <P> Produces the fields in order<OL><LI> FROM_KEY<LI>JMSType
      * <LI>JMSDestination<LI>Value
      *
      * @param sourceLine - sourceLine of text
@@ -286,7 +286,7 @@ public class IRC extends AbstractAgent implements Runnable {
      */
     private void parseLine(String sourceLine, Map messageIn, String prefix) throws NoSuchElementException {
         StringTokenizer tokenizer;
-        String IRCDestination, IRCChannel, JMSDestination = getFrom();
+        String IRCDestination, IRCChannel, JMSDestination = (String) getFrom().toString();
         tokenizer = new StringTokenizer(sourceLine, ":", false);
         String cmd = tokenizer.nextToken(),
                 value = tokenizer.nextToken("\0").substring(1);

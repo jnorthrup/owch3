@@ -26,6 +26,10 @@ public class SocketProxy extends AbstractAgent implements Runnable {
     String AgentPort;
     private ServerSocket ss;
 
+    public SocketProxy(Iterator<Map.Entry<CharSequence, Object>> m) {
+        super(m);
+    }
+
     public static void main(String[] args) {
 
         SocketProxy d = new SocketProxy(Env.getInstance().parseCommandLineArgs(args));

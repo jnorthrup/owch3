@@ -14,7 +14,7 @@ import java.util.*;
 public class GateKeeper extends AbstractAgent {
     private httpRegistry httpRegistry = Env.getInstance().getHttpRegistry();
 
-    public GateKeeper(HashMap<CharSequence, Object> map) {
+    public GateKeeper(Map<CharSequence, Object> map) {
         super(map);
     }
 
@@ -22,7 +22,7 @@ public class GateKeeper extends AbstractAgent {
     //todo:  modernize the agent spinning into the workerques
     public static void main(String[] args) throws InterruptedException {
 
-        final HashMap<CharSequence, Object> map = getMap(Env.getInstance().parseCommandLineArgs(args));
+        final Map<CharSequence, Object> map = getMap(Env.getInstance().parseCommandLineArgs(args));
 
         if (!map.containsKey(ImmutableNotification.FROM_KEY)) {
             Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "GateKeeper Agent usage:\n\n" +

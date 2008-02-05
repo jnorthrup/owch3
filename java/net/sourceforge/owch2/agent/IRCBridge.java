@@ -9,22 +9,26 @@ public class IRCBridge extends AbstractAgent {
 
     public IRCBridge(Iterable<Map.Entry<CharSequence, Object>> m) {
         super(m);
+//
+//        final String[] ka = {ImmutableNotification.FROM_KEY, "IRCAgents",};
+//
+//        if (!keySet().containsAll(Arrays.asList(ka))) {
+//            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
+//                    "IRCBridge usage:\n\n" +
+//                    "-name (String)name --(channel name e.g. #python)\n" +
+//                    "-IRCAgents (String)'agent1[ agent..n]'\n" +
+//                    "[-Deploy 'host1[ ..hostn]']\n" +
+//                    "$Id$\n");
+//        } else {
+//
+//            super.relocate();
+//            final String aaaa = get("IRCAgents").toString();
+//            setAgents(aaaa);
+//        }
+    }
 
-        final String[] ka = {ImmutableNotification.FROM_KEY, "IRCAgents",};
-
-        if (!keySet().containsAll(Arrays.asList(ka))) {
-            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
-                    "IRCBridge usage:\n\n" +
-                    "-name (String)name --(channel name e.g. #python)\n" +
-                    "-IRCAgents (String)'agent1[ agent..n]'\n" +
-                    "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id$\n");
-        } else {
-
-            super.relocate();
-            final String aaaa = get("IRCAgents").toString();
-            setAgents(aaaa);
-        }
+    public IRCBridge(Iterator<Map.Entry<CharSequence, Object>> m) {
+        super(m);
     }
 
     public void setAgents(String agentsIn) {

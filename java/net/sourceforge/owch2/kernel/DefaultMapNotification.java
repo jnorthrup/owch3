@@ -24,7 +24,7 @@ public class DefaultMapNotification extends LinkedHashMap<CharSequence, Object>
         }
     }
 
-    public DefaultMapNotification(String from, URI uri) {
+    public DefaultMapNotification(CharSequence from, URI uri) {
         super();
         put(FROM_KEY, from);
         put(URI_KEY, uri);

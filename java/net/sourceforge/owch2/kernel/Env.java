@@ -2,6 +2,7 @@ package net.sourceforge.owch2.kernel;
 
 import static net.sourceforge.owch2.kernel.ImmutableNotification.*;
 import net.sourceforge.owch2.protocol.*;
+import static net.sourceforge.owch2.protocol.TransportEnum.*;
 
 import javax.script.*;
 import java.io.*;
@@ -17,7 +18,7 @@ import java.util.concurrent.*;
  * that messages are destined for.
  * <p/>
  * Workflow design is facilitated by decoupling the URI and URL endpoints from the
- * agent identifiers (labeled <B>"JMSReplyTo"</B>).  Agents are semantically named with short human-readable ID's in order to
+ * agent identifiers (labeled <B>"FROM_KEY"</B>).  Agents are semantically named with short human-readable ID's in order to
  * facilitate generic service names living among cloned, replicated, and mobile agents, who will
  * always communicate via the nearest agent hop named "default" initially to locate direct transport locations to
  * route to.
@@ -61,8 +62,12 @@ public class Env implements Invocable {
     private int pipePort;
     public static Map<String, Socket> httpdSockets = new ConcurrentHashMap<String, Socket>();
     private httpRegistry httpRegistry;
-    private static Transport[] inboundTransports;
-    private static Transport[] outboundTransports;
+    private static Transport[] inboundTransports = new Transport[]{
+            local, owch, http, Default
+    };
+    private static Transport[] outboundTransports = new Transport[]{
+            local, owch, http, Default
+    };
     private static Set<Agent> localAgents = new ConcurrentSkipListSet<Agent>();
 
     private Env() {
@@ -111,8 +116,8 @@ public class Env implements Invocable {
         outboundTransports = outboundTransport;
     }
 
-    public static Set<Agent> getLocalAgents() {
-        return localAgents;
+    public static Map<CharSequence, Agent> getLocalAgents() {
+        return local.getLocalAgents();
     }
 
     public static Transport[] getInboundTransports() {
@@ -223,20 +228,20 @@ public class Env implements Invocable {
      * @param arguments usu. the commandline args or the source args for a clone instance
      * @return the props from the commandline
      */
-    public Iterable<Map.Entry<CharSequence, Object>> parseCommandLineArgs(String[] arguments) {
+    public Iterator<Entry<CharSequence, Object>> parseCommandLineArgs(CharSequence... arguments) {
         try {
             ArrayList<Entry<CharSequence, Object>> bootMessage = new ArrayList<Entry<CharSequence, Object>>();
             //harsh but effective, asume everything is key value pairs.
             for (int i = 0; i < (arguments.length - (arguments.length % 2)); i += 2) {
 
                 String argument;
-                argument = arguments[i];
+                argument = arguments[i].toString();
 
                 if (!argument.startsWith("-")) {
                     throw new RuntimeException("err:parameter '" + argument + "':Params must all start with -");
                 }
                 String protoToken = argument.substring(1);
-                String valueString = arguments[i + 1];
+                String valueString = arguments[i + 1].toString();
                 if (protoToken.equals("help")) {
                     throw new RuntimeException("requested help");
                 }
@@ -312,12 +317,12 @@ public class Env implements Invocable {
                 }
                 bootMessage.add(new AbstractMap.SimpleEntry<CharSequence, Object>(protoToken, valueString));
             }
-            return bootMessage;
+            return bootMessage.iterator();
         } catch (RuntimeException e) {
             e.printStackTrace();
             cmdLineHelp("<this was an Env-cmdline syntax problem>");
         } catch (Exception e) {
-            e.printStackTrace();  //!TODO: review for fit
+            e.printStackTrace();
         }
         return null;
     }
@@ -328,8 +333,8 @@ public class Env implements Invocable {
                 "All cmdline params are of the pairs form -key 'Value'\n\n " +
                 "valid environmental cmdline options are typically:\n" +
                 "-config      - config file[s] to use having (RFC822) pairs of Key: Value\n" +
-                "-JMSReplyTo  - Name of agent\n" +
-                "-name        - shorthand for JMSReplyTo\n" +
+                "-FROM_KEY  - Name of agent\n" +
+                "-name        - shorthand for FROM_KEY\n" +
                 "-HostAddress - Host address to use\n" +
                 "-HostInterface - Host interface to use\n" +
                 "-SocketCount - Multiple dynamic sockets for high load?\n" +
@@ -409,9 +414,15 @@ public class Env implements Invocable {
     public HasOrigin getParentNode() {
         if (parentNode == null) {
             DefaultMapNotification l = new DefaultMapNotification();
+
             l.put("Created", "env.getDomain()");
             l.put(FROM_KEY, "default");
-            l.put(URI_KEY, "owch://" + getHostAddress().getCanonicalHostName() + ":2112/");
+
+            try {
+                l.put(URI_KEY, new URI("owch", "default", getHostAddress().getCanonicalHostName(), 2112, "/default", "", ""));
+            } catch (URISyntaxException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
             parentNode = l;
         }
         return parentNode;

@@ -48,20 +48,25 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
     protected static final String CLASSTYPE_KEY = "Class";
 
     protected AbstractAgent(Iterable<Map.Entry<CharSequence, Object>> l) {
-        this(getMap(l));
+        this(l.iterator());
     }
 
     protected AbstractAgent(Map<CharSequence, Object> proto) {
-        super((proto));
+        super(proto);
+        start();
+    }
 
+    public AbstractAgent(Iterator<Map.Entry<CharSequence, Object>> entryIterator) {
+        super(getMap(entryIterator));
         start();
     }
 
     private void start() {
-        local.getLocalAgents().put(getFrom(), this);
-        if (!isParent()) {
+        if (null == getFrom())
+            throw new IllegalArgumentException("missing Map Entry: " + FROM_KEY);
+        Env.getLocalAgents().put(getFrom(), this);
+        if (!isParent())
             linkTo(DEFAULT_LINK_NAME);
-        }
     }
 
     /**
@@ -70,8 +75,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
      * @see #putValue
      */
     public Object getValue(String key) {
-//        if (Env.logDebug) Env.log(499, getClass().getName() + ":" + key);
-        Object value = null; //= default_val;
+        Object value;
         Class c = this.getClass();
         try {
             value = c.getField(key).get(this);
@@ -119,9 +123,9 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
                 this.put(key, value);
             }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();  //!TODO: review for fit
+            e.printStackTrace();
         } catch (InvocationTargetException e) {
-            e.printStackTrace();  //!TODO: review for fit
+            e.printStackTrace();
         }
     }
 
@@ -136,7 +140,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
      * @param lk node(s) to link to
      */
     public void linkTo(String lk) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     /**
@@ -165,12 +169,9 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
         Env.getInstance().send(n);
     }
 
-
-    public final void recv(Notification notificationIn) {
+    public void recv(Notification notificationIn) {
         try {
-
-
-            HashMap map = getMap(notificationIn);
+            Map map = getMap(notificationIn);
             String msgType = (String) map.get(TYPE_KEY);
             //for later optimizations.... switch(  valueOf(msgType)) ... is enabled.
             if (msgType != null) getClass().getMethod("handle_" + msgType, cls_m).invoke(this, notificationIn);
@@ -182,7 +183,6 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-
     }
 
     public Object getValue(CharSequence key) {
@@ -190,25 +190,22 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
     }
 
     protected AbstractAgent(Map.Entry<CharSequence, Object>... proto) {
-        this(getMap(Arrays.asList(proto)));
+        super(getMap(proto));
+        start();
     }
-
 
     public void init(Map<String, Object> proto) {
         putAll(proto);
-//        Transport.ipc.hasPath(this.getFrom());
-        if (!isParent()) {
+        //Transport.ipc.hasPath(this.getFrom());
+        if (!isParent())
             linkTo(DEFAULT_LINK_NAME);
-        }
     }
 
     /**
-     * this tells our (potentially clone) agent to stop re-registering.
-     * it will cease to spin.
+     * this tells our (potentially clone) agent to stop re-registering. it will cease to spin.
      */
     public void handle_Dissolve(HasProperties n) {
         killFlag = true;
-
     }
 
     /**
@@ -243,7 +240,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
      * <li> facilitates the ability to relocate a singleton agent and reroute messages held up during relocation
      * <li> can cycle or coexist addresses for multihoming, multiprotocol, and and port load-balancing
      *
-     * @param p JMSReplyTo
+     * @param p FROM_KEY
      */
     public void handle_Update(Notification p) {
         CharSequence dest = p.getFrom();
@@ -277,8 +274,12 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
 
     }
 
-    public final String getFrom() {
+    public CharSequence getFrom() {
         return (String) get(FROM_KEY);
+    }
+
+    public void setFrom(String val) {
+        put(FROM_KEY, val);
     }
 
     /**
@@ -292,7 +293,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
      * @param n the payload describing the move
      */
     public void handle_Move(Notification n) {
-        final HashMap<CharSequence, Object> map = getMap(n);
+        final Map<CharSequence, Object> map = getMap(n);
         CharSequence host = (CharSequence) map.get(MOBILEHOST_KEY);
         if (host == null) {
             host = Env.getInstance().getHostname();
@@ -311,6 +312,11 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
         response.put(DESTINATION_KEY, host);
         send(response);
         killFlag = true;
+
+    }
+
+    public Map<CharSequence, Object> getMap(Iterable<Map.Entry<CharSequence, Object>> n) {
+        return getMap(n.iterator());
 
     }
 
@@ -337,8 +343,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
      * @param n clone instructions
      */
     public void handle_Clone(Notification n) {
-
-        final HashMap<CharSequence, Object> map = getMap(n);
+        final Map<CharSequence, Object> map = getMap(n.iterator());
         String host = map.get(MOBILEHOST_KEY).toString(); //name of a Deploy agent
         if (host == null) {
             host = Env.getInstance().getHostname();
@@ -365,6 +370,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
                 String clist = (String) get(DEPLOY_KEY);
                 remove(DEPLOY_KEY);
                 StringTokenizer st = new StringTokenizer(clist);
+
                 while (st.hasMoreTokens()) {
                     clone_state1(st.nextToken());
                 }
@@ -376,12 +382,25 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
         }
     }
 
-    protected static HashMap<CharSequence, Object> getMap(Iterable<Map.Entry<CharSequence, Object>> n) {
-        final HashMap hashMap = new HashMap<CharSequence, Object>();
-        for (Map.Entry<CharSequence, Object> charSequenceEntry : n) {
-            hashMap.put(charSequenceEntry.getKey(), charSequenceEntry.getValue());
+    public static Map<CharSequence, Object> getMap(Iterator<Map.Entry<CharSequence, Object>> n) {
+
+        final Map<CharSequence, Object> hashMap = new LinkedHashMap<CharSequence, Object>();
+
+        while (n.hasNext()) {
+            Map.Entry<CharSequence, Object> charSequenceObjectEntry = n.next();
+            hashMap.put(charSequenceObjectEntry.getKey(), charSequenceObjectEntry.getValue());
         }
         return hashMap;
+    }
+
+    public static Map<CharSequence, Object> getMap(Map.Entry<CharSequence, Object>... n) {
+
+        final HashMap<CharSequence, Object> hashMap = new LinkedHashMap<CharSequence, Object>();
+
+        for (Map.Entry<CharSequence, Object> charSequenceEntry : n)
+            hashMap.put(charSequenceEntry.getKey(), charSequenceEntry.getValue());
+        return hashMap;
+
     }
 
     /**
@@ -393,5 +412,3 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
         return this.entrySet().iterator();
     }
 }
-
-

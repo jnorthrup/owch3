@@ -3,7 +3,6 @@ package net.sourceforge.owch2.agent;
 import net.sourceforge.owch2.kernel.*;
 
 import java.io.*;
-import static java.lang.Thread.*;
 import java.net.*;
 import java.util.*;
 
@@ -24,28 +23,29 @@ public class SocksProxy extends AbstractAgent implements Runnable {
     };
 
     public static void main(String[] args) {
-        Map m;
-        final Iterable<Map.Entry<CharSequence, Object>> iterable = Env.getInstance().parseCommandLineArgs(args);
-        m = getMap(iterable);
-        if (!(m.containsKey(ImmutableNotification.FROM_KEY) && m.containsKey("SocksHost") && m.containsKey("SourcePort") &&
-                m.containsKey("SourceHost") && m.containsKey("AgentPort"))) {
-            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "SocketProxy Agent usage:\n\n" +
-                    "-name       (String)name\n" + "-SourceHost (String)hostname/IP\n" + "-SocksHost (String)hostname/IP\n" +
-                    "-SourcePort (int)port\n" + "-AgentPort  (int)port\n" +
-                    "[-SocksPort (int)port]\n" + "[-Clone 'host1[ ..hostn]']\n" + "[-Deploy 'host1[ ..hostn]']\n" +
-                    "$Id$\n");
-        }
-        SocketProxy d = new SocketProxy(iterable);
-        Thread t = new Thread();
-        try {
-            t.start();
-            while (!Env.getInstance().shutdown) {
-                sleep(6000);
-            } //todo: something
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+//        Map m;
+//        final Iterable<Map.Entry<CharSequence, Object>> iterable = Env.getInstance().parseCommandLineArgs(args);
+//        m = getMap(iterable);
+//        if (!(m.containsKey(ImmutableNotification.FROM_KEY) && m.containsKey("SocksHost") && m.containsKey("SourcePort") &&
+//                m.containsKey("SourceHost") && m.containsKey("AgentPort"))) {
+//            Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" + "SocketProxy Agent usage:\n\n" +
+//                    "-name       (String)name\n" + "-SourceHost (String)hostname/IP\n" + "-SocksHost (String)hostname/IP\n" +
+//                    "-SourcePort (int)port\n" + "-AgentPort  (int)port\n" +
+//                    "[-SocksPort (int)port]\n" + "[-Clone 'host1[ ..hostn]']\n" + "[-Deploy 'host1[ ..hostn]']\n" +
+//                    "$Id$\n");
+//        }
+//        SocketProxy d = new SocketProxy(iterable);
+//        Thread t = new Thread();
+//        try {
+//            t.start();
+//            while (!Env.getInstance().shutdown) {
+//                sleep(6000);
+//            } //todo: something
+//        }
+//        catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        new SocksProxy(Env.getInstance().parseCommandLineArgs(args));
     }
 
 
@@ -68,7 +68,7 @@ public class SocksProxy extends AbstractAgent implements Runnable {
     /**
      * handy remote deployment code
      */
-    public SocksProxy(Map m) {
+    public SocksProxy(Iterator<Map.Entry<CharSequence, Object>> m) {
         super(m);
         try {
             relocate();

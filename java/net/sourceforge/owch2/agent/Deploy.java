@@ -15,27 +15,40 @@ public class Deploy extends AbstractAgent {
     static int uniq = 0;
     private boolean killFlag;
 
-    public Deploy(Iterable<Map.Entry<CharSequence, Object>> p) {
-        this(getMap(p));//To change body of created methods use File | Settings | File Templates.
+    public Deploy(Map.Entry<CharSequence, Object>... p) {
+        super(p);
+    }
+
+    public Deploy() {
+    }
+
+    public Deploy(Iterable<Map.Entry<CharSequence, Object>> entryIterable) {
+        super(entryIterable.iterator());
+    }
+
+    public Deploy(Iterator<Map.Entry<CharSequence, Object>> entryIterator) {
+        super(entryIterator);
     }
 
     public static void main(String[] args) throws Exception {
-        Map<CharSequence, Object> m = getMap(Env.getInstance().parseCommandLineArgs(args));
-        {
-            final String[] ka = {ImmutableNotification.FROM_KEY,};
+//        Map<CharSequence, Object> m = getMap(Env.getInstance().parseCommandLineArgs(args));
+//        {
+//            final String[] ka = {ImmutableNotification.FROM_KEY,};
+//
+//            if (!m.keySet().containsAll(Arrays.asList(ka))) {
+//                Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
+//                        "Deploy Agent usage:\n\n" +
+//                        "-name name\n" +
+//                        "$Id$\n");
+//            }
+//        }
+//        Deploy d = new Deploy(m);
+//        Thread t = new Thread();
+//        t.start();
+//        while (!d.killFlag) t.sleep(1000 * 60 * 3);
+//
 
-            if (!m.keySet().containsAll(Arrays.asList(ka))) {
-                Env.getInstance().cmdLineHelp("\n\n******************** cmdline syntax error\n" +
-                        "Deploy Agent usage:\n\n" +
-                        "-name name\n" +
-                        "$Id$\n");
-            }
-        }
-        Deploy d = new Deploy(m);
-        Thread t = new Thread();
-        t.start();
-        while (!d.killFlag) t.sleep(1000 * 60 * 3);
-
+        Deploy deploy = new Deploy(Env.getInstance().parseCommandLineArgs());
     }
 
     /*
@@ -55,7 +68,7 @@ public class Deploy extends AbstractAgent {
      */
     public void handle_Deploy(Notification n) {
 
-        final HashMap hashMap = getMap(n);
+        final Map<CharSequence, Object> hashMap = getMap(n);
         String _class = (String) hashMap.get("Class");
         String path = (String) hashMap.get("Path");
         String parm = (String) hashMap.get("Parameters");

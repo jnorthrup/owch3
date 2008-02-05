@@ -14,11 +14,14 @@ public class AgentGUI {
     }
 
     public static void main(String[] args) throws Exception {
-        final Iterable<Map.Entry<CharSequence, Object>> iterable = Env.getInstance().parseCommandLineArgs(args);
+        final Iterator<Map.Entry<CharSequence, Object>> iterable = Env.getInstance().parseCommandLineArgs(args);
         AgentGUI f = new AgentGUI();
         final AgentVisitor visitor = f.getGui();
-        for (Map.Entry<CharSequence, Object> charSequenceObjectEntry : iterable) {
+
+        while (iterable.hasNext()) {
+            Map.Entry<CharSequence, Object> charSequenceObjectEntry = iterable.next();
             visitor.put(charSequenceObjectEntry.getKey(), charSequenceObjectEntry.getValue());
+
         }
         Thread.sleep(10000);
     }

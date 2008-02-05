@@ -3,13 +3,13 @@ package net.sourceforge.owch2.protocol;
 
 import net.sourceforge.owch2.kernel.*;
 
-import javax.lang.model.element.*;
 import java.io.*;
 import java.net.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.*;
 
 
 /**
@@ -17,7 +17,6 @@ import java.util.concurrent.*;
  *
  * @author James Northrup
  * @version $Id$
- * @copyright All Rights Reserved Glamdring Inc.
  */
 @SuppressWarnings({"ALL"})
 public enum TransportEnum implements Transport {
@@ -86,13 +85,6 @@ public enum TransportEnum implements Transport {
 
 
                 public boolean channelRead(SelectionKey key) throws ExecutionException, InterruptedException, IOException {
-//                    Future<Iterable<Map.Entry<CharSequence,Object>>> future = Reactor.submit(new Callable<Iterable<Map.Entry<CharSequence, Object>>>() {
-//                        public Iterable<Map.Entry<CharSequence, Object>>
-//                        call() throws Exception {
-//                            final Future<Iterable<Map.Entry<CharSequence, Object>>> future1 = format.recv(readX);
-//                            return future1.get();
-//                        }
-//                    });
                     final Future<Iterable<Map.Entry<CharSequence, Object>>> iterableFuture = format.recv(readX);
 
                     ByteChannel iChannel = (ByteChannel) key.channel();
@@ -103,9 +95,6 @@ public enum TransportEnum implements Transport {
                     Env.getInstance().recv(new DefaultMapTransaction(iterableFuture.get()));
                     return true;
                 }
-
-                ;
-
 
                 public boolean channelWrite(SelectionKey key) throws InterruptedException, IOException {
                     ByteBuffer buffer = writeSwap.exchange(Reactor.getCacheBuffer());
@@ -118,43 +107,49 @@ public enum TransportEnum implements Transport {
         }
     },
     http,
-    Null;
+    /**
+     * Default's job is to deliver all message up to 'default' agent
+     */
+    Default {
+        public boolean hasPath(final CharSequence name) {
+            if (!Env.getInstance().isParentHost()) {
+                owch.pathMap.putIfAbsent(name, Env.getInstance().getDefaultURI());
+                return true;
+            }
+
+            Logger.getAnonymousLogger().warning("Creating Queue Agent for " + name);
+            Agent agent = new AbstractAgent() {
+                {
+                    Set<Notification> set = new HashSet<Notification>();
+                    put("BackLog", set);
+
+                }
+
+                public void recv(Notification n) {
+                    Set set = (Set) get("BackLog");
+                    set.add(n);
+                }
+
+                public CharSequence getFrom() {
+                    return name;
+                }
+            };
+            return true;
+        };
+    }, Null;
     private static DatagramChannel channel;
     private static Map<CharSequence, Agent> localAgents = new ConcurrentHashMap<CharSequence, Agent>();
-    private ConcurrentSkipListMap<Name, URI> pathMap = new ConcurrentSkipListMap<Name, URI>();
+    private ConcurrentSkipListMap<CharSequence, URI> pathMap = new ConcurrentSkipListMap<CharSequence, URI>();
     private URI URI;
     private InetAddress hostAddress;
     private NetworkInterface hostInterface;
     private Short port;
     private Integer sockets;
     private Integer threads;
-    /**
-     robust {public void init() {
-     //To change body of implemented methods use File | Settings | File Templates.
-     }},
-     http {public void init() {
-     //To change body of implemented methods use File | Settings | File Templates.
-     }},
-     Domain {public void init() {
-     //To change body of implemented methods use File | Settings | File Templates.
-     }},
-     multicast {public void init() {
-     //To change body of implemented methods use File | Settings | File Templates.
-     }},
-     Default {public void init() {
-     //To change body of implemented methods use File | Settings | File Templates.
-     }},
-     Null {public void init() {
-     //To change body of implemented methods use File | Settings | File Templates.
-     }},
-     RFC822 {public void init() {
-     //To change body of implemented methods use File | Settings | File Templates.
-     }},*/
-    ;
 
 
     public Map<CharSequence, Agent> getLocalAgents() {
-        return localAgents;
+        return TransportEnum.localAgents;
     }
 
     public URI getURI() {

@@ -104,7 +104,7 @@ public class PCTScanner extends AbstractAgent {
     }
 
     public static void main(String[] args) throws Exception {
-        new PCTScanner(Env.getInstance().parseCommandLineArgs(args));
+        new PCTScanner((Iterable<Map.Entry<CharSequence, Object>>) Env.getInstance().parseCommandLineArgs(args));
     }
 
     public void putValue(String key, Object value) {

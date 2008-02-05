@@ -9,6 +9,7 @@ import java.nio.channels.*;
 import static java.nio.channels.SelectionKey.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.*;
 
 /**
  * Reactor design pattern singleton as presented by the letters E,N,U, and M.
@@ -30,8 +31,6 @@ import java.util.concurrent.*;
  * @author James Northrup
  * @version $Id$
  */
-
-
 public enum Reactor {
     /**
      * Accept Reactor are ChannelController specific operations
@@ -60,6 +59,8 @@ public enum Reactor {
     public static final int BUFFSIZE = 1024 << 4;
     static final int BUFFCOUNT = 128;
     private static ByteBuffer cache;
+    private static int futureBufferCount = BUFFCOUNT;
+    private static int currentBufferCount = 0;
 
     static {
         try {
@@ -102,7 +103,7 @@ public enum Reactor {
                                         }
                                 );
                             } catch (IOException e) {
-                                e.printStackTrace();  //ToDo: change body of catch statement use File | Settings | File Templates.
+                                e.printStackTrace();
                             }
                     }
                 });
@@ -152,17 +153,49 @@ public enum Reactor {
 
     static {
 
-        for (int pos = 0; pos < BUFFCOUNT; pos += BUFFSIZE) {
+        refillBufferCache();
+
+    }
+
+    private static void refillBufferCache() {
+
+        for (int pos = 0; pos < futureBufferCount; pos += BUFFSIZE) {
             cache.position(pos);
             cache.limit(pos + BUFFSIZE);
             new WeakReference<ByteBuffer>(cache.slice(), RECLAIMER);
         }
 
+        currentBufferCount += futureBufferCount;
+        futureBufferCount *= 2;
     }
 
     static public ByteBuffer getCacheBuffer() throws InterruptedException {
-        return RECLAIMER.remove().get();
+        ByteBuffer buffer;
+        try {
+            buffer = RECLAIMER.remove(250).get();
+        } catch (InterruptedException e) {
+            System.gc();
+            try {
+                buffer = RECLAIMER.remove(20).get();
+                Logger.getAnonymousLogger().warning("System.gc() was run to reclaim buffers");
+            } catch (InterruptedException e1) {
+                refillBufferCache();
+                synchronized (RECLAIMER) {
+                    try {
+                        buffer = (RECLAIMER).remove(500).get();
+                        Logger.getAnonymousLogger().warning("refillBuffercache was called to add buffers");
+                    } catch (InterruptedException e2) {
+                        Logger.getAnonymousLogger().severe("---- buffers delayed past 770ms -- bad news. blocking");
+                        long beginWait = System.currentTimeMillis();
+                        buffer = RECLAIMER.remove().get();
+                        long delayed = System.currentTimeMillis() - beginWait;
+                        Logger.getAnonymousLogger().severe("==== buffers released at " + delayed);
+                        Logger.getAnonymousLogger().info("" + currentBufferCount + " buffers total");
+                    }
+                }
+            }
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return buffer;
     }
 }
-
-

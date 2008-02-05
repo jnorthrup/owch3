@@ -44,14 +44,14 @@ public class MobilePayload extends AbstractAgent {
     }
 
     public static void main(String[] args) {
-        final HashMap<CharSequence, Object> m = getMap(Env.getInstance().parseCommandLineArgs(args));
-        if (!(m.containsKey(ImmutableNotification.FROM_KEY) && m.containsKey("Resource"))) {
-            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "MobilePayload Agent usage:\n\n" + "-name name\n" +
-                    "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n" +
-                    "-Source 'file' -- the file \n" + "[-Content-Type 'application/msword']\n" + "[-Clone 'host1[ ..hostn]']\n" +
-                    "[-Deploy 'host1[ ..hostn]']\n" + "$Id$\n");
-        }
-        new MobilePayload(m);
+        new MobilePayload(getMap(Env.getInstance().parseCommandLineArgs(args)));
+//        if (!(m.containsKey(ImmutableNotification.FROM_KEY) && m.containsKey("Resource"))) {
+//            Env.cmdLineHelp("\n\n******************** cmdline syntax error\n" + "MobilePayload Agent usage:\n\n" + "-name name\n" +
+//                    "-Resource 'resource' -- the resource starting with '/' that is registered on the GateKeeper\n" +
+//                    "-Source 'file' -- the file \n" + "[-Content-Type 'application/msword']\n" + "[-Clone 'host1[ ..hostn]']\n" +
+//                    "[-Deploy 'host1[ ..hostn]']\n" + "$Id$\n");
+//        }
+//        new MobilePayload(m);
     }
 //
 //    /**
@@ -201,7 +201,7 @@ public class MobilePayload extends AbstractAgent {
             payload = os.toByteArray();
             os.flush();
             os.close();
-            thread = new Thread(this, getClass().getName() + ":" + get("JMSReplyTo()") + ":" + get("Resource"));
+            thread = new Thread(this, getClass().getName() + ":" + get("FROM_KEY()") + ":" + get("Resource"));
             thread.start();
         } catch (Exception e) {
             e.printStackTrace();

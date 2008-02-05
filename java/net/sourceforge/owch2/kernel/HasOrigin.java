@@ -10,7 +10,7 @@ import java.net.*;
  * To change this template use File | Settings | File Templates.
  */
 public interface HasOrigin {
-    String FROM_KEY = "JMSReplyTo";
+    String FROM_KEY = "From";
     String URI_KEY = "URI";
 
     /**

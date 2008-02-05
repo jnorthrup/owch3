@@ -27,11 +27,9 @@ public class RFC822Format implements Format {
                 cacheBuf.rewind();
 
                 for (Map.Entry<CharSequence, Object> entry : event) {
-
-                    builder.append(URLEncoder.encode(entry.getKey().toString(), "UTF-8")).append(colon);
-                    builder.append(URLEncoder.encode(String.valueOf(entry.getValue()), "UTF-8"));
+                    builder.append(/*URLEncoder.encode(*/entry.getKey().toString()/*, "UTF-8")*/).append(colon);
+                    builder.append(/*URLEncoder.encode(*/String.valueOf(entry.getValue()))/*), "UTF-8")*/;
                     builder.append('\n');
-
                     flip();
                     builder.delete(0, builder.length());
                 }

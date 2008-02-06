@@ -2,12 +2,13 @@ package net.sourceforge.owch2.kernel;
 
 import java.io.*;
 import java.lang.ref.*;
+import java.net.*;
 import java.nio.*;
 import java.nio.channels.*;
 import static java.nio.channels.SelectionKey.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.logging.*;
+
 
 /**
  * Reactor design pattern singleton as presented by the letters E,N,U, and M.
@@ -29,172 +30,414 @@ import java.util.logging.*;
  * @author James Northrup
  * @version $Id$
  */
-public enum Reactor {
-    /**
-     * Accept Reactor are ChannelController specific operations
-     */
-    ACCEPT(OP_ACCEPT) {
-        boolean call(SelectionKey key) throws IOException {
-            return ((ChannelController) key.attachment()).channelAccept(key);
+@SuppressWarnings({"unchecked"})
+public class Reactor {
+
+    private Selector selector;
+
+    //    private int bufferSize = 1024 << 4;
+    private int bufferCount = 128;
+    private int bufferStep[];
+    private int currentBufferCount = 0;
+    private boolean shutdown;
+    private static Reactor instance;
+    private Map<SelectionKey, Exchanger> keyXMap = new WeakHashMap<SelectionKey, Exchanger>();
+    private static final int KILOBYTE = 2 << 9;
+    private Map<Integer, ReferenceQueue<ByteBuffer>> reclaimer = new ConcurrentHashMap<Integer, ReferenceQueue<ByteBuffer>>();
+
+
+    static Reactor getInstance() {
+        if (instance == null) {
+            instance = new Reactor();
         }
-    },
-    CONNECT(OP_CONNECT) {
-        boolean call(SelectionKey key) throws IOException {
-            return ((ChannelController) key.attachment()).channelConnect(key);
-        }},
-    READ(OP_READ) {
-        boolean call(SelectionKey key) throws IOException, ExecutionException, InterruptedException {
-            return ((ChannelController) key.attachment()).channelRead(key);
-        }},
-    WRITE(OP_WRITE) {
-        boolean call(SelectionKey key) throws IOException, InterruptedException {
-            return ((ChannelController) key.attachment()).channelWrite(key);
+        return instance;
+    }
 
-        }},;
+    Reactor() {
 
-    static Selector selector;
-
-    public static final int BUFFSIZE = 1024 << 4;
-    static final int BUFFCOUNT = 128;
-    private static ByteBuffer cache;
-    private static int futureBufferCount = BUFFCOUNT;
-    private static int currentBufferCount = 0;
-    private static boolean shutdown;
-
-    static {
         try {
             selector = Selector.open();
         } catch (IOException e) {
             e.printStackTrace();
         }
         threadPool = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+//        cache = ByteBuffer.allocateDirect(bufferCount * bufferSize);
 
-        Init();
-        cache = ByteBuffer.allocateDirect(BUFFCOUNT * BUFFSIZE);
-    }
+        bufferStep = new int[16];
+        Arrays.fill(bufferStep, bufferCount);
 
-    private static void Init() {
-        threadPool.execute(
-                new Runnable() {
-                    public void run() {
-                        int i = 0;
-//                        Env instance = Env.getInstance();
-                        while (!shutdown)
-                            try {
+        threadPool.submit(new Runnable() {
+            public void run() {
+                while (selector.isOpen()) {
+                    try {
+                        if (selector.select() < 1) continue;
 
-                                //this blocks
-                                i = selector.select();
-                                if (i >= 1) submit(
-                                        new Callable() {
-                                            public Boolean call() throws Exception {
-                                                boolean b = false;
-                                                for (final SelectionKey selectionKey : selector.selectedKeys())
-                                                    for (final Reactor reactor : values())
-                                                        if (0 != (reactor.op & selectionKey.readyOps())) {
-                                                            b = reactor.call(selectionKey);
-                                                            if (!b) {
-                                                                selectionKey.cancel();
-                                                                return false;
-                                                            }
-                                                        }
-                                                return true;
-                                            }
-                                        }
-                                );
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                    } catch (IOException e) {
+                        e.printStackTrace();  //Todo: verify
+                        continue;
+
                     }
-                });
+                    Set<SelectionKey> selectionKeySet = selector.selectedKeys();
+                    for (final SelectionKey key : selectionKeySet) {
+                        try {
+                            int rops = key.readyOps();
+
+                            final Object payload = key.attachment();
+                            final Exchanger exchanger = keyXMap.get(key);
+                            if (exchanger == null) key.cancel();
+
+                            if ((key.isAcceptable() || key.isReadable())) {
+                                channelInduction(key, exchanger);
+                            } else {
+                                if (key.isReadable()) {
+                                    if (payload instanceof Exchanger) {
+                                        Exchanger e = (Exchanger) payload;
+                                        spinRead(key, null, e);
+                                    } else if (payload instanceof Exchanger[]) {
+                                        Exchanger[] e = (Exchanger[]) payload;
+                                        spinRead(key, null, e);
+                                    } else if (payload instanceof Integer) {
+                                        spinRead(key, ((Integer) payload), exchanger);
+                                    } else if (payload instanceof int[]) {
+                                        //array of ByteBuffer sizes for Scatter/Gather
+                                        throw new IllegalArgumentException("Scatter Gather not yet implemented");
+                                    } else {
+                                        spinRead(key, null, exchanger);
+                                    }
+                                }
+                                if (0 < (rops | OP_WRITE)) {
+                                    if (payload instanceof Exchanger) {
+                                        Exchanger e = (Exchanger) payload;
+                                        spinWrite(key, null, e);
+                                    } else if (payload instanceof Exchanger[]) {
+                                        Exchanger[] e = (Exchanger[]) payload;
+                                        spinWrite(key, null, e);
+                                    } else if (payload instanceof Integer) {
+                                        spinWrite(key, ((Integer) payload), exchanger);
+                                    } else if (payload instanceof OwchTransport) {
+                                        DatagramChannel d = (DatagramChannel) key.channel();
+                                        OwchTransport t = (OwchTransport) payload;
+                                        final OwchTransport.Quad<Transaction, CharSequence, SocketAddress, ByteBuffer> charSequenceSocketAddressByteBufferQuad = t.sendX.exchange(null);
+                                        final int i2 = d.write(charSequenceSocketAddressByteBufferQuad.getObject());
+                                    } else if (payload instanceof int[]) {
+                                        //array of ByteBuffer sizes for Scatter/Gather
+                                        throw new IllegalArgumentException("Scatter Gather not yet implemented");
+                                    } else {
+                                        spinWrite(key, null, exchanger);
+                                    }
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();  //Todo: verify
+
+                        }
+                    }
+                }
+            }
+        }
+
+        );
     }
+
+    private void channelInduction(SelectionKey key, Exchanger exchanger) throws IOException, InterruptedException {
+        if (key.isAcceptable()) {
+
+
+            ServerSocketChannel sc = (ServerSocketChannel) key.channel();
+            SocketChannel ic;
+            while (null != (ic = sc.accept()))
+                exchanger.exchange(ic);
+        } else if (key.isConnectable()) {
+            SocketChannel socketChannel = (SocketChannel) key.channel();
+            if (socketChannel.finishConnect()) {
+                SocketChannel reboundChannel = (SocketChannel) exchanger.exchange(socketChannel);
+                if (reboundChannel != null && reboundChannel.isOpen()) {
+                    ((SocketChannel) reboundChannel.configureBlocking(false)).connect(socketChannel.socket().getRemoteSocketAddress());
+                    Exchanger exchanger1 = registerChannel(reboundChannel, exchanger, reboundChannel, OP_CONNECT);
+                }
+                SocketAddress socketAddress = socketChannel.socket().getRemoteSocketAddress();
+            }
+
+        }
+    }
+
+    private void performIo(SelectionKey key, int rops, Object payload, Exchanger exchanger) {
+        if (key.isReadable()) {
+            if (payload instanceof Exchanger) {
+                Exchanger e = (Exchanger) payload;
+                spinRead(key, null, e);
+            } else if (payload instanceof Exchanger[]) {
+                Exchanger[] e = (Exchanger[]) payload;
+                spinRead(key, null, e);
+            } else if (payload instanceof Integer) {
+                spinRead(key, ((Integer) payload), exchanger);
+            } else if (payload instanceof int[]) {
+                //array of ByteBuffer sizes for Scatter/Gather
+                throw new IllegalArgumentException("Scatter Gather not yet implemented");
+            } else {
+                spinRead(key, null, exchanger);
+            }
+        }
+        if (0 < (rops | OP_WRITE)) {
+            if (payload instanceof Exchanger) {
+                Exchanger e = (Exchanger) payload;
+                spinWrite(key, null, e);
+            } else if (payload instanceof Exchanger[]) {
+                Exchanger[] e = (Exchanger[]) payload;
+                spinWrite(key, null, e);
+            } else if (payload instanceof Integer) {
+                spinWrite(key, ((Integer) payload), exchanger);
+            } else if (payload instanceof int[]) {
+                //array of ByteBuffer sizes for Scatter/Gather
+                throw new IllegalArgumentException("Scatter Gather not yet implemented");
+            } else {
+                spinWrite(key, null, exchanger);
+            }
+
+        }
+    }
+
+    private Future<Integer> spinRead(final SelectionKey key, final Integer exponent, final Exchanger... e) {
+        return (Future<Integer>) submit(new Callable<Integer>() {
+            public Integer call() throws IOException, InterruptedException {
+                ByteBuffer buffer = exponent == null ? getCacheBuffer() : getCacheBuffer(exponent);
+                int bytes = 0;
+                int bytes2 = 0;
+                while ((bytes = ((ByteChannel) key.channel()).read(buffer)) > 0) {
+                    bytes2 += bytes;
+                    buffer = (ByteBuffer) ((ByteBuffer) e[0].exchange(buffer)).clear();
+                }
+
+                return bytes2;
+            }
+        });
+    }
+
+
+    private Future<Integer> spinWrite(final SelectionKey key, final Integer exponent, final Exchanger... e) {
+        return (Future<Integer>) submit(new Callable<Integer>() {
+            public Integer call() throws IOException, InterruptedException {
+                ByteBuffer buffer = exponent == null ? getCacheBuffer() : getCacheBuffer(exponent);
+                int bytes = 0;
+                int bytes2 = 0;
+
+
+                do {
+                    bytes2 += bytes;
+                    buffer = (ByteBuffer) e[0].exchange(buffer);
+                } while (0 < (bytes = ((ByteChannel) key.channel()).write(buffer)));
+
+                return bytes2;
+            }
+        });
+    }
+
 
     /**
      * react to the event.
      *
      * @return whether to re-use this object or remove it (and child if any) from the reactor
      */
-    abstract boolean call(SelectionKey key) throws IOException, ExecutionException, InterruptedException;
+//     boolean call(SelectionKey key) throws IOException, ExecutionException, InterruptedException;
 
-    static ThreadPoolExecutor threadPool;
-    Timer timer = new Timer();
+    private ThreadPoolExecutor threadPool;
+    private Timer timer = new Timer();
+//
+//    public SelectionKey registerChannel(SelectableChannel channel, ChannelController ChannelController) throws IOException {
+//        if (!channel.isOpen()) {
+//            return null;
+//        }
+//        if (channel.isBlocking()) {
+//            channel.configureBlocking(false);
+//        }
+//        int valid = channel.validOps();
+//        return channel.register(selector, valid, ChannelController);
+//    }
 
-    int op;
 
-    Reactor(int op) {
-        this.op = op;
-    }
-
-    static public SelectionKey registerChannel(SelectableChannel channel, ChannelController ChannelController) throws IOException {
-        if (!channel.isOpen()) {
-            return null;
-        }
-        if (channel.isBlocking()) {
-            channel.configureBlocking(false);
-        }
-        int valid = channel.validOps();
-        return channel.register(selector, valid, ChannelController);
-    }
-
-    public static ThreadPoolExecutor getThreadPool() {
+    public ThreadPoolExecutor getThreadPool() {
         return threadPool;
     }
 
-    public static Future<ByteBuffer> submit(Callable<ByteBuffer> callable) {
-        return getThreadPool().submit(callable);
+    /**
+     * Establish Exchanger chain for sockets and files
+     *
+     * @param channel
+     * @param callback
+     * @param interest
+     * @return
+     * @throws ClosedChannelException
+     */
+    public Exchanger registerChannel(SelectableChannel channel, Exchanger callback, Object payload, int... interest) throws ClosedChannelException {
+        int inter = 0;
+        for (int i2 : interest)
+            inter = i2;
+
+        if (callback == null)
+            callback = new Exchanger<SelectableChannel>();
+
+
+        SelectionKey selectionKey = channel.register(selector, inter == 0 ? channel.validOps() : inter, payload == null ? callback : payload);
+
+        keyXMap.put(selectionKey, callback);
+
+        return callback;
     }
 
-    public static Selector getSelector() {
+    public Selector getSelector() {
         return selector;
     }
 
 
-    private static final ReferenceQueue<ByteBuffer> RECLAIMER = new ReferenceQueue<ByteBuffer>();
-
-    static {
-
-        refillBufferCache();
-
+    private void refillBufferCache() {
+        refillBufferCache(4);
     }
 
-    private static void refillBufferCache() {
+    private void refillBufferCache(int power) {
+        final int bufferSize = KILOBYTE << power;
+        final ByteBuffer cache = ByteBuffer.allocateDirect(bufferSize * bufferStep[power]);
 
-        for (int pos = 0; pos < futureBufferCount; pos += BUFFSIZE) {
+        if (!reclaimer.containsKey(power)) reclaimer.put(power, new ReferenceQueue<ByteBuffer>());
+        for (int pos = 0; pos < bufferStep[power]; pos += bufferSize) {
             cache.position(pos);
-            cache.limit(pos + BUFFSIZE);
-            new WeakReference<ByteBuffer>(cache.slice(), RECLAIMER);
-        }
+            cache.limit(pos + bufferSize);
+            {
+                new WeakReference<ByteBuffer>(cache.slice(), reclaimer.get(power));
+            }
 
-        currentBufferCount += futureBufferCount;
-        futureBufferCount *= 2;
+        }
+        bufferStep[power] *= 2;
     }
 
-    static public ByteBuffer getCacheBuffer() throws InterruptedException {
-        ByteBuffer buffer;
+    public ByteBuffer getCacheBuffer() {
+        return getCacheBuffer(4);
+    }
+
+    private ByteBuffer getCacheBuffer(int power) {
+        ByteBuffer buffer = null;
         try {
-            buffer = RECLAIMER.remove(250).get();
+            buffer = (ByteBuffer) reclaimer.get(power).remove(250).get();
         } catch (InterruptedException e) {
-            System.gc();
-            try {
-                buffer = RECLAIMER.remove(20).get();
-                Logger.getAnonymousLogger().warning("System.gc() was run to reclaim buffers");
-            } catch (InterruptedException e1) {
-                refillBufferCache();
-                synchronized (RECLAIMER) {
-                    try {
-                        buffer = (RECLAIMER).remove(500).get();
-                        Logger.getAnonymousLogger().warning("refillBuffercache was called to add buffers");
-                    } catch (InterruptedException e2) {
-                        Logger.getAnonymousLogger().severe("---- buffers delayed past 770ms -- bad news. blocking");
-                        long beginWait = System.currentTimeMillis();
-                        buffer = RECLAIMER.remove().get();
-                        long delayed = System.currentTimeMillis() - beginWait;
-                        Logger.getAnonymousLogger().severe("==== buffers released at " + delayed);
-                        Logger.getAnonymousLogger().info("" + currentBufferCount + " buffers total");
-                    }
-                }
-            }
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            refillBufferCache();
+            return getCacheBuffer(power);
         }
         return buffer;
+    }
+
+    public void setSelector(Selector selector) {
+        this.selector = selector;
+    }
+
+    public int getBufferCount() {
+        return bufferCount;
+    }
+
+    public int getCurrentBufferCount() {
+        return currentBufferCount;
+    }
+
+    public void setCurrentBufferCount(int currentBufferCount) {
+        this.currentBufferCount = currentBufferCount;
+    }
+
+    public boolean isShutdown() {
+        return shutdown;
+    }
+
+    public void setShutdown(boolean shutdown) {
+        this.shutdown = shutdown;
+    }
+
+    public static void setInstance(Reactor instance) {
+        Reactor.instance = instance;
+    }
+
+    public Map<SelectionKey, Exchanger> getKeyXMap() {
+        return keyXMap;
+    }
+
+    public void setKeyXMap(Map<SelectionKey, Exchanger> keyXMap) {
+        this.keyXMap = keyXMap;
+    }
+
+
+    public Timer getTimer() {
+        return timer;
+    }
+
+    public Future<?> submit(Callable<?> c) {
+        return getThreadPool().submit(c);
+    }
+
+    public Future<?> submit(Runnable runnable) {
+        return getThreadPool().submit(runnable);
+    }
+
+    /**
+     * this is a shortcut for a buffer-exchanger chain
+     *
+     * @param circleX
+     * @return
+     */
+    public Future submit(final Exchanger... circleX) {
+        return submit(getCacheBuffer(), circleX);
+    }
+
+    /**
+     * wrapper for weak reference submit.
+     * if/when one exchanger is garbage collected or is interrupted, the activities end.
+     *
+     * @param circleX
+     * @return a future<null>
+     */
+    public Future submit(Object seed, final Exchanger... circleX) {
+
+        final Reference<Exchanger>[] wX = (Reference<Exchanger>[]) new WeakReference[circleX.length];
+
+        for (int i = 0; i < circleX.length; i++) {
+            Exchanger exchanger = circleX[i];
+            wX[i] = new WeakReference<Exchanger>(exchanger);
+        }
+        return submit(seed, (Reference<Exchanger>[]) wX);
+
+    }
+
+    /**
+     * this is a shortcut for a buffer-exchanger chain
+     *
+     * @param circleX
+     * @return
+     */
+    public Future submit(final Reference<Exchanger>... circleX) {
+        return submit(getCacheBuffer(), circleX);
+    }
+
+    /**
+     * this passes a common <e.g. Buffer> along a chain of exchangers and
+     * circles the <e.g. buffer> back to the start.
+     * <p/>
+     * if/when one exchanger is garbage collected or is interrupted, the activities end.
+     *
+     * @param circleX
+     * @return a future<null>
+     */
+    public Future submit(final Object seed, final Reference<Exchanger>... circleX) {
+        final Runnable r = new Runnable() {
+            public void run() {
+                Object o = seed;
+                try {
+                    do
+                        for (Reference<Exchanger> exchangerWeakReference : circleX) {
+                            if (exchangerWeakReference.isEnqueued())
+                                return;
+                            final Exchanger exchanger = exchangerWeakReference.get();
+                            o = exchanger.exchange(o);
+                        } while (true);
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+        return submit(r);
     }
 }

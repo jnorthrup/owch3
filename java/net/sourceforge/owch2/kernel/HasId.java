@@ -8,5 +8,5 @@ package net.sourceforge.owch2.kernel;
  * To change this template use File | Settings | File Templates.
  */
 public interface HasId {
-    String UNIQUE_ID_KEY = "UniqueId";
+    CharSequence getId();
 }

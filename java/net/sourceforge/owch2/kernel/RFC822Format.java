@@ -14,13 +14,14 @@ import java.util.concurrent.*;
  */
 public class RFC822Format implements Format {
     static final char[] colon = ": ".toCharArray();
+    private int bufferSize = getInstance().getCacheBuffer().capacity();
 
     public Exchanger<ByteBuffer> send(final Map.Entry<CharSequence, Object>... event) throws InterruptedException {
 
         final Exchanger<ByteBuffer> sendX = new Exchanger<ByteBuffer>();
         final StringBuilder builder = new StringBuilder();
-        submit(new Callable<Exchanger<ByteBuffer>>() {
-            ByteBuffer cacheBuf = getCacheBuffer();
+        getInstance().submit(new Callable<Exchanger<ByteBuffer>>() {
+            ByteBuffer cacheBuf = getInstance().getCacheBuffer();
             CharBuffer buffer = cacheBuf.duplicate().asCharBuffer();
 
             public Exchanger<ByteBuffer> call() throws Exception {
@@ -30,25 +31,28 @@ public class RFC822Format implements Format {
                     builder.append(/*URLEncoder.encode(*/entry.getKey().toString()/*, "UTF-8")*/).append(colon);
                     builder.append(/*URLEncoder.encode(*/String.valueOf(entry.getValue()))/*), "UTF-8")*/;
                     builder.append('\n');
-                    flip();
+//                    flip();
                     builder.delete(0, builder.length());
                 }
                 buffer.append('\n');
-                flip();
+                sendX.exchange((ByteBuffer) cacheBuf.rewind());
+
                 return sendX;
             }
 
-            private void flip() throws InterruptedException, InvalidPropertiesFormatException {
-                if (builder.length() <= buffer.length()) {
-                    if (builder.length() > buffer.remaining()) {
-                        cacheBuf = (ByteBuffer) sendX.exchange(cacheBuf).flip();
-                        buffer = cacheBuf.asCharBuffer();
-                        buffer.append(builder);
-                    }
-                    return;
-                }
-                throw new InvalidPropertiesFormatException("output line exceeds " + BUFFSIZE);
-            }
+            ;
+
+//            private void flip() throws InterruptedException, InvalidPropertiesFormatException {
+//                if (builder.length() <= buffer.length()) {
+//                    if (builder.length() > buffer.remaining()) {
+//                        cacheBuf = (ByteBuffer) sendX.exchange(cacheBuf).flip();
+//                        buffer = cacheBuf.asCharBuffer();
+//                        buffer.append(builder);
+//                    }
+//                    return;
+//                }
+//                throw new InvalidPropertiesFormatException("output line exceeds " + bufferSize);
+//            }
         });
         return sendX;
     }
@@ -84,7 +88,7 @@ public class RFC822Format implements Format {
 
 
                 try {
-                    buffer = getCacheBuffer();
+                    buffer = getInstance().getCacheBuffer();
 
                     CharBuffer charBuffer = buffer.asCharBuffer();
                     StringBuilder bounce = null;
@@ -150,53 +154,15 @@ public class RFC822Format implements Format {
                                             final String k = URLDecoder.decode(key.toString(), "UTF-8").trim();
                                             final String v = URLDecoder.decode(val.toString(), "UTF-8").trim();
 
-                                            event_put.add((Map.Entry<CharSequence, Object>) new Map.Entry<CharSequence, Object>() {
-                                                /**
-                                                 * Returns the key corresponding to this entry.
-                                                 *
-                                                 * @return the key corresponding to this entry
-                                                 * @throws IllegalStateException implementations may, but are not
-                                                 *                               required to, throw this exception if the entry has been
-                                                 *                               removed from the backing map.
-                                                 */
+                                            event_put.add(new Map.Entry<CharSequence, Object>() {
                                                 public CharSequence getKey() {
                                                     return k;  //To change body of implemented methods use File | Settings | File Templates.
                                                 }
 
-                                                /**
-                                                 * Returns the value corresponding to this entry.  If the mapping
-                                                 * has been removed from the backing map (by the iterator's
-                                                 * <tt>remove</tt> operation), the results of this call are undefined.
-                                                 *
-                                                 * @return the value corresponding to this entry
-                                                 * @throws IllegalStateException implementations may, but are not
-                                                 *                               required to, throw this exception if the entry has been
-                                                 *                               removed from the backing map.
-                                                 */
                                                 public Object getValue() {
                                                     return v;  //To change body of implemented methods use File | Settings | File Templates.
                                                 }
 
-                                                /**
-                                                 * Replaces the value corresponding to this entry with the specified
-                                                 * value (optional operation).  (Writes through to the map.)  The
-                                                 * behavior of this call is undefined if the mapping has already been
-                                                 * removed from the map (by the iterator's <tt>remove</tt> operation).
-                                                 *
-                                                 * @param value new value to be stored in this entry
-                                                 * @return old value corresponding to the entry
-                                                 * @throws UnsupportedOperationException if the <tt>put</tt> operation
-                                                 *                                       is not supported by the backing map
-                                                 * @throws ClassCastException            if the class of the specified value
-                                                 *                                       prevents it from being stored in the backing map
-                                                 * @throws NullPointerException          if the backing map does not permit
-                                                 *                                       null values, and the specified value is null
-                                                 * @throws IllegalArgumentException      if some property of this value
-                                                 *                                       prevents it from being stored in the backing map
-                                                 * @throws IllegalStateException         implementations may, but are not
-                                                 *                                       required to, throw this exception if the entry has been
-                                                 *                                       removed from the backing map.
-                                                 */
                                                 public Object setValue(Object value) {
                                                     throw new UnsupportedOperationException();
                                                 }
@@ -225,10 +191,16 @@ public class RFC822Format implements Format {
                 return event;
             }
         };
-        return (Future<Iterable<Map.Entry<CharSequence, Object>>>) submit(callable);
+        return (Future<Iterable<Map.Entry<CharSequence, Object>>>) getInstance().submit(callable);
     }
 
 
+    public Exchanger<ByteBuffer> send(Iterable<Map.Entry<CharSequence, Object>> transaction) throws InterruptedException {
+        Collection<Map.Entry<CharSequence, Object>> arr = new ArrayList<Map.Entry<CharSequence, Object>>();
+        for (Map.Entry<CharSequence, Object> charSequenceObjectEntry : transaction)
+            arr.add(charSequenceObjectEntry);
+        return send((Map.Entry<CharSequence, Object>[]) arr.toArray());
+    }
 }
 
 

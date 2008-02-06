@@ -20,7 +20,7 @@ public interface ChannelController {
 
     boolean channelConnect(SelectionKey key);
 
-    boolean channelRead(SelectionKey key) throws ExecutionException, InterruptedException, IOException;
+    Exchanger<ByteBuffer> channelRead(SelectionKey key) throws ExecutionException, InterruptedException, IOException;
 
-    boolean channelWrite(SelectionKey key) throws InterruptedException, IOException;
+    Exchanger<ByteBuffer> channelWrite(SelectionKey key) throws InterruptedException, IOException;
 }

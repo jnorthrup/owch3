@@ -8,4 +8,5 @@ package net.sourceforge.owch2.kernel;
  */
 public interface Transaction extends HasDestination, HasOrigin, HasId, HasProperties {
 
+
 }

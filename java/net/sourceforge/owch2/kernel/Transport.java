@@ -16,7 +16,7 @@ public interface Transport {
 
     URI getURI() throws SocketException, URISyntaxException;
 
-    Short getPort();
+    int getPort();
 
     boolean hasPath(CharSequence name);
 
@@ -31,10 +31,10 @@ public interface Transport {
     void setThreads(Integer threads);
 
 
-    Format getFormat();
-
-    void recv(HasDestination notification);
+    void recv(HasDestination transaction);
 
     Future<Exchanger<ByteBuffer>> send(HasDestination notification);
+
+
 }
 

@@ -10,22 +10,22 @@ final class dpwrap implements BehaviorState {
 
     dpwrap(DatagramPacket p_) {
         p = p_;
-    };
+    }
 
-    final byte[] getData() {
+  final byte[] getData() {
         return p.getData();
-    };
+    }
 
-    final InetAddress getAddress() {
+  final InetAddress getAddress() {
         return p.getAddress();
-    };
+    }
 
-    final int getPort() {
+  final int getPort() {
         return p.getPort();
-    };
+    }
 
 
-    public byte fire() throws IOException {
+  public byte fire() throws IOException {
         count++;
         DatagramSocket ds;
         if (count < lifespan) {
@@ -44,5 +44,5 @@ final class dpwrap implements BehaviorState {
             return dead;
         }
         return frozen; //don't try
-    };
+    }
 }

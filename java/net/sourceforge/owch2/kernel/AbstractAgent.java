@@ -67,8 +67,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         }
         catch (NoSuchMethodException nsm) {
             if (Env.logDebug) Env.log(499, attempt);
-            ;
-            nsm.printStackTrace();
+          nsm.printStackTrace();
             try {
                 Field f = c.getField(key);
                 f.set(this, value);
@@ -87,9 +86,9 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     public boolean isParent() {
         return false; //
-    };
+    }
 
-    /**
+  /**
      * Sends a Link notification other node(s) intended to establish direct socket communication.
      * @param lk node(s) to link to
      */
@@ -98,8 +97,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
             if (Env.logDebug) Env.log(5, getClass().getName() + "::" + this.getJMSReplyTo() + ".link invoked. routing to default");
             lk = Env.getParentNode().getJMSReplyTo();
         }
-        ;
-        MetaProperties n = new Notification();
+      MetaProperties n = new Notification();
         n.put("JMSDestination", lk);
         n.put("JMSType", "Link");
         send(n);
@@ -116,21 +114,19 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         if (n.getJMSReplyTo() == null) {
             n.put("JMSReplyTo", this.getJMSReplyTo());
         }
-        ;
-        d = (String) n.get("JMSDestination");
+      d = (String) n.get("JMSDestination");
         if (d == null) {
             if (Env.logDebug) Env.log(8, "debug: AbstractAgent.Send(Notification) dropping unsendd Notification from " + getJMSReplyTo());
             return;
         }
-        ;
-        Env.send(n);
-    };
+      Env.send(n);
+    }
 
-    public final void recv(MetaProperties notificationIn) {
+  public final void recv(MetaProperties notificationIn) {
         String JMSType = (String) notificationIn.get("JMSType");
         try {
             getClass().getMethod("handle_" + JMSType, cls_m).invoke(this,
-                    new Object[]{notificationIn});
+                notificationIn);
         }
         catch (InvocationTargetException e) {
             if (Env.logDebug)
@@ -141,8 +137,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         catch (Exception e) {
             if (Env.logDebug) Env.log(2, "" + e + " thrown for " + this.getJMSReplyTo() + "::" + getClass().getName() + "->" + JMSType);
         }
-        ;
-    }
+  }
 
     public AbstractAgent() {
     }
@@ -178,9 +173,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
             }
             catch (Exception e) {
             }
-            ;
         }
-        ;
     }
 
     public void handle_Link(MetaProperties p) {
@@ -190,10 +183,10 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         n.put("JMSDestination", dest);
         send(n);
         if (Env.logDebug) Env.log(15, getClass().getName() + "::" + getJMSReplyTo() + " AbstractAgent.update() sent for " + dest);
-    };
+    }
 
 
-    /**
+  /**
      * Sends an update to another AbstractAgent
      *  @param dest JMSReplyTo
      */
@@ -216,8 +209,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
             if (Env.logDebug) Env.log(5, getClass().getName() + "::" + this.getJMSReplyTo() + ".unlink invoked. routing to default");
             lk = Env.getParentNode().getJMSReplyTo();
         }
-        ;
-        MetaProperties n = new Notification();
+      MetaProperties n = new Notification();
         n.put("JMSDestination", lk);
         n.put("JMSType", "UnLink");
         send(n);
@@ -230,8 +222,9 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
 
     public final String getJMSReplyTo() {
         return (String) get("JMSReplyTo");
-    };
-    /**  move - clone self.<OL><LI> node arrives at new host,
+    }
+
+  /**  move - clone self.<OL><LI> node arrives at new host,
      *    registers in Nodecache on opaque name. <LI>sends
      *    "Dissolve" message and registers original
      *    name.  <LI>Dissolver registers new opaque name,
@@ -260,8 +253,9 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
         //n2.put( "Resource",get("Resource"));//produces 3 Strings
         n2.put("JMSDestination", host);
         send(n2);
-    };
-    /**
+    }
+
+  /**
      clone <OL><LI>recv order to clone, and host<LI>  deploy
      new class.  <LI>deliver content.  <LI>close channel.
      */
@@ -289,8 +283,7 @@ abstract public class AbstractAgent extends TreeMap implements Agent {
                 clone_state1(st.nextToken());
             }
         }
-        ;
-        if (containsKey("Deploy")) {
+      if (containsKey("Deploy")) {
             try {
                 String clist = (String) get("Deploy");
                 remove("Deploy");

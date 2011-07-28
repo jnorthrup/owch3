@@ -32,7 +32,6 @@ public class WordStore extends VerbKnowledge {
         else {
             wordMap = (Map) w[2];
         }
-        ;
 
     }
 

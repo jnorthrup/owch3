@@ -1,6 +1,0 @@
-package net.sourceforge.idyuts.IOLayer;
- 
-public interface @XCLASS@Filter extends Filter {
-	public void recv(@XFILTERTYPE@ data );
- 	
-}

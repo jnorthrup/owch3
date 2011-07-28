@@ -1,9 +1,0 @@
-
-package  net.sourceforge.idyuts.IOLayer;
-
-
-public interface  @XCLASS@Source extends Source{	
-    void attach(@XCLASS@Filter filter); 
-    void detach(@XCLASS@Filter filter);  
-};	
-

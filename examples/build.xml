@@ -2,7 +2,7 @@
     <property name="dist" location="${basedir}/dist"/>
     <property name="build" location="${basedir}/build"/>
     <property name="src" location="${basedir}/java"/>
-    <property name="distjar" value="${dist}/lib/owch2.jar"/>
+    <property name="distjar" value="${dist}/lib/agent-1.0-SNAPSHOT.jar"/>
     <target name="init">
         <mkdir dir="${build}/classes"/>
         <mkdir dir="${dist}/lib/"/>

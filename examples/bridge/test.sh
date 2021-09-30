@@ -11,7 +11,7 @@
 
 for j in Domain IRC IRCBridge 
 do 
-
+set -x
 for i in *.$j.conf 
 do
 	java -cp ../dist/*:../dist/lib/*  net.sourceforge.owch2.agent.$j -config $i&

@@ -5,6 +5,8 @@ import net.sourceforge.owch2.protocol.TransportEnum
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.*
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.*
 import java.util.AbstractMap.SimpleEntry
 import java.util.concurrent.ConcurrentHashMap
@@ -43,6 +45,8 @@ import javax.script.ScriptException
  * @see AbstractAgent
  */
 class Env private constructor() : Invocable {
+
+
     @JvmField
     @Volatile
     var shutdown = false//
@@ -82,7 +86,7 @@ class Env private constructor() : Invocable {
         for (inboundTransport in inboundTransports) {
             if (inboundTransport.hasPath(notificationDescriptor1.destination)) {
                 inboundTransport.recv(notificationDescriptor1)
-            } else if (instance!!.isParentHost) {
+            } else if (instance.isParentHost) {
                 send(notificationDescriptor1)
             }
         }
@@ -122,7 +126,7 @@ class Env private constructor() : Invocable {
      * @throws NullPointerException         if method name is null.
      */
     @Throws(ScriptException::class, NoSuchMethodException::class)
-    override fun invokeFunction(name: String, vararg args: Any): Any?{
+    override fun invokeFunction(name: String, vararg args: Any): Any? {
         return null //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -138,7 +142,8 @@ class Env private constructor() : Invocable {
      * @throws IllegalArgumentException if the specified `Class` object
      * is null or is not an interface.
      */
-   @Deprecated("tmfm here with interface") override fun <T> getInterface(clasz: Class<T>): T? {
+    @Deprecated("tmfm here with interface")
+    override fun <T> getInterface(clasz: Class<T>): T? {
         return null //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -156,7 +161,8 @@ class Env private constructor() : Invocable {
      * is null or is not an interface, or if the specified Object is
      * null or does not represent a scripting object.
      */
-      @Deprecated("tmfm here with <Any>interface")  override fun <T> getInterface(thiz: Any, clasz: Class<T>): T? {
+    @Deprecated("tmfm here with <Any>interface")
+    override fun <T> getInterface(thiz: Any, clasz: Class<T>): T? {
         return null
     }
 
@@ -173,7 +179,7 @@ class Env private constructor() : Invocable {
     fun parseCommandLineArgs(vararg arguments: CharSequence): Iterator<Map.Entry<CharSequence, Any>>? {
         try {
             val bootMessage = ArrayList<Map.Entry<CharSequence, Any>>()
-            //harsh but effective, asume everything is key value pairs.
+            //harsh but effective, assume everything is key value pairs.
             var i = 0
             while (i < arguments.size - arguments.size % 2) {
                 var argument: String
@@ -193,7 +199,7 @@ class Env private constructor() : Invocable {
                         continue
                     }
                     "HostAddress" -> {
-                        hostAddress= InetAddress.getByName(valueString)
+                        hostAddress = InetAddress.getByName(valueString)
                         i += 2
                         continue
                     }
@@ -231,18 +237,27 @@ class Env private constructor() : Invocable {
                         continue
                     }
                     protoToken == "ParentURL" -> {
-                        val evt = parentNode  as Notification?
+                        val evt = parentNode as Notification?
                         evt!!["URL"] = valueString
-                         parentNode= evt
+                        parentNode = evt
                         i += 2
                         continue
                     }
                     protoToken == "config" -> {
                         val streamTokenizer: Enumeration<*> = StringTokenizer(valueString)
+
                         while (streamTokenizer.hasMoreElements()) {
                             val tempString = streamTokenizer.nextElement() as String
                             val fileInputStream: InputStream = FileInputStream(tempString)
-                            throw UnsupportedClassVersionError()
+                            Files.readAllLines(Paths.get(tempString)).let { lines: MutableList<String> ->
+                                bootMessage += lines.mapNotNull {
+                                    it.  split(":".toRegex(), 2).takeIf {
+                                        it.size == 2
+                                    }?.let { (a, b) ->
+                                        SimpleEntry(a .trim() , b.trim())
+                                    }
+                                }
+                            }
                         }
                         i += 2
                         continue
@@ -285,16 +300,13 @@ class Env private constructor() : Invocable {
                 l["Created"] = "env.getDomain()"
                 l[HasOrigin.FROM_KEY] = "default"
                 try {
-                    l[HasOrigin.URI_KEY] = URI("owch", "default", hostAddress !!.canonicalHostName, 2112, "/default", "", "")
+                    l[HasOrigin.URI_KEY] = URI("owch", "default", hostAddress!!.canonicalHostName, 2112, "/default", "", "")
                 } catch (e: URISyntaxException) {
                     e.printStackTrace() //To change body of catch statement use File | Settings | File Templates.
                 }
                 field = l
             }
             return field
-        }
-        set(value) {
-            field = value
         }
 
     var hostAddress: InetAddress? = null
@@ -303,7 +315,7 @@ class Env private constructor() : Invocable {
                 var hostInterface: NetworkInterface?
                 hostInterface = field
                 if (hostInterface != null) return getExternalAddress(hostInterface).also { field = it }
-                val networkInterfaces: Enumeration<NetworkInterface?>? =   try {
+                val networkInterfaces: Enumeration<NetworkInterface?>? = try {
                     NetworkInterface.getNetworkInterfaces()
                 } catch (e: SocketException) {
                     e.printStackTrace() //To change body of catch statement use Options | File Templates.
@@ -322,18 +334,11 @@ class Env private constructor() : Invocable {
 
 
     val hostname: String
-        get() = hostAddress !!.hostName
+        get() = hostAddress!!.hostName
 
     companion object {
         @JvmStatic
-        var instance: Env? = null
-            get() {
-                synchronized(Env::class.java) {
-                    if (null == field) field = Env()
-                    return field
-                }
-            }
-            private set
+        val instance: Env by lazy { Env() }
         var httpdSockets: Map<String, Socket> = ConcurrentHashMap()
         var inboundTransports = arrayOf<Transport>(TransportEnum.local, TransportEnum.owch, TransportEnum.http, TransportEnum.Default)
         private var outboundTransports = arrayOf<Transport>(TransportEnum.local, TransportEnum.owch, TransportEnum.http, TransportEnum.Default)

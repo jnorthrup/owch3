@@ -54,9 +54,7 @@ public class GateKeeper extends AbstractAgent {
         Object item = (String) notificationIn.get("URLSpec");
         notificationIn.put("URL", notificationIn.get("URLFwd"));
         httpRegistry.unregisterItem(item);
-
     }
-
 }
 
 

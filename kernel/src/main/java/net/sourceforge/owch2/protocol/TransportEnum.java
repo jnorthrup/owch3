@@ -3,14 +3,13 @@ package net.sourceforge.owch2.protocol;
 
 import net.sourceforge.owch2.kernel.*;
 
-
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
- import java.util.LinkedHashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -39,7 +38,8 @@ public enum TransportEnum implements Transport {
             };
             Reactor.submit(callable);
             return null;
-        }},
+        }
+    },
     owch {
         void init() {
 
@@ -111,7 +111,10 @@ public enum TransportEnum implements Transport {
 
         }
     },
-    /** http[s] post semantics */http ,
+    /**
+     * http[s] post semantics
+     */
+    http,
     /**
      * Default's job is to deliver all message up to 'default' agent
      */
@@ -140,7 +143,9 @@ public enum TransportEnum implements Transport {
                 }
             };
             return true;
-        };
+        }
+
+        ;
     }, Null;
     private static DatagramChannel channel;
     private static Map<CharSequence, Agent> localAgents = new ConcurrentHashMap<CharSequence, Agent>();

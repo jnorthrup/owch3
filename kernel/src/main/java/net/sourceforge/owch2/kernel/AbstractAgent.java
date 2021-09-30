@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import static java.lang.Thread.sleep;
 import static net.sourceforge.owch2.kernel.AgentLifecycle.*;
 import static net.sourceforge.owch2.protocol.TransportEnum.http;
-
 /**
  * AbstractAgent provides the base class which communicates with the Env
  * agent host platform and the protocols it operates. communication is
@@ -230,7 +229,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
     /**
      * Sends an update to another AbstractAgent.  this serves to improve lazy routing accuracy.
      * <p/>
-     * a great number of features derive from competitiver updates for multiple nodes with 1 name
+     * a great number of features derive from competitive updates for multiple nodes with 1 name
      * <p/>
      * <h3>for aggregates nodes sharing an "Alias, Cloning, or load/distance balancing  </h3>
      * <ul><li>asynchronous agent job queues: agents update more frequently as thier idles cycles increase so that they can be the chosen designated resource as the most recent update.
@@ -277,7 +276,7 @@ public abstract class AbstractAgent extends LinkedHashMap<CharSequence, Object> 
     }
 
     public CharSequence getFrom() {
-        return (String) get(FROM_KEY);
+        return (String) getOrDefault(FROM_KEY,"default");
     }
 
     public void setFrom(String val) {

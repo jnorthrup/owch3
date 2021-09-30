@@ -90,20 +90,18 @@ public enum Reactor {
                                 //this blocks
                                 i = selector.select();
                                 if (i >= 1) submit(
-                                        new Callable() {
-                                            public Boolean call() throws Exception {
-                                                boolean b = false;
-                                                for (final SelectionKey selectionKey : selector.selectedKeys())
-                                                    for (final Reactor reactor : values())
-                                                        if (0 != (reactor.op & selectionKey.readyOps())) {
-                                                            b = reactor.call(selectionKey);
-                                                            if (!b) {
-                                                                selectionKey.cancel();
-                                                                return false;
-                                                            }
+                                        (Callable) () -> {
+                                            boolean b = false;
+                                            for (final SelectionKey selectionKey : selector.selectedKeys())
+                                                for (final Reactor reactor : values())
+                                                    if (0 != (reactor.op & selectionKey.readyOps())) {
+                                                        b = reactor.call(selectionKey);
+                                                        if (!b) {
+                                                            selectionKey.cancel();
+                                                            return false;
                                                         }
-                                                return true;
-                                            }
+                                                    }
+                                            return true;
                                         }
                                 );
                             } catch (IOException e) {

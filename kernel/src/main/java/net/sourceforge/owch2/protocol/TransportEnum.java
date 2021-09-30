@@ -3,14 +3,14 @@ package net.sourceforge.owch2.protocol;
 
 import net.sourceforge.owch2.kernel.*;
 
+
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -97,7 +97,7 @@ public enum TransportEnum implements Transport {
                     int i = iChannel.read(buffer);
                     final ByteBuffer buffer1 = readX.exchange(buffer);
 
-                    Env.getInstance().recv(new DefaultMapTransaction(iterableFuture.get()));
+                    Env.Companion.getInstance().recv(new DefaultMapTransaction(iterableFuture.get()));
                     return true;
                 }
 
